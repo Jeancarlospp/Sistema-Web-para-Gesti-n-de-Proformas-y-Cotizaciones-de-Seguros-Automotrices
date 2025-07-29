@@ -124,12 +124,12 @@
           <div class="modal-header bg-primary"><h5 class="modal-title text-white">Registrar Nuevo Cliente</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
           <div class="modal-body">
             <form id="new-client-form">
-              <div class="form-group"><label class="form-label">Nombre Completo</label><input type="text" class="form-control" required></div>
-              <div class="form-group"><label class="form-label">Tipo de Documento</label><select class="form-select"><option>Cédula</option><option>RUC</option><option>Pasaporte</option></select></div>
-              <div class="form-group"><label class="form-label">Número de Documento</label><input type="text" class="form-control"></div>
-              <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-control"></div>
-              <div class="form-group"><label class="form-label">Teléfono</label><input type="tel" class="form-control"></div>
-              <div class="form-group"><label class="form-label">Dirección</label><textarea class="form-control"></textarea></div>
+              <div class="form-group"><label class="form-label" for="Nombre">Nombre Completo</label><input id="Nombre" type="text" class="form-control" placeholder="Nombre Completo" required></div>
+              <div class="form-group"><label class="form-label" for="Documento">Tipo de Documento</label><select id="Documento"" class="form-select" required><option >Cédula</option><option>RUC</option></select></div>
+              <div class="form-group"><label class="form-label" for="nDoc">Número de Documento</label><input placeholder="Numero del documento" id="nDoc" type="text" class="form-control" required></div>
+              <div class="form-group"><label class="form-label" for="Correo">Email</label><input  id="Correo" type="email" class="form-control" placeholder="Correo electronico"  required></div>
+              <div class="form-group"><label class="form-label" for="Telefono">Teléfono</label><input id="Telefono" type="tel" class="form-control" placeholder="Numero telefonico"  required></div>
+              <div class="form-group"><label class="form-label" for="Direccion">Dirección</label><textarea id="Direccion" class="form-control" placeholder="Dirección del domicilio"  required></textarea></div>
             </form>
           </div>
           <div class="modal-footer">

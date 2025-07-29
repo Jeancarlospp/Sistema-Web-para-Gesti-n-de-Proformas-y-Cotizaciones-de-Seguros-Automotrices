@@ -26,7 +26,7 @@
         <div id="main">
             <header class="mb-3"><a href="#" class="burger-btn d-block d-xl-none"><i class="bi bi-justify fs-3"></i></a></header>
             <div class="page-heading d-flex justify-content-between align-items-center">
-                <h3>Catálogo de Productos Asegurables</h3>
+                <h3>Catálogo de Productos Asegurables</h3> 
                 <div class="page-heading">
                     <div class="dropdown d-flex align-items-center justify-content-center">
                         <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
@@ -53,6 +53,14 @@
             </div> 
             <p class="text-subtitle text-muted">Consulte los detalles de cada plan disponible para ofrecer a sus clientes.</p>
             <br>
+            <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="card-title">Listado de Productos</h4>
+            <button class="btn btn-primary d-flex justify-content-between " data-bs-toggle="modal" data-bs-target="#addProductModal">
+                <i class="bi bi-plus-circle"></i> &nbsp;Añadir Nuevo Producto
+            </button>
+            </div>
+
+             <br>
             <div class="page-content"> 
                 <section class="row">
                     <!-- Plan Básico -->
@@ -112,5 +120,80 @@
     </div>
     <script src="../assets/compiled/js/app.js"></script>
     <script src="../js/main.js"></script>
+
+    <!-- Modal: Añadir Nuevo Producto -->
+<!-- Modal: Añadir Nuevo Producto -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="addProductModalLabel">Añadir Nuevo Producto Asegurable</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+            <form id="formNuevoProducto">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                <label for="nombreProducto" class="form-label">Nombre del Producto</label>
+                <input type="text" id="nombreProducto" name="nombreProducto" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                <label for="precioProducto" class="form-label">Precio Mensual ($)</label>
+                <input type="number" id="precioProducto" name="precioProducto" class="form-control" min="0" step="0.01" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="descripcionProducto" class="form-label">Descripción</label>
+                <textarea id="descripcionProducto" name="descripcionProducto" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="responsabilidadCivil" class="form-label">Responsabilidad Civil ($)</label>
+                <input type="number" id="responsabilidadCivil" name="responsabilidadCivil" class="form-control" min="0" step="1000" placeholder="Ej: 20000" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Coberturas Incluidas</label>
+                <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="robo_total" id="coberturaRobo">
+                <label class="form-check-label" for="coberturaRobo">Robo Total del Vehículo</label>
+                </div>
+                <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="asistencia" id="coberturaAsistencia">
+                <label class="form-check-label" for="coberturaAsistencia">Asistencia Vial</label>
+                </div>
+                <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="colision" id="coberturaColision">
+                <label class="form-check-label" for="coberturaColision">Daños por Colisión</label>
+                </div>
+                <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="reemplazo" id="coberturaReemplazo">
+                <label class="form-check-label" for="coberturaReemplazo">Auto de Reemplazo</label>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+            
+                <div class="col-md-6">
+                <label for="estadoProducto" class="form-label">Estado</label>
+                <select id="estadoProducto" name="estadoProducto" class="form-select">
+                    <option value="activo" selected>Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                </select>
+                </div>
+            </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" form="formNuevoProducto">Guardar Producto</button>
+        </div>
+        </div>
+    </div>
+    </div>
+
+
+
 </body>
 </html>
