@@ -1,17 +1,26 @@
 /**
  * =================================================================================
- * CS ENSIGNA - main.js (Versión Robusta y Simplificada)
+ * CS ENSIGNA - main.js (Versión Final Definitiva - Enfoque de Ocultar/Mostrar)
+ * ---------------------------------------------------------------------------------
+ * Lógica centralizada de la aplicación.
+ * ESTRATEGIA:
+ * 1. Cada página HTML carga el sidebar maestro completo.
+ * 2. Los scripts de la plantilla Mazer (`app.js`, `dark.js`) se encargan de la
+ *    interactividad (hamburguesa, modo oscuro).
+ * 3. Este script se ejecuta al final para gestionar la lógica de negocio:
+ *    - Maneja el formulario de login.
+ *    - Oculta los enlaces del menú que no corresponden al rol del usuario.
+ *    - Puebla los datos del perfil y ejecuta la lógica específica de cada página.
  * =================================================================================
  */
 
-// --- SECCIÓN 1: LÓGICA DE LOGIN ---
+// --- SECCIÓN 1: LÓGICA DE LA PÁGINA DE LOGIN ---
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
     loginForm.addEventListener('submit', function(event) {
         event.preventDefault();
         const username = document.getElementById('username').value.trim().toLowerCase();
         let role = '', fullName = '', dashboardUrl = '';
-
         switch (username) {
             case 'admin': role = 'Administrador'; fullName = 'Danna Andrade'; dashboardUrl = 'html/admin_dashboard.html'; break;
             case 'asesor': role = 'Asesor'; fullName = 'Ariel Llumiquinga'; dashboardUrl = 'html/asesor_dashboard.html'; break;
@@ -24,97 +33,116 @@ if (loginForm) {
     });
 }
 
-// --- SECCIÓN 2: ORQUESTADOR PARA PÁGINAS INTERNAS ---
+// --- SECCIÓN 2: ORQUESTADOR PARA PÁGINAS AUTENTICADAS ---
 document.addEventListener('DOMContentLoaded', function() {
+    // Si no estamos en la página de login, inicializamos la página interna.
     if (!loginForm) {
         initAuthenticatedPage();
     }
 });
 
+/**
+ * Función principal que se ejecuta en cada página protegida.
+ */
 function initAuthenticatedPage() {
     const userRole = localStorage.getItem('userRole');
     const userName = localStorage.getItem('userName');
 
+    // Verificación de seguridad
     if (!userRole || !userName) {
-        console.error("Acceso denegado. No hay sesión.");
+        console.error("Acceso denegado. No se encontró información de la sesión.");
         window.location.href = '../index.html';
         return;
     }
 
-    loadSidebar(userRole)
-        .then(() => {
-            populateProfileData(userName, userRole);
-            runPageSpecificLogic();
-            controlElementVisibility(userRole);
-        })
-        .catch(error => {
-            console.error("Fallo al inicializar la página:", error);
-            alert("Ocurrió un error al cargar el menú: " + error.message);
-        });
+    // El sidebar ya está en el HTML y es funcional gracias a los scripts de la plantilla.
+    // Nuestra única tarea es gestionar la visibilidad de los enlaces.
+    manageSidebarVisibility(userRole);
+    
+    // El resto de nuestras funciones personalizadas.
+    setActiveMenuItem();
+    initializeLogoutButtons();
+    populateProfileData(userName, userRole);
+    runPageSpecificLogic();
+    controlElementVisibility(userRole);
 }
 
-// --- SECCIÓN 3: FUNCIONES DE CARGA DINÁMICA ---
-function loadSidebar(role) {
-    return new Promise((resolve, reject) => {
-        const sidebarContainer = document.getElementById('sidebar');
-        if (!sidebarContainer) return reject(new Error("Contenedor #sidebar no encontrado."));
+// --- SECCIÓN 3: LÓGICA DE VISIBILIDAD DEL MENÚ ---
 
-        let sidebarPath;
-        switch (role) {
-            case 'Administrador': sidebarPath = '_admin_sidebar.html'; break;
-            case 'Asesor': sidebarPath = '_asesor_sidebar.html'; break;
-            case 'Vendedor': sidebarPath = '_vendedor_sidebar.html'; break;
-            default: return reject(new Error(`Rol no reconocido: ${role}`));
+/**
+ * Oculta y muestra los elementos del menú basados en el rol del usuario.
+ * @param {string} role El rol del usuario actual.
+ */
+function manageSidebarVisibility(role) {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    // 1. Ocultamos todos los elementos con rol específico para empezar de cero.
+    sidebar.querySelectorAll('.role-admin, .role-asesor, .role-vendedor').forEach(el => {
+        el.style.display = 'none';
+    });
+
+    // 2. Determinamos qué clase de rol debemos mostrar.
+    let roleClassToShow = '';
+    switch (role) {
+        case 'Administrador': roleClassToShow = '.role-admin'; break;
+        case 'Asesor': roleClassToShow = '.role-asesor'; break;
+        case 'Vendedor': roleClassToShow = '.role-vendedor'; break;
+    }
+
+    // 3. Mostramos solo los elementos para el rol actual.
+    if (roleClassToShow) {
+        sidebar.querySelectorAll(roleClassToShow).forEach(el => {
+            el.style.display = ''; // Usar '' resetea al estilo por defecto (block, list-item, etc.)
+        });
+    }
+}
+
+
+// --- SECCIÓN 4: OTRAS FUNCIONES AUXILIARES ---
+
+/**
+ * Marca como activo el enlace del menú correspondiente a la página actual.
+ */
+function setActiveMenuItem() {
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('#sidebar .sidebar-item').forEach(li => {
+        const link = li.querySelector('a');
+        if (link) {
+            const linkPage = link.getAttribute('href').split('/').pop();
+            // Solo marcamos como activo si el link coincide Y el elemento está visible.
+            if (linkPage === currentPage && li.style.display !== 'none') {
+                li.classList.add('active');
+            } else {
+                li.classList.remove('active');
+            }
         }
-
-        fetch(sidebarPath)
-            .then(response => {
-                if (!response.ok) throw new Error(`Error ${response.status} al cargar ${sidebarPath}`);
-                return response.text();
-            })
-            .then(html => {
-                sidebarContainer.innerHTML = html;
-
-                // --- INICIO DE LA NUEVA SOLUCIÓN ---
-                // No dependemos de objetos globales. Asignamos los eventos nosotros mismos.
-
-                // 1. Reactivar el Sidebar (menú hamburguesa)
-                const burgerBtn = document.querySelector('.burger-btn');
-                const sidebarHideBtn = document.querySelector('.sidebar-hide');
-                if (burgerBtn) {
-                    burgerBtn.addEventListener('click', () => sidebarContainer.classList.toggle('active'));
-                }
-                if(sidebarHideBtn) {
-                    sidebarHideBtn.addEventListener('click', () => sidebarContainer.classList.toggle('active'));
-                }
-                
-                // 2. Reactivar el Tema Oscuro
-                const themeTogglers = document.querySelectorAll('#toggle-dark');
-                const storedTheme = localStorage.getItem('theme') || (window.matchMedia("(prefers-color-scheme: dark)").matches ? 'dark' : 'light');
-
-                themeTogglers.forEach(toggler => {
-                    if (toggler) {
-                        toggler.checked = storedTheme === 'dark';
-                        toggler.addEventListener('input', (e) => {
-                            const newTheme = e.target.checked ? 'dark' : 'light';
-                            document.documentElement.setAttribute('data-bs-theme', newTheme);
-                            localStorage.setItem('theme', newTheme);
-                        });
-                    }
-                });
-
-                // 3. Funciones personalizadas
-                setActiveMenuItem();
-                initializeLogoutButtons();
-                // --- FIN DE LA NUEVA SOLUCIÓN ---
-                
-                resolve();
-            })
-            .catch(error => reject(error));
     });
 }
 
-// --- RESTO DEL CÓDIGO (SIN CAMBIOS) ---
+/**
+ * Asigna la funcionalidad de logout a los botones de cerrar sesión.
+ */
+function initializeLogoutButtons() {
+    const setupLogout = (buttonId) => {
+        const btn = document.getElementById(buttonId);
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.clear();
+                window.location.href = '../index.html';
+            });
+        }
+    };
+    setupLogout('logout-btn-sidebar');
+    setupLogout('logout-btn');
+}
+
+/**
+ * Rellena la información del perfil del usuario en el header.
+ * @param {string} name El nombre del usuario.
+ * @param {string} role El rol del usuario.
+ */
 function populateProfileData(name, role) {
     const profileNameEl = document.getElementById('profile-name');
     const profileRoleEl = document.getElementById('profile-role');
@@ -124,27 +152,9 @@ function populateProfileData(name, role) {
     if (greetingNameEl) greetingNameEl.textContent = name.split(' ')[0];
 }
 
-function setActiveMenuItem() {
-    const currentPage = window.location.pathname.split('/').pop();
-    document.querySelectorAll('#sidebar .sidebar-link').forEach(link => {
-        const linkPage = link.getAttribute('href').split('/').pop();
-        if (currentPage === linkPage) {
-            link.parentElement.classList.add('active');
-        }
-    });
-}
-
-function initializeLogoutButtons() {
-    const logoutAction = (event) => {
-        event.preventDefault();
-        localStorage.clear();
-        window.location.href = '../index.html';
-    };
-    document.querySelectorAll('#logout-btn, #logout-btn-sidebar').forEach(btn => {
-        btn.addEventListener('click', logoutAction);
-    });
-}
-
+/**
+ * Ejecuta la lógica específica de la página actual basándose en la URL.
+ */
 function runPageSpecificLogic() {
     const url = window.location.href;
     if (url.includes('admin_dashboard.html')) loadAdminDashboard();
@@ -153,6 +163,10 @@ function runPageSpecificLogic() {
     else if (url.includes('gestion_clientes.html')) loadGestionClientes();
 }
 
+/**
+ * Controla la visibilidad de elementos específicos en una página según el rol.
+ * @param {string} role El rol del usuario.
+ */
 function controlElementVisibility(role) {
     const url = window.location.href;
     if (url.includes('gestion_clientes.html')) {
@@ -163,13 +177,16 @@ function controlElementVisibility(role) {
     }
 }
 
-// ... (El resto de tus funciones como buildComparisonTable, loadAdminDashboard, etc. van aquí sin cambios) ...
+
+// --- SECCIÓN 5: IMPLEMENTACIÓN DE LÓGICA DE PÁGINAS ---
+
 const mockInsuranceData = {
     basico: { name: 'Plan Básico', price: 50, features: { responsabilidadCivil: 'Hasta $20,000', roboTotal: true, asistenciaVial: 'Básica', colision: null, autoReemplazo: null } },
     intermedio: { name: 'Plan Intermedio', price: 85, features: { responsabilidadCivil: 'Hasta $50,000', roboTotal: true, asistenciaVial: 'Completa 24/7', colision: 'Deducible 5%', autoReemplazo: null } },
     completo: { name: 'Plan Completo', price: 120, features: { responsabilidadCivil: 'Hasta $100,000', roboTotal: true, asistenciaVial: 'VIP Ilimitada', colision: 'Sin Deducible', autoReemplazo: 'Hasta 15 días' } }
 };
 const featureLabels = { responsabilidadCivil: 'Responsabilidad Civil', roboTotal: 'Robo Total', asistenciaVial: 'Asistencia Vial', colision: 'Daños por Colisión', autoReemplazo: 'Auto de Reemplazo' };
+
 function buildComparisonTable(selectedPlans, tableHead, tableBody, tableFoot) {
     tableHead.innerHTML = ''; tableBody.innerHTML = ''; tableFoot.innerHTML = '';
     let headRow = '<tr><th>Cobertura</th>';
@@ -187,6 +204,7 @@ function buildComparisonTable(selectedPlans, tableHead, tableBody, tableFoot) {
     selectedPlans.forEach(planKey => { footRow += `<td><h4>$${mockInsuranceData[planKey].price}</h4></td>`; });
     tableFoot.innerHTML = footRow + '</tr>';
 }
+
 function loadAdminDashboard() {
     const mockUsers = [ { id: 1, name: 'Andrade Lucio Danna Valentina', email: 'daandrade9@espe.edu.ec', role: 'Diseñador' }, { id: 2, name: 'Santi Cruz Jeancarlo Javier', email: 'jjsanti@espe.edu.ec', role: 'Programador' }, { id: 3, name: 'Llumiquinga Ñacato Ariel Jose', email: 'ajllumiquinga2@espe.edu.ec', role: 'Analista' }, { id: 4, name: 'Manangón Vinueza Zaith Alejandro', email: 'zamanangon@espe.edu.ec', role: 'Programador' } ];
     const userTableBody = document.getElementById('user-table-body');
@@ -195,6 +213,7 @@ function loadAdminDashboard() {
         mockUsers.forEach(user => { userTableBody.innerHTML += `<tr><td>${user.id}</td><td>${user.name}</td><td>${user.email}</td><td><span class="badge bg-success">${user.role}</span></td><td><button class="btn btn-sm btn-info">Editar</button><button class="btn btn-sm btn-danger ms-1">Desactivar</button></td></tr>`; });
     }
 }
+
 function loadAsesorDashboard() {
     const form = document.getElementById('quote-form');
     if (!form) return;
@@ -211,6 +230,7 @@ function loadAsesorDashboard() {
     const pdfBtn = document.getElementById('generate-pdf-btn');
     if (pdfBtn) pdfBtn.addEventListener('click', () => alert(`Simulación: PDF generado para ${document.getElementById('client-name-display').textContent}.`));
 }
+
 function loadVendedorDashboard() {
     const form = document.getElementById('quick-quote-form');
     if (!form) return;
@@ -226,6 +246,7 @@ function loadVendedorDashboard() {
     const pdfBtn = document.getElementById('vendedor-generate-pdf-btn');
     if (pdfBtn) pdfBtn.addEventListener('click', () => alert(`Simulación: PDF generado para ${document.getElementById('vendedor-client-name').value || 'el cliente'}.`));
 }
+
 function loadGestionClientes() {
-    //
+    // Aquí iría la lógica futura para la página de gestión de clientes.
 }
