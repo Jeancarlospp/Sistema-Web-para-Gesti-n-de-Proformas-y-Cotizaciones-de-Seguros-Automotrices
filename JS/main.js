@@ -1,42 +1,24 @@
 /**
  * =================================================================================
- * CS ENSIGNA - main.js (Versión Final Definitiva - Enfoque de Ocultar/Mostrar)
+ * CS ENSIGNA - main.js (Versión Corregida - Solo para páginas autenticadas)
  * ---------------------------------------------------------------------------------
  * Lógica centralizada de la aplicación.
  * ESTRATEGIA:
- * 1. Cada página HTML carga el sidebar maestro completo.
- * 2. Los scripts de la plantilla Mazer (`app.js`, `dark.js`) se encargan de la
- *    interactividad (hamburguesa, modo oscuro).
- * 3. Este script se ejecuta al final para gestionar la lógica de negocio:
- *    - Maneja el formulario de login.
- *    - Oculta los enlaces del menú que no corresponden al rol del usuario.
- *    - Puebla los datos del perfil y ejecuta la lógica específica de cada página.
+ * 1. El login se maneja completamente por PHP (login.php)
+ * 2. Este script solo se ejecuta en páginas autenticadas para:
+ *    - Ocultar los enlaces del menú que no corresponden al rol del usuario.
+ *    - Poblar los datos del perfil y ejecutar la lógica específica de cada página.
  * =================================================================================
  */
 
-// --- SECCIÓN 1: LÓGICA DE LA PÁGINA DE LOGIN ---
-const loginForm = document.getElementById('login-form');
-if (loginForm) {
-    loginForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const username = document.getElementById('username').value.trim().toLowerCase();
-        let role = '', fullName = '', dashboardUrl = '';
-        switch (username) {
-            case 'admin': role = 'Administrador'; fullName = 'Danna Andrade'; dashboardUrl = 'html/admin_dashboard.html'; break;
-            case 'asesor': role = 'Asesor'; fullName = 'Ariel Llumiquinga'; dashboardUrl = 'html/asesor_dashboard.html'; break;
-            case 'vendedor': role = 'Vendedor'; fullName = 'Jeancarlo Santi'; dashboardUrl = 'html/vendedor_dashboard.html'; break;
-            default: alert('Usuario no válido.'); return;
-        }
-        localStorage.setItem('userRole', role);
-        localStorage.setItem('userName', fullName);
-        window.location.href = dashboardUrl;
-    });
-}
-
-// --- SECCIÓN 2: ORQUESTADOR PARA PÁGINAS AUTENTICADAS ---
+// --- ORQUESTADOR PARA PÁGINAS AUTENTICADAS ---
 document.addEventListener('DOMContentLoaded', function() {
-    // Si no estamos en la página de login, inicializamos la página interna.
-    if (!loginForm) {
+    // Solo inicializamos si NO estamos en la página de login
+    const isLoginPage = window.location.pathname.includes('index.html') || 
+                       window.location.pathname.endsWith('/') || 
+                       window.location.pathname.includes('login.php');
+    
+    if (!isLoginPage) {
         initAuthenticatedPage();
     }
 });
@@ -67,7 +49,7 @@ function initAuthenticatedPage() {
     controlElementVisibility(userRole);
 }
 
-// --- SECCIÓN 3: LÓGICA DE VISIBILIDAD DEL MENÚ ---
+// --- LÓGICA DE VISIBILIDAD DEL MENÚ ---
 
 /**
  * Oculta y muestra los elementos del menú basados en el rol del usuario.
@@ -98,8 +80,7 @@ function manageSidebarVisibility(role) {
     }
 }
 
-
-// --- SECCIÓN 4: OTRAS FUNCIONES AUXILIARES ---
+// --- OTRAS FUNCIONES AUXILIARES ---
 
 /**
  * Marca como activo el enlace del menú correspondiente a la página actual.
@@ -158,6 +139,7 @@ function populateProfileData(name, role) {
 function runPageSpecificLogic() {
     const url = window.location.href;
     if (url.includes('admin_dashboard.html')) loadAdminDashboard();
+    else if (url.includes('gestion_usuarios.html')) loadGestionUsuarios();
     else if (url.includes('asesor_dashboard.html')) loadAsesorDashboard();
     else if (url.includes('vendedor_dashboard.html')) loadVendedorDashboard();
     else if (url.includes('gestion_clientes.html')) loadGestionClientes();
@@ -177,8 +159,7 @@ function controlElementVisibility(role) {
     }
 }
 
-
-// --- SECCIÓN 5: IMPLEMENTACIÓN DE LÓGICA DE PÁGINAS ---
+// --- IMPLEMENTACIÓN DE LÓGICA DE PÁGINAS ---
 
 const mockInsuranceData = {
     basico: { name: 'Plan Básico', price: 50, features: { responsabilidadCivil: 'Hasta $20,000', roboTotal: true, asistenciaVial: 'Básica', colision: null, autoReemplazo: null } },
@@ -205,13 +186,218 @@ function buildComparisonTable(selectedPlans, tableHead, tableBody, tableFoot) {
     tableFoot.innerHTML = footRow + '</tr>';
 }
 
+// Dashboard del administrador: empleados conectados recientemente (por ultimo_login)
 function loadAdminDashboard() {
-    const mockUsers = [ { id: 1, name: 'Andrade Lucio Danna Valentina', email: 'daandrade9@espe.edu.ec', role: 'Diseñador' }, { id: 2, name: 'Santi Cruz Jeancarlo Javier', email: 'jjsanti@espe.edu.ec', role: 'Programador' }, { id: 3, name: 'Llumiquinga Ñacato Ariel Jose', email: 'ajllumiquinga2@espe.edu.ec', role: 'Analista' }, { id: 4, name: 'Manangón Vinueza Zaith Alejandro', email: 'zamanangon@espe.edu.ec', role: 'Programador' } ];
+    console.log('Cargando dashboard de administrador...');
     const userTableBody = document.getElementById('user-table-body');
-    if (userTableBody) {
-        userTableBody.innerHTML = '';
-        mockUsers.forEach(user => { userTableBody.innerHTML += `<tr><td>${user.id}</td><td>${user.name}</td><td>${user.email}</td><td><span class="badge bg-success">${user.role}</span></td><td><button class="btn btn-sm btn-info">Editar</button><button class="btn btn-sm btn-danger ms-1">Desactivar</button></td></tr>`; });
+    if (!userTableBody) {
+        console.error('No se encontró el elemento user-table-body');
+        return;
     }
+
+    // Mostrar mensaje de carga
+    userTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Cargando usuarios...</td></tr>';
+
+    fetch('../usuarios_api.php')
+        .then(res => {
+            console.log('Respuesta del servidor:', res.status);
+            return res.json();
+        })
+        .then(users => {
+            console.log('Usuarios recibidos:', users);
+            userTableBody.innerHTML = '';
+            
+            if (!users || users.length === 0) {
+                userTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay usuarios registrados</td></tr>';
+                return;
+            }
+
+            users.forEach(user => {
+                const estadoBadge = user.estado === 'activo' ? 
+                    '<span class="badge bg-success">Activo</span>' : 
+                    '<span class="badge bg-secondary">Inactivo</span>';
+                
+                const lastLogin = user.ultimo_login ? 
+                    new Date(user.ultimo_login).toLocaleString() : 
+                    'Nunca';
+
+                userTableBody.innerHTML += `
+                    <tr data-user-id="${user.id}">
+                        <td>${user.id}</td>
+                        <td>${user.nombre}</td>
+                        <td>${user.correo}</td>
+                        <td><span class="badge bg-primary">${user.rol}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-info btn-editar" title="Editar usuario">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm ${user.estado === 'activo' ? 'btn-warning' : 'btn-success'} btn-desactivar ms-1" 
+                                    title="${user.estado === 'activo' ? 'Desactivar' : 'Activar'} usuario">
+                                <i class="bi bi-${user.estado === 'activo' ? 'pause' : 'play'}"></i>
+                                ${user.estado === 'activo' ? 'Desactivar' : 'Activar'}
+                            </button>
+                        </td>
+                    </tr>`;
+            });
+
+            // Asignar eventos a los botones
+            userTableBody.querySelectorAll('.btn-desactivar').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tr = this.closest('tr');
+                    const userId = tr.getAttribute('data-user-id');
+                    const currentText = this.textContent.trim();
+                    const newEstado = currentText === 'Desactivar' ? 'inactivo' : 'activo';
+                    const actionText = newEstado === 'inactivo' ? 'desactivar' : 'activar';
+                    
+                    if (confirm(`¿Seguro que deseas ${actionText} este usuario?`)) {
+                        // Deshabilitar el botón mientras se procesa
+                        this.disabled = true;
+                        this.innerHTML = '<i class="bi bi-hourglass-split"></i> Procesando...';
+                        
+                        fetch('../usuarios_api.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'update_estado', id: userId, estado: newEstado })
+                        })
+                        .then(res => res.json())
+                        .then(resp => {
+                            if (resp.success) {
+                                loadAdminDashboard(); // Recargar la tabla
+                            } else {
+                                alert('Error al cambiar el estado del usuario');
+                                this.disabled = false;
+                                this.innerHTML = `<i class="bi bi-${newEstado === 'activo' ? 'pause' : 'play'}"></i> ${currentText}`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error de conexión');
+                            this.disabled = false;
+                            this.innerHTML = `<i class="bi bi-${newEstado === 'activo' ? 'pause' : 'play'}"></i> ${currentText}`;
+                        });
+                    }
+                });
+            });
+
+            userTableBody.querySelectorAll('.btn-editar').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tr = this.closest('tr');
+                    const userId = tr.getAttribute('data-user-id');
+                    alert('Funcionalidad de edición pendiente para el usuario ID: ' + userId);
+                });
+            });
+        })
+        .catch(error => {
+            console.error('Error al cargar usuarios:', error);
+            userTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar los usuarios</td></tr>';
+        });
+}
+
+// Gestión de usuarios: todos los usuarios ordenados alfabéticamente
+function loadGestionUsuarios() {
+    console.log('Cargando gestión de usuarios...');
+    const userTableBody = document.getElementById('all-users-table');
+    if (!userTableBody) {
+        console.error('No se encontró el elemento all-users-table');
+        return;
+    }
+
+    // Mostrar mensaje de carga
+    userTableBody.innerHTML = '<tr><td colspan="7" class="text-center">Cargando usuarios...</td></tr>';
+
+    fetch('../usuarios_api.php?all=1')
+        .then(res => {
+            console.log('Respuesta del servidor:', res.status);
+            return res.json();
+        })
+        .then(users => {
+            console.log('Usuarios recibidos:', users);
+            // Ordenar alfabéticamente por nombre
+            users.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+            userTableBody.innerHTML = '';
+            
+            if (!users || users.length === 0) {
+                userTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No hay usuarios registrados</td></tr>';
+                return;
+            }
+
+            users.forEach(user => {
+                const estadoBadge = user.estado === 'activo' ? 
+                    '<span class="badge bg-success">Activo</span>' : 
+                    '<span class="badge bg-secondary">Inactivo</span>';
+                
+                userTableBody.innerHTML += `
+                    <tr data-user-id="${user.id}">
+                        <td>${user.id}</td>
+                        <td>${user.nombre}</td>
+                        <td>${user.cedula || 'N/A'}</td>
+                        <td>${user.correo}</td>
+                        <td><span class="badge bg-primary">${user.rol}</span></td>
+                        <td>${estadoBadge}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info btn-editar" title="Editar usuario">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm ${user.estado === 'activo' ? 'btn-warning' : 'btn-success'} btn-desactivar ms-1" 
+                                    title="${user.estado === 'activo' ? 'Desactivar' : 'Activar'} usuario">
+                                <i class="bi bi-${user.estado === 'activo' ? 'pause' : 'play'}"></i>
+                                ${user.estado === 'activo' ? 'Desactivar' : 'Activar'}
+                            </button>
+                        </td>
+                    </tr>`;
+            });
+
+            // Asignar eventos a los botones
+            userTableBody.querySelectorAll('.btn-desactivar').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tr = this.closest('tr');
+                    const userId = tr.getAttribute('data-user-id');
+                    const currentText = this.textContent.trim();
+                    const newEstado = currentText === 'Desactivar' ? 'inactivo' : 'activo';
+                    const actionText = newEstado === 'inactivo' ? 'desactivar' : 'activar';
+                    
+                    if (confirm(`¿Seguro que deseas ${actionText} este usuario?`)) {
+                        // Deshabilitar el botón mientras se procesa
+                        this.disabled = true;
+                        this.innerHTML = '<i class="bi bi-hourglass-split"></i> Procesando...';
+                        
+                        fetch('../usuarios_api.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'update_estado', id: userId, estado: newEstado })
+                        })
+                        .then(res => res.json())
+                        .then(resp => {
+                            if (resp.success) {
+                                loadGestionUsuarios(); // Recargar la tabla
+                            } else {
+                                alert('Error al cambiar el estado del usuario');
+                                this.disabled = false;
+                                this.innerHTML = `<i class="bi bi-${newEstado === 'activo' ? 'pause' : 'play'}"></i> ${currentText}`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error de conexión');
+                            this.disabled = false;
+                            this.innerHTML = `<i class="bi bi-${newEstado === 'activo' ? 'pause' : 'play'}"></i> ${currentText}`;
+                        });
+                    }
+                });
+            });
+
+            userTableBody.querySelectorAll('.btn-editar').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tr = this.closest('tr');
+                    const userId = tr.getAttribute('data-user-id');
+                    alert('Funcionalidad de edición pendiente para el usuario ID: ' + userId);
+                });
+            });
+        })
+        .catch(error => {
+            console.error('Error al cargar usuarios:', error);
+            userTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar los usuarios</td></tr>';
+        });
 }
 
 function loadAsesorDashboard() {
@@ -248,5 +434,6 @@ function loadVendedorDashboard() {
 }
 
 function loadGestionClientes() {
+    console.log('Página de gestión de clientes cargada');
     // Aquí iría la lógica futura para la página de gestión de clientes.
 }
