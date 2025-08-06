@@ -1,9 +1,9 @@
 <?php
 class Conexion {
     private $host = "localhost";
-    private $db = "aseguradora_autos";
-    private $user = "root";
-    private $pass = "rootroot";
+    private $db = "sistema_cotizaciones";
+    private $user = "admin";
+    private $pass = "admin";
     public $conn;
 
     public function __construct() {

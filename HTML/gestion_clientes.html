@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,14 +8,13 @@
     <link rel="shortcut icon" href="../assets/compiled/svg/favicon.svg" type="image/x-icon">
     <link rel="stylesheet" href="../assets/compiled/css/app.css">
     <link rel="stylesheet" href="../assets/compiled/css/app-dark.css">
-    <link rel="stylesheet" href="../assets/compiled/css/iconly.css">
     <link rel="stylesheet" href="../assets/extensions/bootstrap-icons/font/bootstrap-icons.css">
-
 </head>
 
 <body>
     <script src="../assets/static/js/initTheme.js"></script>
     <div id="app">
+        
         <!-- ======================================================= -->
         <!-- ===== INICIO DE LA CORRECCIÓN: SIDEBAR UNIVERSAL ===== -->
         <!-- ======================================================= -->
@@ -72,132 +70,41 @@
         <!-- ======================================================= -->
         <!-- ================== FIN DEL SIDEBAR ==================== -->
         <!-- ======================================================= -->
-
-
-
+        
         <div id="main">
-            <header class="mb-3">
-                <a href="#" class="burger-btn d-block d-xl-none">
-                    <i class="bi bi-justify fs-3"></i>
-                </a>
-            </header>
-            <div class="page-heading">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3>Gestión de Clientes</h3>
-                    <div class="dropdown d-flex align-items-center justify-content-center">
-                        <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-menu d-flex">
-                                <div class="user-name text-end me-3 d-none d-sm-block">
-                                    <h6 class="mb-0 text-gray-600" id="profile-name">Cargando...</h6>
-                                    <p class="mb-0 text-sm text-gray-600 " id="profile-role">...</p>
-                                </div>
-                                <div class="user-img d-flex align-items-center">
-                                    <div class="avatar avatar-md">
-                                        <img src="../assets/compiled/jpg/1.jpg" alt="Avatar">
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton" style="min-width: 11rem;">
-                            <li><h6 class="dropdown-header">Hola, <span id="profile-greeting-name">Usuario</span>!</h6></li>
-                            <li><a class="dropdown-item" href="#"><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" id="logout-btn"><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar Sesión</a></li>
-                        </ul>
-                    </div>
-                </div>   
-            </div>
-      
-            <div class="page-content"> 
-                <section class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h4>Listado de Clientes Activos</h4>
-                                <!--
-                                    Este botón se mostrará o se ocultará automáticamente
-                                    por la función controlElementVisibility() en app.js
-                                -->
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addClientModal">
-                                    <i class="bi bi-plus-circle"></i>  Añadir Nuevo Cliente
-                                </button>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover table-lg">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Nombre Completo</th>
-                                                <th>Email</th>
-                                                <th>Teléfono</th>
-                                                <th>Fecha de Registro</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Los datos se cargarían dinámicamente -->
-                                            <tr>
-                                                <td>CLI-001</td>
-                                                <td>Juan Pérez</td>
-                                                <td>juan.perez@example.com</td>
-                                                <td>+593 987654321</td>
-                                                <td>2024-05-10</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-info">Editar</button>
-                                                    <button class="btn btn-sm btn-secondary">Ver Historial</button>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>CLI-002</td>
-                                                <td>Maria García</td>
-                                                <td>maria.garcia@example.com</td>
-                                                <td>+593 998877665</td>
-                                                <td>2024-05-12</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-info">Editar</button>
-                                                    <button class="btn btn-sm btn-secondary">Ver Historial</button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+            <header class="mb-3"><a href="#" class="burger-btn d-block d-xl-none"><i class="bi bi-justify fs-3"></i></a></header>
+            <div class="page-heading"><div class="d-flex justify-content-between align-items-center"><h3>Gestión de Clientes</h3><div class="dropdown"><a href="#" data-bs-toggle="dropdown" aria-expanded="false"><div class="user-menu d-flex"><div class="user-name text-end me-3 d-none d-sm-block"><h6 class="mb-0 text-gray-600" id="profile-name">Cargando...</h6><p class="mb-0 text-sm text-gray-600 " id="profile-role">...</p></div><div class="user-img d-flex align-items-center"><div class="avatar avatar-md"><img src="../assets/compiled/jpg/1.jpg" alt="Avatar"></div></div></div></a><ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton" style="min-width: 11rem;"><li><h6 class="dropdown-header">Hola, <span id="profile-greeting-name">Usuario</span>!</h6></li><li><a class="dropdown-item" href="miPerfil.html"><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a></li><li><hr class="dropdown-divider"></li><li><a class="dropdown-item" href="#" id="logout-btn"><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar Sesión</a></li></ul></div></div></div>
+            <div class="page-content">
+                <section class="row"><div class="col-12"><div class="card"><div class="card-header d-flex justify-content-between align-items-center"><h4>Listado de Clientes Activos</h4><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addClientModal"><i class="bi bi-plus-circle"></i>&nbsp; Añadir Nuevo Cliente</button></div><div class="card-body"><div class="table-responsive"><table class="table table-hover table-lg"><thead><tr><th>ID</th><th>Nombre</th><th>Cédula</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr></thead>
+                <!-- ===== CORRECCIÓN 1: Se añade un ID al tbody ===== -->
+                <tbody id="client-table-body">
+                    <!-- ===== CORRECCIÓN 2: Se reemplazan los datos estáticos por un mensaje de carga ===== -->
+                    <tr><td colspan="6" class="text-center">Cargando clientes...</td></tr>
+                </tbody>
+                </table></div></div></div></div></section>
             </div>
         </div>
     </div>
 
-    
-    <!-- Modal para Añadir Cliente (sin cambios) -->
-    <div class="modal fade" id="addClientModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-primary"><h5 class="modal-title text-white">Registrar Nuevo Cliente</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-          <div class="modal-body">
-            <form id="new-client-form">
-              <div class="form-group"><label class="form-label" for="Nombre">Nombre Completo</label><input id="Nombre" type="text" class="form-control" placeholder="Nombre Completo" required></div>
-              <div class="form-group"><label class="form-label" for="Documento">Tipo de Documento</label><select id="Documento"" class="form-select" required><option >Cédula</option><option>RUC</option></select></div>
-              <div class="form-group"><label class="form-label" for="nDoc">Número de Documento</label><input placeholder="Numero del documento" id="nDoc" type="text" class="form-control" required></div>
-              <div class="form-group"><label class="form-label" for="Correo">Email</label><input  id="Correo" type="email" class="form-control" placeholder="Correo electronico"  required></div>
-              <div class="form-group"><label class="form-label" for="Telefono">Teléfono</label><input id="Telefono" type="tel" class="form-control" placeholder="Numero telefonico"  required></div>
-              <div class="form-group"><label class="form-label" for="Direccion">Dirección</label><textarea id="Direccion" class="form-control" placeholder="Dirección del domicilio"  required></textarea></div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary" onclick="alert('Cliente guardado (simulación)')">Guardar Cliente</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Modal para Añadir Cliente -->
+    <div class="modal fade" id="addClientModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-primary"><h5 class="modal-title text-white">Registrar Nuevo Cliente</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body">
+    <!-- ===== CORRECCIÓN 3: Se añade un ID al formulario ===== -->
+    <form id="add-client-form">
+        <div class="form-group"><label class="form-label" for="clientName">Nombre Completo</label><input id="clientName" type="text" class="form-control" placeholder="Nombre y Apellido" required></div>
+        <div class="form-group"><label class="form-label" for="clientCedula">Cédula</label><input id="clientCedula" type="text" class="form-control" placeholder="Número de Cédula" required></div>
+        <div class="form-group"><label class="form-label" for="clientEmail">Email</label><input  id="clientEmail" type="email" class="form-control" placeholder="Correo electrónico" required></div>
+        <div class="form-group"><label class="form-label" for="clientPhone">Teléfono</label><input id="clientPhone" type="tel" class="form-control" placeholder="Número telefónico" required></div>
+    </form>
+    </div><div class="modal-footer">
+        <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <!-- ===== CORRECCIÓN 4: Se modifica el botón para controlarlo por JS ===== -->
+        <button type="button" id="btnGuardarCliente" class="btn btn-primary">Guardar Cliente</button>
+    </div></div></div></div>
 
-    <!-- Scripts de la plantilla y nuestro script personalizado -->
+    <!-- Bloque de Scripts Optimizado -->
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-    <script src="../assets/compiled/js/app.js"></script>
-    <script src="../js/main.js"></script>
+    <script type="module" src="../js/main.js"></script>
+    <script src="../assets/compiled/js/app.js" defer></script>
 </body>
 </html>

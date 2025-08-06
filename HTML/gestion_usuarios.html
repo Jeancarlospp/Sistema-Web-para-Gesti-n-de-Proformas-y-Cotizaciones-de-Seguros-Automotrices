@@ -93,7 +93,7 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton" style="min-width: 11rem;">
                         <li><h6 class="dropdown-header">Hola, <span id="profile-greeting-name">Usuario</span>!</h6></li>
-                        <li><a class="dropdown-item" href="#"><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a></li>
+                        <li><a class="dropdown-item" href="miPerfil.html"><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="#" id="logout-btn"><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar Sesión</a></li>
                     </ul>
@@ -125,30 +125,7 @@
                                         </thead>
                                         <tbody id="all-users-table">
                                             <!-- Ejemplo de fila -->
-                                            <tr>
-                                                <td>1</td>
-                                                <td>Andrade Lucio Danna Valentina</td>
-                                                <td>1722651567</td>
-                                                <td>daandrade9@espe.edu.ec</td>
-                                                <td>Diseñador</td>
-                                                <td><span class="badge bg-success">Activo</span></td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-info">Editar</button>
-                                                    <button class="btn btn-sm btn-danger">Desactivar</button>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>2</td>
-                                                <td>Santi Cruz Jeancarlo Javier</td>
-                                                <td>1111111111</td>
-                                                <td>jjsanti@espe.edu.ec</td>
-                                                <td>Programador</td>
-                                                <td><span class="badge bg-success">Activo</span></td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-info">Editar</button>
-                                                    <button class="btn btn-sm btn-danger">Desactivar</button>
-                                                </td>
-                                            </tr>
+                                            
                                         </tbody>
                                     </table>
                                 </div>
@@ -194,9 +171,11 @@
       </div>
     </div>
 
+    <!-- Este orden previene conflictos de tiempo de ejecución entre los scripts. -->
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-    <script src="../assets/compiled/js/app.js"></script>
-    <script src="../js/main.js"></script>
+    <script type="module" src="../js/main.js"></script>
+    <script src="../assets/compiled/js/app.js" defer></script>
+
 </body>
 </html>

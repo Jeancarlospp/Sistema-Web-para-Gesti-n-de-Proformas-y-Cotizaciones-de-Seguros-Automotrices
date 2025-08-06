@@ -9,24 +9,20 @@
     <link rel="shortcut icon" href="../assets/compiled/svg/favicon.svg" type="image/x-icon">
     <link rel="stylesheet" href="../assets/compiled/css/app.css">
     <link rel="stylesheet" href="../assets/compiled/css/app-dark.css">
-    <link rel="stylesheet" href="../assets/compiled/css/iconly.css">
     <link rel="stylesheet" href="../assets/extensions/bootstrap-icons/font/bootstrap-icons.css">
 </head>
 
 <body>
     <script src="../assets/static/js/initTheme.js"></script>
     <div id="app">
-        <!-- ======================================================= -->
-        <!-- ===== INICIO DE LA CORRECCIÓN: SIDEBAR UNIVERSAL ===== -->
-        <!-- ======================================================= -->
+        
+        <!-- El Sidebar Universal es correcto y no necesita cambios -->
         <div id="sidebar">
-            <!-- Este es el contenido completo del sidebar maestro.
-                 El script main.js se encargará de mostrar solo las partes correctas. -->
             <div class="sidebar-wrapper active">
                 <div class="sidebar-header position-relative">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="logo">
-                            <a href="index.html"><img src="../assets/compiled/svg/logo.svg" alt="Logo" srcset=""></a>
+                            <a href="../index.html"><img src="../assets/compiled/svg/logo.svg" alt="Logo" srcset=""></a>
                         </div>
                         <div class="theme-toggle d-flex gap-2 align-items-center mt-2">
                             <svg class="iconify iconify--system-uicons" width="20" height="20" viewBox="0 0 21 21"><g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 14.5c2.219 0 4-1.763 4-3.982a4.003 4.003 0 0 0-4-4.018c-2.219 0-4 1.781-4 4c0 2.219 1.781 4 4 4zM4.136 4.136L5.55 5.55m9.9 9.9l1.414 1.414M1.5 10.5h2m14 0h2M4.135 16.863L5.55 15.45m9.899-9.9l1.414-1.415M10.5 19.5v-2m0-14v-2" opacity=".3"></path><g transform="translate(-210 -1)"><path d="M220.5 2.5v2m6.5.5l-1.5 1.5"></path><circle cx="220.5" cy="11.5" r="4"></circle><path d="m214 5l1.5 1.5m5 14v-2m6.5-.5l-1.5-1.5M214 18l1.5-1.5m-4-5h2m14 0h2"></path></g></g></svg>
@@ -41,59 +37,43 @@
                 </div>
                 <div class="sidebar-menu">
                     <ul class="menu">
-                        <!-- ========== MENÚ ADMINISTRADOR ========== -->
+                        <!-- MENÚS POR ROLES (Esto es manejado por sidebar.js) -->
                         <li class="sidebar-title role-admin">Menú Principal</li>
                         <li class="sidebar-item role-admin"><a href="admin_dashboard.html" class='sidebar-link'><i class="bi bi-grid-fill"></i><span>Dashboard</span></a></li>
                         <li class="sidebar-item role-admin"><a href="gestion_usuarios.html" class='sidebar-link'><i class="bi bi-people-fill"></i><span>Gestión de Usuarios</span></a></li>
                         <li class="sidebar-item role-admin"><a href="gestion_empresas.html" class='sidebar-link'><i class="bi bi-building"></i><span>Gestión de Empresas</span></a></li>
                         <li class="sidebar-item role-admin"><a href="gestion_clientes.html" class='sidebar-link'><i class="bi bi-person-lines-fill"></i><span>Gestión Clientes</span></a></li>
-                        <li class="sidebar-item role-admin"><a href="supervisar_cotizaciones.html" class='sidebar-link'><i class="bi bi-file-earmark-text-fill"></i><span>Supervisar Cotizaciones</span></a></li>
-                        <li class="sidebar-item role-admin"><a href="reportes_auditoria.html" class='sidebar-link'><i class="bi bi-journal-album"></i><span>Reportes y Auditoría</span></a></li>
-                        
-                        <!-- ========== MENÚ ASESOR ========== -->
                         <li class="sidebar-title role-asesor">Menú Asesor</li>
                         <li class="sidebar-item role-asesor"><a href="asesor_dashboard.html" class='sidebar-link'><i class="bi bi-grid-fill"></i><span>Dashboard de Cotización</span></a></li>
                         <li class="sidebar-item role-asesor"><a href="gestion_clientes.html" class='sidebar-link'><i class="bi bi-person-lines-fill"></i><span>Gestión de Clientes</span></a></li>
-                        <li class="sidebar-item role-asesor"><a href="productos_asegurables.html" class='sidebar-link'><i class="bi bi-card-checklist"></i><span>Productos Asegurables</span></a></li>
-
-                        <!-- ========== MENÚ VENDEDOR ========== -->
                         <li class="sidebar-title role-vendedor">Menú Vendedor</li>
                         <li class="sidebar-item role-vendedor"><a href="vendedor_dashboard.html" class='sidebar-link'><i class="bi bi-lightning-charge-fill"></i><span>Cotización Rápida</span></a></li>
                         <li class="sidebar-item role-vendedor"><a href="visualizar_productos.html" class='sidebar-link'><i class="bi bi-grid-1x2-fill"></i><span>Visualizar Productos</span></a></li>
-
-                        <!-- ========== CUENTA (Común para todos) ========== -->
                         <li class="sidebar-title">Cuenta</li>
-                        <li class="sidebar-item"><a href="../index.html" id="logout-btn-sidebar" class="sidebar-link"><i class="bi bi-box-arrow-left"></i><span>Cerrar Sesión</span></a></li>
+                        <li class="sidebar-item"><a href="#" id="logout-btn-sidebar" class="sidebar-link"><i class="bi bi-box-arrow-left"></i><span>Cerrar Sesión</span></a></li>
                     </ul>
                 </div>
             </div>
         </div>
-        <!-- ======================================================= -->
-        <!-- ================== FIN DEL SIDEBAR ==================== -->
-        <!-- ======================================================= -->
-
-
+        
         <div id="main">
             <header class="mb-3"><a href="#" class="burger-btn d-block d-xl-none"><i class="bi bi-justify fs-3"></i></a></header>
             <div class="page-heading d-flex justify-content-between align-items-center">
                 <h3>Productos Disponibles para Venta</h3>
-                <div class="dropdown d-flex align-items-center justify-content-center">
+                <!-- El perfil es correcto y no necesita cambios -->
+                <div class="dropdown">
                     <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
                         <div class="user-menu d-flex">
                             <div class="user-name text-end me-3 d-none d-sm-block">
                                 <h6 class="mb-0 text-gray-600" id="profile-name">Cargando...</h6>
                                 <p class="mb-0 text-sm text-gray-600 " id="profile-role">...</p>
                             </div>
-                            <div class="user-img d-flex align-items-center">
-                                <div class="avatar avatar-md">
-                                    <img src="../assets/compiled/jpg/1.jpg">
-                                </div>
-                            </div>
+                            <div class="user-img d-flex align-items-center"><div class="avatar avatar-md"><img src="../assets/compiled/jpg/1.jpg"></div></div>
                         </div>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton" style="min-width: 11rem;">
                         <li><h6 class="dropdown-header">Hola, <span id="profile-greeting-name">Usuario</span>!</h6></li>
-                        <li><a class="dropdown-item" href="#"><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a></li>
+                        <li><a class="dropdown-item" href="miPerfil.html"><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="#" id="logout-btn"><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar Sesión</a></li>
                     </ul>
@@ -115,21 +95,13 @@
                                                 <th>Precio Mensual</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <!-- ===== CORRECCIÓN 1: Se añade un ID al tbody ===== -->
+                                        <!-- Este ID permite a nuestro JavaScript encontrar y llenar la tabla dinámicamente. -->
+                                        <tbody id="product-table-body">
+                                            <!-- ===== CORRECCIÓN 2: Reemplazamos los datos estáticos por un mensaje de carga ===== -->
+                                            <!-- Esto mejora la experiencia del usuario mientras los datos se cargan desde la API. -->
                                             <tr>
-                                                <td><strong>Paquete Básico</strong></td>
-                                                <td>Cobertura esencial de responsabilidad civil y robo.</td>
-                                                <td>$50</td>
-                                            </tr>
-                                            <tr class="table-primary">
-                                                <td><strong>Paquete Intermedio</strong></td>
-                                                <td>El más vendido. Incluye cobertura por colisión con deducible.</td>
-                                                <td>$85</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Paquete Completo</strong></td>
-                                                <td>Cobertura total sin deducible y con beneficios adicionales.</td>
-                                                <td>$120</td>
+                                                <td colspan="3" class="text-center">Cargando productos...</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -142,10 +114,12 @@
         </div>
     </div>
     
+    <!-- ===== CORRECCIÓN 3: Bloque de Scripts Optimizado ===== -->
+    <!-- Este orden previene conflictos de tiempo de ejecución entre los scripts. -->
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-    <script src="../assets/compiled/js/app.js"></script>
-    <script src="../js/main.js"></script>
+    <script type="module" src="../js/main.js"></script>
+    <script src="../assets/compiled/js/app.js" defer></script>
     
 </body>
 </html>

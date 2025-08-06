@@ -93,7 +93,7 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton" style="min-width: 11rem;">
                         <li><h6 class="dropdown-header">Hola, <span id="profile-greeting-name">Usuario</span>!</h6></li>
-                        <li><a class="dropdown-item" href="#"><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a></li>
+                        <li><a class="dropdown-item" href="miPerfil.html"><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="#" id="logout-btn"><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar Sesión</a></li>
                     </ul>
@@ -111,8 +111,26 @@
                             </button>
                             </div>
                             <div class="card-body">
-                                <!-- Contenido aquí -->
-                                <p>Tabla con empresas proveedoras, con opciones para añadir, editar y desactivar.</p>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-lg">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Nombre</th>
+                                                <th>RUC</th>
+                                                <th>Email</th>
+                                                <th>Estado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="company-table-body">
+                                            <!-- Las filas de las empresas se insertarán aquí por JavaScript -->
+                                            <tr>
+                                                <td colspan="6" class="text-center">Cargando empresas...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -138,15 +156,16 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary" onclick="alert('Empresa guardada (simulación)')">Guardar Empresa</button>
+            <button type="button" id="save-company-btn" class="btn btn-primary">Guardar Empresa</button>          
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Bloque de Scripts Optimizado -->
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-    <script src="../assets/compiled/js/app.js"></script>
-    <script src="../js/main.js"></script>
+    <script type="module" src="../js/main.js"></script>
+    <script src="../assets/compiled/js/app.js" defer></script>
 </body>
 </html>
