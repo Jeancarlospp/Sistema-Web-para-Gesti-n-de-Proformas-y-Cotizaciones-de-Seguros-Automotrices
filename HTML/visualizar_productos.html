@@ -16,13 +16,17 @@
     <script src="../assets/static/js/initTheme.js"></script>
     <div id="app">
         
-        <!-- El Sidebar Universal es correcto y no necesita cambios -->
+        <!-- ======================================================= -->
+        <!-- ===== INICIO DE LA CORRECCIÓN: SIDEBAR UNIVERSAL ===== -->
+        <!-- ======================================================= -->
         <div id="sidebar">
+            <!-- Este es el contenido completo del sidebar maestro.
+                 El script main.js se encargará de mostrar solo las partes correctas. -->
             <div class="sidebar-wrapper active">
                 <div class="sidebar-header position-relative">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="logo">
-                            <a href="../index.html"><img src="../assets/compiled/svg/logo.svg" alt="Logo" srcset=""></a>
+                            <a href="index.html"><img src="../assets/compiled/svg/logo.svg" alt="Logo" srcset=""></a>
                         </div>
                         <div class="theme-toggle d-flex gap-2 align-items-center mt-2">
                             <svg class="iconify iconify--system-uicons" width="20" height="20" viewBox="0 0 21 21"><g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 14.5c2.219 0 4-1.763 4-3.982a4.003 4.003 0 0 0-4-4.018c-2.219 0-4 1.781-4 4c0 2.219 1.781 4 4 4zM4.136 4.136L5.55 5.55m9.9 9.9l1.414 1.414M1.5 10.5h2m14 0h2M4.135 16.863L5.55 15.45m9.899-9.9l1.414-1.415M10.5 19.5v-2m0-14v-2" opacity=".3"></path><g transform="translate(-210 -1)"><path d="M220.5 2.5v2m6.5.5l-1.5 1.5"></path><circle cx="220.5" cy="11.5" r="4"></circle><path d="m214 5l1.5 1.5m5 14v-2m6.5-.5l-1.5-1.5M214 18l1.5-1.5m-4-5h2m14 0h2"></path></g></g></svg>
@@ -37,24 +41,38 @@
                 </div>
                 <div class="sidebar-menu">
                     <ul class="menu">
-                        <!-- MENÚS POR ROLES (Esto es manejado por sidebar.js) -->
+                        <!-- ========== MENÚ ADMINISTRADOR ========== -->
                         <li class="sidebar-title role-admin">Menú Principal</li>
                         <li class="sidebar-item role-admin"><a href="admin_dashboard.html" class='sidebar-link'><i class="bi bi-grid-fill"></i><span>Dashboard</span></a></li>
                         <li class="sidebar-item role-admin"><a href="gestion_usuarios.html" class='sidebar-link'><i class="bi bi-people-fill"></i><span>Gestión de Usuarios</span></a></li>
                         <li class="sidebar-item role-admin"><a href="gestion_empresas.html" class='sidebar-link'><i class="bi bi-building"></i><span>Gestión de Empresas</span></a></li>
                         <li class="sidebar-item role-admin"><a href="gestion_clientes.html" class='sidebar-link'><i class="bi bi-person-lines-fill"></i><span>Gestión Clientes</span></a></li>
+                        <li class="sidebar-item role-admin"><a href="supervisar_cotizaciones.html" class='sidebar-link'><i class="bi bi-file-earmark-text-fill"></i><span>Supervisar Cotizaciones</span></a></li>
+                        <li class="sidebar-item role-admin"><a href="reportes_auditoria.html" class='sidebar-link'><i class="bi bi-journal-album"></i><span>Reportes y Auditoría</span></a></li>
+                        
+                        <!-- ========== MENÚ ASESOR ========== -->
                         <li class="sidebar-title role-asesor">Menú Asesor</li>
                         <li class="sidebar-item role-asesor"><a href="asesor_dashboard.html" class='sidebar-link'><i class="bi bi-grid-fill"></i><span>Dashboard de Cotización</span></a></li>
                         <li class="sidebar-item role-asesor"><a href="gestion_clientes.html" class='sidebar-link'><i class="bi bi-person-lines-fill"></i><span>Gestión de Clientes</span></a></li>
+                        <li class="sidebar-item role-asesor"><a href="productos_asegurables.html" class='sidebar-link'><i class="bi bi-card-checklist"></i><span>Productos Asegurables</span></a></li>
+
+                        <!-- ========== MENÚ VENDEDOR ========== -->
                         <li class="sidebar-title role-vendedor">Menú Vendedor</li>
                         <li class="sidebar-item role-vendedor"><a href="vendedor_dashboard.html" class='sidebar-link'><i class="bi bi-lightning-charge-fill"></i><span>Cotización Rápida</span></a></li>
                         <li class="sidebar-item role-vendedor"><a href="visualizar_productos.html" class='sidebar-link'><i class="bi bi-grid-1x2-fill"></i><span>Visualizar Productos</span></a></li>
+                        <li class="sidebar-item role-vendedor"><a href="gestion_clientes.html" class='sidebar-link'><i class="bi bi-person-lines-fill"></i><span>Gestión de Clientes</span></a></li>
+
+
+                        <!-- ========== CUENTA (Común para todos) ========== -->
                         <li class="sidebar-title">Cuenta</li>
-                        <li class="sidebar-item"><a href="#" id="logout-btn-sidebar" class="sidebar-link"><i class="bi bi-box-arrow-left"></i><span>Cerrar Sesión</span></a></li>
+                        <li class="sidebar-item"><a href="../index.html" id="logout-btn-sidebar" class="sidebar-link"><i class="bi bi-box-arrow-left"></i><span>Cerrar Sesión</span></a></li>
                     </ul>
                 </div>
             </div>
         </div>
+        <!-- ======================================================= -->
+        <!-- ================== FIN DEL SIDEBAR ==================== -->
+        <!-- ======================================================= -->
         
         <div id="main">
             <header class="mb-3"><a href="#" class="burger-btn d-block d-xl-none"><i class="bi bi-justify fs-3"></i></a></header>
