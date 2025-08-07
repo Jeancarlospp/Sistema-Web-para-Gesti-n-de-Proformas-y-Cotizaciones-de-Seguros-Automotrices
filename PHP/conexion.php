@@ -1,7 +1,7 @@
 <?php
 class Conexion {
     private $host = "localhost";
-    private $db = "sistema_cotizaciones";
+    private $db = "sistemas_cotizaciones";
     private $user = "admin";
     private $pass = "admin";
     public $conn;
