@@ -1,40 +1,150 @@
 /**
- * Lógica para la página: Dashboard del Asesor.
+ * js/asesor_dashboard.js
+ * Lógica 100% dinámica para la página: Dashboard del Asesor,
+ * adaptada al esquema SQL de 'sistemas_cotizaciones'.
  */
-import { buildComparisonTable } from './comparison_table.js';
 
-export function loadAsesorDashboard() {
-    const form = document.getElementById('quote-form');
-    if (!form) return;
+// Importamos la función reutilizable para crear la tabla de comparación.
+// ¡Asegúrate de que este nombre de archivo coincida con el tuyo!
+import { buildComparisonTable } from "./comparison_table.js";
 
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const selectedPlans = Array.from(form.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
-        if (selectedPlans.length === 0) {
-            alert('Por favor, seleccione al menos un plan para comparar.');
-            return;
-        }
+/**
+ * Muestra un mensaje de carga o error en el contenedor de planes.
+ */
+function showPlansMessage(message, isError = false, container) {
+  container.innerHTML = `<p class="text-${isError ? "danger" : "muted"}">${message}</p>`;
+}
 
-        const area = document.getElementById('comparison-area');
-        const clientName = document.getElementById('client-name').value || 'Cliente';
-        
-        buildComparisonTable(
-            selectedPlans,
-            document.getElementById('comparison-table-head'),
-            document.getElementById('comparison-table-body'),
-            document.getElementById('comparison-table-foot')
-        );
+/**
+ * Carga las categorías de vehículos desde la API y las añade al <select>.
+ */
+async function populateVehicleTypes(selectElement) {
+  try {
+    const response = await fetch("../php/productos_api.php?action=get_categories");
+    if (!response.ok) throw new Error("No se pudieron cargar las categorías de vehículos.");
 
-        document.getElementById('client-name-display').textContent = clientName;
-        area.style.display = 'block';
-        area.scrollIntoView({ behavior: 'smooth' });
+    const categories = await response.json();
+    selectElement.innerHTML = '<option value="" disabled selected>-- Seleccione un tipo --</option>';
+
+    categories.forEach((category) => {
+      const option = document.createElement("option");
+      option.value = category.idcategoria;
+      option.textContent = category.Cat_nombre;
+      selectElement.appendChild(option);
     });
+  } catch (error) {
+    console.error("Error al poblar tipos de vehículo:", error);
+    selectElement.innerHTML = '<option value="" disabled selected>Error al cargar</option>';
+  }
+}
 
-    const pdfBtn = document.getElementById('generate-pdf-btn');
-    if (pdfBtn) {
-        pdfBtn.addEventListener('click', () => {
-            const clientName = document.getElementById('client-name-display').textContent;
-            alert(`Simulación: PDF generado para ${clientName}.`);
-        });
+/**
+ * Carga los planes (productos) para una categoría específica desde la API.
+ */
+async function fetchAndRenderPlans(categoryId, container) {
+  showPlansMessage("Cargando planes...", false, container);
+  try {
+    const response = await fetch(`../php/productos_api.php?category_id=${categoryId}`);
+    if (!response.ok) throw new Error("No se pudieron cargar los planes.");
+
+    const plans = await response.json();
+    container.innerHTML = "";
+    if (!plans || plans.length === 0) {
+      showPlansMessage("No hay planes disponibles para este tipo de vehículo.", true, container);
+      return;
     }
+
+    plans.forEach((plan) => {
+      const checkboxHtml = `
+          <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id="plan-${plan.idproducto}" value="${plan.idproducto}">
+              <label class="form-check-label" for="plan-${plan.idproducto}">${plan.Pro_nombre}</label>
+          </div>`;
+      container.innerHTML += checkboxHtml;
+    });
+  } catch (error) {
+    console.error(`Error al cargar planes para la categoría ${categoryId}:`, error);
+    showPlansMessage("Error al cargar los planes.", true, container);
+  }
+}
+
+/**
+ * Función principal que se exporta y se llama desde main.js.
+ */
+export function loadAsesorDashboard() {
+  console.log("Módulo del Dashboard del Asesor (sincronizado con SQL) cargado.");
+
+  // Elementos del DOM
+  const form = document.getElementById("quote-form");
+  const vehicleTypeSelect = document.getElementById("vehicle-type");
+  const plansContainer = document.getElementById("plans-checkbox-container");
+  const comparisonArea = document.getElementById("comparison-area");
+  const clientNameInput = document.getElementById("client-name");
+  const clientNameDisplay = document.getElementById("client-name-display");
+  const pdfBtn = document.getElementById("generate-pdf-btn");
+  const resetBtn = document.getElementById("btn-reset-form");
+  const compareBtn = document.getElementById("btn-compare");
+
+  // Verificar que todos los elementos existen antes de continuar.
+  if (!form || !vehicleTypeSelect || !plansContainer || !comparisonArea || !clientNameInput || !clientNameDisplay || !pdfBtn || !resetBtn || !compareBtn) {
+      console.error("Faltan elementos HTML esenciales en el dashboard del asesor. Abortando inicialización.");
+      return;
+  }
+
+  // --- LÓGICA DE INICIALIZACIÓN ---
+  populateVehicleTypes(vehicleTypeSelect);
+
+  // --- MANEJO DE EVENTOS ---
+
+  // 1. Cuando se cambia el tipo de vehículo.
+  vehicleTypeSelect.addEventListener("change", () => {
+    const selectedCategoryId = vehicleTypeSelect.value;
+    if (selectedCategoryId) {
+      fetchAndRenderPlans(selectedCategoryId, plansContainer);
+      compareBtn.disabled = false;
+    } else {
+      showPlansMessage("Por favor, seleccione primero un tipo de vehículo.", false, plansContainer);
+      compareBtn.disabled = true;
+    }
+    comparisonArea.style.display = "none";
+  });
+
+  // 2. Cuando se envía el formulario para cotizar.
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const selectedPlanIds = Array.from(
+      plansContainer.querySelectorAll("input[type=checkbox]:checked")
+    ).map((cb) => cb.value);
+
+    if (selectedPlanIds.length === 0) {
+      alert("Por favor, seleccione al menos un plan para comparar.");
+      return;
+    }
+
+    const clientName = clientNameInput.value || "Cliente";
+
+    await buildComparisonTable(
+      selectedPlanIds,
+      document.getElementById("comparison-table-head"),
+      document.getElementById("comparison-table-body"),
+      document.getElementById("comparison-table-foot")
+    );
+
+    clientNameDisplay.textContent = clientName;
+    comparisonArea.style.display = "block";
+    comparisonArea.scrollIntoView({ behavior: "smooth" });
+  });
+
+  // 3. Cuando se limpia el formulario.
+  resetBtn.addEventListener("click", () => {
+    comparisonArea.style.display = "none";
+    showPlansMessage("Por favor, seleccione primero un tipo de vehículo.", false, plansContainer);
+    compareBtn.disabled = true;
+  });
+
+  // 4. Lógica del botón PDF.
+  pdfBtn.addEventListener("click", () => {
+    alert(`Simulación: PDF generado para ${clientNameDisplay.textContent}.`);
+  });
 }
