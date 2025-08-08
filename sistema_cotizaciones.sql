@@ -307,13 +307,15 @@ INSERT INTO `usuarios` (`id_usuario`, `correo`, `contrasena`, `nombre`, `cedula`
 -- Disparadores `usuarios`
 --
 DELIMITER $$
-CREATE TRIGGER `tr_usuario_insert` AFTER INSERT ON `usuarios` FOR EACH ROW BEGIN
-  INSERT INTO `sistemas_cotizaciones`.`auditoria` 
+CREATE TRIGGER tr_usuario_insert
+AFTER INSERT ON usuarios
+FOR EACH ROW
+BEGIN
+  INSERT INTO `sistema_cotizaciones`.`auditoria` 
   (`idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_IP`)
   VALUES 
   (NEW.id_usuario, 'INSERT', 'usuarios', CONCAT('Nuevo usuario creado: ', NEW.correo), '127.0.0.1');
-END
-$$
+END$$
 DELIMITER ;
 
 --
