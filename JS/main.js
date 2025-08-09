@@ -11,6 +11,7 @@ import { checkAuth, initializeLogoutButtons } from "./auth.js";
 import { manageSidebarVisibility, setActiveMenuItem } from "./sidebar.js";
 import { populateProfileData } from "./profile.js";
 import { controlElementVisibility } from "./ui.js";
+import { SessionManager } from "./session-manager.js";
 
 // Importaciones de Lógica Específica de cada Página
 import { loadAdminDashboard } from "./admin_dashboard.js";
@@ -55,7 +56,13 @@ function initAuthenticatedPage() {
 
   const { userRole, userName } = session;
 
-  // 2. Lógica de UI común a todas las páginas autenticadas
+  // 2. Inicializar el sistema de control de sesiones
+  if (!window.sessionManager) {
+    window.sessionManager = new SessionManager(5); // 5 minutos de inactividad
+    console.log('Sistema de control de sesiones iniciado - Timeout: 5 minutos');
+  }
+
+  // 3. Lógica de UI común a todas las páginas autenticadas
   manageSidebarVisibility(userRole);
   setActiveMenuItem();
   initializeLogoutButtons();

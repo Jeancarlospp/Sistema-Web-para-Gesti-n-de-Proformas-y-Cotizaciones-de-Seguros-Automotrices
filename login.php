@@ -55,6 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['usuario_id'] = $id_usuario;
                 $_SESSION['rol'] = $rol_bd; // Rol de la BD (ej: 'admin')
                 $_SESSION['nombre'] = $nombre;
+                $_SESSION['last_activity'] = time(); // Timestamp para control de sesión
                 
                 // --- MAPEO DE ROLES PARA JAVASCRIPT ---
                 // Mapea el rol de la BD al nombre que espera el frontend.
