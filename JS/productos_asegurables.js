@@ -13,6 +13,127 @@ let viewState = {
   totalRecords: 0,
 };
 
+// --- CONTROL DE PERMISOS POR ROL ---
+let userPermissions = {
+  canEdit: false,
+  canAdd: false,
+  canToggleStatus: false
+};
+
+/**
+ * Inicializa los permisos del usuario basado en su rol
+ */
+async function initializeUserPermissions() {
+  try {
+    console.log('🔍 Verificando permisos del usuario...');
+    const response = await fetch('../PHP/check_session.php');
+    const data = await response.json();
+    
+    console.log('📋 Respuesta del servidor:', data);
+    
+    if (data.status === 'active' && data.user) {
+      const userRole = data.user.Usr_rol;
+      
+      console.log(`👤 Rol del usuario detectado: ${userRole}`);
+      
+      // Configurar permisos según el rol
+      switch(userRole) {
+        case 'Administrador':
+          userPermissions = {
+            canEdit: true,
+            canAdd: true,
+            canToggleStatus: true
+          };
+          break;
+        case 'Asesor':
+          userPermissions = {
+            canEdit: false,
+            canAdd: false,
+            canToggleStatus: false
+          };
+          break;
+        default:
+          userPermissions = {
+            canEdit: false,
+            canAdd: false,
+            canToggleStatus: false
+          };
+      }
+      
+      console.log(`🔐 Permisos configurados para rol: ${userRole}`, userPermissions);
+    } else {
+      console.warn('⚠️ No se pudo obtener información del usuario:', data);
+    }
+  } catch (error) {
+    console.error('❌ Error al verificar permisos:', error);
+    // En caso de error, denegar todos los permisos
+    userPermissions = {
+      canEdit: false,
+      canAdd: false,
+      canToggleStatus: false
+    };
+  }
+}
+
+/**
+ * Aplica restricciones de interfaz basadas en el rol del usuario
+ */
+function applyRoleBasedRestrictions() {
+  const addButton = document.getElementById('btnAgregarProducto');
+  const pageTitle = document.querySelector('.page-heading h3');
+  
+  // Controlar visibilidad del botón "Agregar Producto"
+  if (addButton) {
+    if (userPermissions.canAdd) {
+      addButton.style.display = 'inline-block';
+    } else {
+      addButton.style.display = 'none';
+    }
+  }
+  
+  // Mostrar mensaje informativo para Asesores
+  if (!userPermissions.canEdit) {
+    // Cambiar título de la página
+    if (pageTitle) {
+      pageTitle.textContent = 'Catálogo de Productos - Consulta';
+    }
+    
+    const pageHeading = document.querySelector('.page-heading');
+    if (pageHeading) {
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'alert alert-info mb-3';
+      infoDiv.innerHTML = `
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Modo Consulta:</strong> Tienes acceso de solo lectura a los productos asegurables. 
+        Puedes consultar todos los detalles para asesorar a tus clientes.
+      `;
+      
+      // Insertar después del page-heading
+      pageHeading.parentNode.insertBefore(infoDiv, pageHeading.nextSibling);
+    }
+    
+    // Agregar estilos CSS para tarjetas clicables
+    const style = document.createElement('style');
+    style.textContent = `
+      .asesor-clickable {
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .asesor-clickable:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,123,255,0.3) !important;
+        border-color: #007bff;
+      }
+    `;
+    document.head.appendChild(style);
+  } else {
+    // Para administradores, mantener el título original
+    if (pageTitle) {
+      pageTitle.textContent = 'Catálogo de Productos Asegurables';
+    }
+  }
+}
+
 // --- RENDERIZADO Y LÓGICA DE LA INTERFAZ ---
 
 /** Dibuja las tarjetas de productos detalladas en el contenedor. */
@@ -70,9 +191,39 @@ function renderProductCards(products, container) {
     const actionButtonIcon =
       product.Pro_estado === "activo" ? "bi-pause-circle" : "bi-play-circle";
 
+    // Generar botones de acción según permisos
+    let actionButtonsHtml = '';
+    if (userPermissions.canEdit || userPermissions.canToggleStatus) {
+      actionButtonsHtml = '<div class="btn-group" role="group">';
+      
+      if (userPermissions.canEdit) {
+        actionButtonsHtml += `
+          <button class="btn btn-sm btn-info btn-edit" data-id="${product.idproducto}" title="Editar Producto">
+            <i class="bi bi-pencil"></i>
+          </button>
+        `;
+      }
+      
+      if (userPermissions.canToggleStatus) {
+        actionButtonsHtml += `
+          <button class="btn btn-sm ${estadoButtonClass} btn-toggle-status" 
+                  data-id="${product.idproducto}" 
+                  data-new-status="${product.Pro_estado === "activo" ? "inactivo" : "activo"}" 
+                  title="${estadoButtonText} Producto">
+            <i class="bi ${actionButtonIcon}"></i>
+          </button>
+        `;
+      }
+      
+      actionButtonsHtml += '</div>';
+    } else {
+      // Para usuarios sin permisos, mostrar mensaje informativo más detallado
+      actionButtonsHtml = '<div class="text-center"><small class="text-muted"><i class="bi bi-eye me-1"></i>Solo consulta</small></div>';
+    }
+
     const cardHtml = `
             <div class="col-12 col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 shadow-sm">
+                <div class="card h-100 shadow-sm ${!userPermissions.canEdit ? 'asesor-clickable' : ''}" ${!userPermissions.canEdit ? `data-product-id="${product.idproducto}"` : ''}>
                     <div class="card-header"><div class="d-flex justify-content-between align-items-center"><h5 class="card-title mb-0">${
                       product.Pro_nombre
                     }</h5><span class="badge ${
@@ -85,17 +236,11 @@ function renderProductCards(products, container) {
                     <div class="card-body"><p class="card-text small fst-italic">"${
                       product.Pro_descripcion
                     }"</p><ul class="list-group list-group-flush small">${featuresHtml}</ul></div>
-                    <div class="card-footer d-flex justify-content-between align-items-center"><h4 class="mb-0">$${parseFloat(
-                      product.Pro_precioMensual
-                    ).toFixed(
-                      2
-                    )}</h4><div class="btn-group" role="group"><button class="btn btn-sm btn-info btn-edit" data-id="${
-      product.idproducto
-    }" title="Editar Producto"><i class="bi bi-pencil"></i></button><button class="btn btn-sm ${estadoButtonClass} btn-toggle-status" data-id="${
-      product.idproducto
-    }" data-new-status="${
-      product.Pro_estado === "activo" ? "inactivo" : "activo"
-    }" title="${estadoButtonText} Producto"><i class="bi ${actionButtonIcon}"></i></button></div></div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">$${parseFloat(product.Pro_precioMensual).toFixed(2)}</h4>
+                        ${actionButtonsHtml}
+                        ${!userPermissions.canEdit ? '<small class="text-primary"><i class="bi bi-cursor-fill me-1"></i>Click para ver detalles</small>' : ''}
+                    </div>
                 </div>
             </div>`;
     container.innerHTML += cardHtml;
@@ -255,8 +400,14 @@ async function openEditProductModal(productId) {
 }
 
 // --- FUNCIÓN PRINCIPAL DE INICIALIZACIÓN ---
-export function loadProductosAsegurables() {
-  console.log("Módulo de Productos Asegurables con filtros y CRUD cargado.");
+export async function loadProductosAsegurables() {
+  console.log("🚀 Inicializando Gestión de Productos...");
+  
+  // Verificar permisos del usuario
+  await initializeUserPermissions();
+  
+  // Aplicar restricciones de interfaz según el rol
+  applyRoleBasedRestrictions();
 
   const container = document.getElementById("product-cards-container");
   const searchInput = document.getElementById("product-search-input");
@@ -276,7 +427,7 @@ export function loadProductosAsegurables() {
     "btnActualizarProducto"
   );
 
-  fetchAndRenderProducts();
+  await fetchAndRenderProducts();
   populateSelects(
     { element: categoryFilter, type: "category-filter" },
     { element: document.getElementById("add-idCategoria"), type: "category" },
@@ -290,6 +441,8 @@ export function loadProductosAsegurables() {
       type: "company",
     }
   );
+  
+  console.log("✅ Gestión de Productos inicializada correctamente");
 
   // --- EVENT LISTENERS ---
 
@@ -325,16 +478,38 @@ export function loadProductosAsegurables() {
   });
 
   container.addEventListener("click", async (event) => {
+    // Verificar si es un clic en tarjeta para Asesor (solo consulta)
+    const card = event.target.closest('.asesor-clickable');
+    if (card && !userPermissions.canEdit) {
+      const productId = card.dataset.productId;
+      if (productId) {
+        showProductInfoModal(productId);
+        return;
+      }
+    }
+    
+    // Manejo de botones de acción (solo para usuarios con permisos)
     const button = event.target.closest("button");
     if (!button) return;
     const productId = button.dataset.id;
     if (!productId) return;
 
     if (button.classList.contains("btn-edit")) {
+      // Verificar permisos para editar
+      if (!userPermissions.canEdit) {
+        alert("No tienes permisos para editar productos.");
+        return;
+      }
       openEditProductModal(productId);
     }
 
     if (button.classList.contains("btn-toggle-status")) {
+      // Verificar permisos para cambiar estado
+      if (!userPermissions.canToggleStatus) {
+        alert("No tienes permisos para cambiar el estado de productos.");
+        return;
+      }
+      
       const newStatus = button.dataset.newStatus;
       if (confirm(`¿Seguro que deseas ${newStatus} este producto?`)) {
         try {
@@ -358,6 +533,12 @@ export function loadProductosAsegurables() {
   });
 
   btnGuardarProducto.addEventListener("click", async () => {
+    // Verificar permisos para agregar productos
+    if (!userPermissions.canAdd) {
+      alert("No tienes permisos para agregar productos.");
+      return;
+    }
+    
     if (!addProductForm.checkValidity()) {
       addProductForm.reportValidity();
       return;
@@ -406,6 +587,12 @@ export function loadProductosAsegurables() {
   });
 
   btnActualizarProducto.addEventListener("click", async () => {
+    // Verificar permisos para editar productos
+    if (!userPermissions.canEdit) {
+      alert("No tienes permisos para editar productos.");
+      return;
+    }
+    
     if (!editProductForm.checkValidity()) {
       editProductForm.reportValidity();
       return;
@@ -455,4 +642,75 @@ export function loadProductosAsegurables() {
       alert("Error al actualizar: " + error.message);
     }
   });
+}
+
+/**
+ * Muestra un modal con información detallada del producto (para Asesores)
+ */
+async function showProductInfoModal(productId) {
+  try {
+    console.log('📋 Mostrando información del producto:', productId);
+    
+    const response = await fetch(`../php/productos_api.php?action=get_product&id=${productId}`);
+    const result = await response.json();
+    
+    if (result.success && result.product) {
+      const product = result.product;
+      
+      // Llenar información general
+      document.getElementById('view-producto-nombre').textContent = product.Pro_nombre;
+      document.getElementById('view-producto-categoria').textContent = product.nombre_categoria || 'N/A';
+      document.getElementById('view-producto-empresa').textContent = product.nombre_empresa || 'N/A';
+      document.getElementById('view-producto-precio').textContent = `$${parseFloat(product.Pro_precioMensual).toFixed(2)}`;
+      document.getElementById('view-producto-descripcion').textContent = product.Pro_descripcion;
+      
+      // Estado con badge
+      const estadoBadge = document.getElementById('view-producto-estado');
+      estadoBadge.textContent = product.Pro_estado;
+      estadoBadge.className = `badge ${product.Pro_estado === 'activo' ? 'bg-success' : 'bg-secondary'}`;
+      
+      // Llenar coberturas
+      const coberturasContainer = document.getElementById('view-producto-coberturas');
+      const coberturas = [
+        { label: "Meses de Cobertura", value: product.Pro_mesesCobertura, unit: " meses" },
+        { label: "Responsabilidad Civil", value: product.Pro_responsabilidadCivil, unit: "$" },
+        { label: "Robo Total", value: product.Pro_roboTotal },
+        { label: "Asistencia Vial", value: product.Pro_asistenciaVial },
+        { label: "Daños por Colisión", value: product.Pro_dañosColision, unit: "$" },
+        { label: "Auto de Reemplazo", value: product.Pro_autoReemplazo },
+        { label: "Gastos Legales", value: product.Pro_gastosLegales, unit: "$" },
+        { label: "Gastos Médicos", value: product.Pro_gastosMedicos, unit: "$" }
+      ];
+      
+      let coberturasHtml = '<ul class="list-group list-group-flush">';
+      coberturas.forEach(cobertura => {
+        let content = `<i class="bi bi-x-circle text-danger me-2"></i> ${cobertura.label}`;
+        if (cobertura.value && cobertura.value !== "no" && cobertura.value != 0) {
+          let displayValue = cobertura.value;
+          if (cobertura.unit === "$" && !isNaN(parseFloat(cobertura.value))) {
+            displayValue = `$${parseFloat(cobertura.value).toLocaleString("es-EC")}`;
+          } else if (cobertura.unit) {
+            displayValue = `${cobertura.value}${cobertura.unit}`;
+          } else if (cobertura.value === "si") {
+            displayValue = "Incluido";
+          }
+          content = `<i class="bi bi-check-circle-fill text-success me-2"></i> ${cobertura.label}: <strong>${displayValue}</strong>`;
+        }
+        coberturasHtml += `<li class="list-group-item py-2 px-0 border-0">${content}</li>`;
+      });
+      coberturasHtml += '</ul>';
+      
+      coberturasContainer.innerHTML = coberturasHtml;
+      
+      // Mostrar el modal
+      const viewModal = new bootstrap.Modal(document.getElementById('viewProductModal'));
+      viewModal.show();
+      
+    } else {
+      throw new Error(result.message || 'No se pudo obtener la información del producto');
+    }
+  } catch (error) {
+    console.error('Error al mostrar información del producto:', error);
+    alert('No se pudo cargar la información del producto: ' + error.message);
+  }
 }
