@@ -3,6 +3,8 @@
  * Lógica avanzada con Paginación, Búsqueda, Ordenamiento y CRUD para la Gestión de Clientes.
  */
 
+import { validarCedulaEcuatoriana, agregarValidacionCedula } from './validaciones.js';
+
 // --- ESTADO GLOBAL DE LA TABLA ---
 let tableState = {
   currentPage: 1,
@@ -219,10 +221,18 @@ export function loadGestionClientes() {
       addClientForm.reportValidity();
       return;
     }
+
+    // Validar cédula ecuatoriana antes del envío
+    const cedula = document.getElementById("add-Cli_cedula").value;
+    if (!validarCedulaEcuatoriana(cedula)) {
+      alert("Por favor, ingrese una cédula ecuatoriana válida");
+      return;
+    }
+
     const nuevoCliente = {
       action: "create_client",
       Cli_nombre: document.getElementById("add-Cli_nombre").value,
-      Cli_cedula: document.getElementById("add-Cli_cedula").value,
+      Cli_cedula: cedula,
       Cli_correo: document.getElementById("add-Cli_correo").value,
       Cli_telefono: document.getElementById("add-Cli_telefono").value,
     };
@@ -251,11 +261,19 @@ export function loadGestionClientes() {
       editClientForm.reportValidity();
       return;
     }
+
+    // Validar cédula ecuatoriana antes del envío
+    const cedula = document.getElementById("edit-Cli_cedula").value;
+    if (!validarCedulaEcuatoriana(cedula)) {
+      alert("Por favor, ingrese una cédula ecuatoriana válida");
+      return;
+    }
+
     const clienteActualizado = {
       action: "update_client",
       idCliente: document.getElementById("edit-idCliente").value,
       Cli_nombre: document.getElementById("edit-Cli_nombre").value,
-      Cli_cedula: document.getElementById("edit-Cli_cedula").value,
+      Cli_cedula: cedula,
       Cli_correo: document.getElementById("edit-Cli_correo").value,
       Cli_telefono: document.getElementById("edit-Cli_telefono").value,
     };
@@ -314,4 +332,8 @@ export function loadGestionClientes() {
       }
     }
   });
+
+  // Agregar validaciones a los campos de cédula
+  agregarValidacionCedula('add-Cli_cedula');
+  agregarValidacionCedula('edit-Cli_cedula');
 }

@@ -3,6 +3,8 @@
  * Lógica para la página de Mi Perfil.
  */
 
+import { validarCedulaEcuatoriana, agregarValidacionCedula } from './validaciones.js';
+
 // --- FUNCIÓN PARA POBLAR LOS FORMULARIOS CON LOS DATOS DEL USUARIO ---
 function populateProfileForms(userData) {
   // Poblar la tarjeta de perfil
@@ -58,11 +60,18 @@ export function loadMiPerfil() {
   formEditProfile.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    // Validar cédula ecuatoriana antes del envío
+    const cedula = document.getElementById("form-profile-cedula").value;
+    if (!validarCedulaEcuatoriana(cedula)) {
+      alert("Por favor, ingrese una cédula ecuatoriana válida");
+      return;
+    }
+
     const profileData = {
       action: "update_profile", // Acción específica para la API
       id: document.getElementById("form-profile-id").value,
       nombre: document.getElementById("form-profile-name").value,
-      cedula: document.getElementById("form-profile-cedula").value,
+      cedula: cedula,
       correo: document.getElementById("form-profile-email").value,
     };
 
@@ -129,4 +138,7 @@ export function loadMiPerfil() {
       alert("Error al cambiar la contraseña: " + error.message);
     }
   });
+
+  // Agregar validación al campo de cédula
+  agregarValidacionCedula('form-profile-cedula');
 }

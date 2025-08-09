@@ -3,6 +3,8 @@
  * Lógica avanzada con Paginación, Búsqueda, Ordenamiento y CRUD para la Gestión de Empresas.
  */
 
+import { validarRucEcuatoriano, agregarValidacionRuc } from './validaciones.js';
+
 // --- ESTADO GLOBAL DE LA TABLA ---
 let tableState = {
   currentPage: 1,
@@ -270,11 +272,19 @@ export function loadGestionEmpresas() {
       addCompanyForm.reportValidity();
       return;
     }
+
+    // Validar RUC ecuatoriano antes del envío
+    const ruc = document.getElementById("add-Emp_ruc").value;
+    if (!validarRucEcuatoriano(ruc)) {
+      alert("Por favor, ingrese un RUC ecuatoriano válido");
+      return;
+    }
+
     const newCompanyData = {
       action: "create_company",
       Emp_razonSocial: document.getElementById("add-Emp_razonSocial").value,
       Emp_nombre: document.getElementById("add-Emp_nombre").value,
-      Emp_ruc: document.getElementById("add-Emp_ruc").value,
+      Emp_ruc: ruc,
       Emp_correo: document.getElementById("add-Emp_correo").value,
       Emp_telefono: document.getElementById("add-Emp_telefono").value,
       Emp_direccion: document.getElementById("add-Emp_direccion").value,
@@ -305,6 +315,14 @@ export function loadGestionEmpresas() {
       editCompanyForm.reportValidity();
       return;
     }
+
+    // Validar RUC ecuatoriano antes del envío
+    const ruc = document.getElementById("edit-Emp_ruc").value;
+    if (!validarRucEcuatoriano(ruc)) {
+      alert("Por favor, ingrese un RUC ecuatoriano válido");
+      return;
+    }
+
     const updatedCompanyData = {
       action: "update_company",
       idEmpresas_Proveedora: document.getElementById(
@@ -312,7 +330,7 @@ export function loadGestionEmpresas() {
       ).value,
       Emp_razonSocial: document.getElementById("edit-Emp_razonSocial").value,
       Emp_nombre: document.getElementById("edit-Emp_nombre").value,
-      Emp_ruc: document.getElementById("edit-Emp_ruc").value,
+      Emp_ruc: ruc,
       Emp_correo: document.getElementById("edit-Emp_correo").value,
       Emp_telefono: document.getElementById("edit-Emp_telefono").value,
       Emp_direccion: document.getElementById("edit-Emp_direccion").value,
@@ -335,4 +353,8 @@ export function loadGestionEmpresas() {
       alert("Error al actualizar: " + error.message);
     }
   });
+
+  // Agregar validaciones a los campos de RUC
+  agregarValidacionRuc('add-Emp_ruc');
+  agregarValidacionRuc('edit-Emp_ruc');
 }

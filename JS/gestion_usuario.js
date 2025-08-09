@@ -3,6 +3,8 @@
  * Lógica completa con Paginación, Búsqueda, Ordenamiento y CRUD para la Gestión de Usuarios.
  */
 
+import { validarCedulaEcuatoriana, agregarValidacionCedula } from './validaciones.js';
+
 // --- ESTADO GLOBAL DE LA TABLA ---
 let tableState = {
   currentPage: 1,
@@ -300,10 +302,18 @@ export function loadGestionUsuarios() {
       addUserForm.reportValidity();
       return;
     }
+
+    // Validar cédula ecuatoriana antes del envío
+    const cedula = document.getElementById("add-userCedula").value;
+    if (!validarCedulaEcuatoriana(cedula)) {
+      alert("Por favor, ingrese una cédula ecuatoriana válida");
+      return;
+    }
+
     const newUser = {
       action: "create_user",
       nombre: document.getElementById("add-userName").value,
-      cedula: document.getElementById("add-userCedula").value,
+      cedula: cedula,
       correo: document.getElementById("add-userEmail").value,
       contrasena: document.getElementById("add-userPassword").value,
       rol_id: document.getElementById("add-userRole").value,
@@ -340,11 +350,19 @@ export function loadGestionUsuarios() {
       editUserForm.reportValidity();
       return;
     }
+
+    // Validar cédula ecuatoriana antes del envío
+    const cedula = document.getElementById("edit-userCedula").value;
+    if (!validarCedulaEcuatoriana(cedula)) {
+      alert("Por favor, ingrese una cédula ecuatoriana válida");
+      return;
+    }
+
     const updatedUser = {
       action: "update_user",
       id: document.getElementById("edit-userId").value,
       nombre: document.getElementById("edit-userName").value,
-      cedula: document.getElementById("edit-userCedula").value,
+      cedula: cedula,
       correo: document.getElementById("edit-userEmail").value,
       rol_id: document.getElementById("edit-userRole").value,
       contrasena: document.getElementById("edit-userPassword").value,
@@ -374,4 +392,8 @@ export function loadGestionUsuarios() {
       btnUpdateUser.innerHTML = "Actualizar Usuario";
     }
   });
+
+  // Agregar validaciones a los campos de cédula
+  agregarValidacionCedula('add-userCedula');
+  agregarValidacionCedula('edit-userCedula');
 }
