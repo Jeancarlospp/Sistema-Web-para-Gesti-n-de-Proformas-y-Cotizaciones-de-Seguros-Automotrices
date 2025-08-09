@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 07-08-2025 a las 23:16:38
+-- Tiempo de generación: 08-08-2025 a las 20:55:51
 -- Versión del servidor: 8.0.17
 -- Versión de PHP: 7.3.10
 
@@ -37,6 +37,15 @@ CREATE TABLE `auditoria` (
   `Aud_fecha` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `Aud_IP` varchar(45) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `auditoria`
+--
+
+INSERT INTO `auditoria` (`idAuditoria`, `idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_fecha`, `Aud_IP`) VALUES
+(1, 1, 'INSERT', 'usuarios', 'Nuevo usuario creado: zuli@sistema.com', '2025-08-07 22:40:07', '127.0.0.1'),
+(2, 4, 'INSERT', 'usuarios', 'Nuevo usuario creado: ariel@sistema.com', '2025-08-07 22:59:00', '127.0.0.1'),
+(3, 6, 'INSERT', 'usuarios', 'Nuevo usuario creado: juan@sistema.com', '2025-08-08 15:10:46', '127.0.0.1');
 
 -- --------------------------------------------------------
 
@@ -83,7 +92,7 @@ CREATE TABLE `cliente` (
 --
 
 INSERT INTO `cliente` (`idCliente`, `Cli_nombre`, `Cli_cedula`, `Cli_correo`, `Cli_telefono`, `Cli_fechaRegistro`) VALUES
-(1, 'Ana Lucio', '1309481925', 'anaR@gmail.com', '0998745632', '2025-08-07 09:46:49'),
+(1, 'Ana Lucio', '1309481925', 'ana@gmail.com', '0998745632', '2025-08-07 09:46:49'),
 (2, 'Carlos Mena', '0103456789', 'carlos_mena@gmail.com', '0991234567', '2025-08-07 09:52:47'),
 (3, 'Lucía Torres', '0923456781', 'lucia_torres@gmail.com', '0987654321', '2025-08-07 09:52:47'),
 (4, 'Andrés Cevallos', '1102345673', 'andres_cevallos@gmail.com', '0961122334', '2025-08-07 09:52:47'),
@@ -299,23 +308,24 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id_usuario`, `correo`, `contrasena`, `nombre`, `cedula`, `rol_id`, `ultimo_login`, `estado`, `fecha_creacion`) VALUES
-(1, 'admin@sistema.com', '$2y$10$YrA4YVCvUovZOYmVy6rNDuq8iUR3/dYnPCugPjKYJhsDNIL/WQUfm', 'Danna Andrade', '1722651567', 1, '2025-08-07 18:06:23', 'activo', '2025-08-07 07:30:39'),
-(2, 'zaith@sistema.com', '$2y$10$P2dCDUaHYhFJsxK8hdBPHuw2lV/06fkmPLRvHNAemL.mS0s7gIdia', 'Zaith Manangon', '1111111111', 2, '2025-08-07 18:05:50', 'activo', '2025-08-07 07:30:39'),
-(3, 'jean@sistema.com', '$2y$10$An9mQo.5qbhbKwpRLyjxOukoGmdhNmCrrBPTdYu.Qpfm17k5JYFZm', 'Jeancarlo Santi', '2222222222', 3, '2025-08-07 18:00:55', 'activo', '2025-08-07 07:30:39');
+(1, 'admin@sistema.com', '$2y$10$YrA4YVCvUovZOYmVy6rNDuq8iUR3/dYnPCugPjKYJhsDNIL/WQUfm', 'Danna Andrade', '1722651567', 1, '2025-08-08 15:22:56', 'activo', '2025-08-07 07:30:39'),
+(2, 'zaith@sistema.com', '$2y$10$P2dCDUaHYhFJsxK8hdBPHuw2lV/06fkmPLRvHNAemL.mS0s7gIdia', 'Zaith Manangon', '1111111111', 2, '2025-08-08 15:49:56', 'activo', '2025-08-07 07:30:39'),
+(3, 'jean@sistema.com', '$2y$10$An9mQo.5qbhbKwpRLyjxOukoGmdhNmCrrBPTdYu.Qpfm17k5JYFZm', 'Jeancarlo Santi', '2222222221', 3, '2025-08-08 15:50:08', 'activo', '2025-08-07 07:30:39'),
+(4, 'ariel@sistema.com', '12345678', 'Ariel Llumiquinga', '1212121212', 3, NULL, 'inactivo', '2025-08-07 22:59:00'),
+(5, 'zuli@sistema.com', '$2y$10$0hNOKL0MtbdhBgpiddWXpu9tjEb41eFZj/Sds0seDFPVlRrEReBzi', 'Zuli Lucio', '1726651567', 1, NULL, 'activo', '2025-08-07 22:40:07'),
+(6, 'juan@sistema.com', '$2y$10$NH98AxUUvdOqskRxPomzJe1QfzmdGXS7o66qr0Xnr6VNd0uzL4cM2', 'Juan Erazo', '0147852369', 2, NULL, 'activo', '2025-08-08 15:10:46');
 
 --
 -- Disparadores `usuarios`
 --
 DELIMITER $$
-CREATE TRIGGER tr_usuario_insert
-AFTER INSERT ON usuarios
-FOR EACH ROW
-BEGIN
+CREATE TRIGGER `tr_usuario_insert` AFTER INSERT ON `usuarios` FOR EACH ROW BEGIN
   INSERT INTO `sistema_cotizaciones`.`auditoria` 
   (`idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_IP`)
   VALUES 
   (NEW.id_usuario, 'INSERT', 'usuarios', CONCAT('Nuevo usuario creado: ', NEW.correo), '127.0.0.1');
-END$$
+END
+$$
 DELIMITER ;
 
 --
@@ -409,7 +419,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `auditoria`
 --
 ALTER TABLE `auditoria`
-  MODIFY `idAuditoria` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `idAuditoria` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `categoria`
@@ -439,7 +449,7 @@ ALTER TABLE `detalle_cotizacion`
 -- AUTO_INCREMENT de la tabla `empresas_proveedora`
 --
 ALTER TABLE `empresas_proveedora`
-  MODIFY `idEmpresas_Proveedora` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `idEmpresas_Proveedora` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_cotizacion`
@@ -463,7 +473,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Restricciones para tablas volcadas

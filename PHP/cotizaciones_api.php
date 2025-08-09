@@ -1,121 +1,116 @@
 <?php
-// Iniciar la sesión para futuras validaciones de permisos.
 session_start();
-
-// Requerir el archivo de conexión.
 require_once 'conexion.php';
-
-// Establecer la cabecera para indicar que la respuesta será en formato JSON.
 header('Content-Type: application/json');
 
-// --- FUNCIÓN PARA ENVIAR RESPUESTAS JSON Y TERMINAR EL SCRIPT ---
 function send_json_response($data, $statusCode = 200) {
     http_response_code($statusCode);
     echo json_encode($data);
     exit();
 }
 
-// Inicializar la conexión.
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    send_json_response(['error' => 'Método no permitido'], 405);
+}
+
 $db = new Conexion();
 $conn = $db->getConn();
 
-// Capturar el método de la solicitud. Solo se permite GET para esta API.
-$method = $_SERVER['REQUEST_METHOD'];
-
-if ($method !== 'GET') {
-    send_json_response(['error' => 'Método no permitido. Solo se aceptan solicitudes GET.'], 405);
-}
-
 try {
-    // --- CONSTRUCCIÓN DE LA CONSULTA SQL BASE ---
-    // Hacemos JOIN con las tablas de cliente y usuarios para obtener sus nombres.
-    $sql = "SELECT 
-                c.idCotizacion,
-                c.Cot_montoAsegurable,
-                c.Cot_estado,
-                c.Cot_fechaCreacion,
-                cli.Cli_nombre,
-                u.nombre as nombre_usuario
-            FROM 
-                cotizacion c
-            JOIN 
-                cliente cli ON c.idCliente = cli.idCliente
-            JOIN 
-                usuarios u ON c.idUsuario = u.id_usuario";
+    // PARÁMETROS DE PAGINACIÓN, FILTRADO Y ORDENAMIENTO
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+    $offset = ($page - 1) * $limit;
 
-    // --- MANEJO DINÁMICO DE FILTROS ---
-    $conditions = [];
+    $search = $_GET['search'] ?? '';
+    $idUsuario = $_GET['idUsuario'] ?? '';
+    $startDate = $_GET['fecha_inicio'] ?? '';
+    $endDate = $_GET['fecha_fin'] ?? '';
+    $sortBy = $_GET['sortBy'] ?? 'Cot_fechaCreacion DESC';
+
+    // LISTA BLANCA DE SEGURIDAD PARA `ORDER BY`
+    $allowedSortColumns = [
+        'Cot_fechaCreacion DESC', 'Cot_fechaCreacion ASC',
+        'idCotizacion DESC', 'idCotizacion ASC',
+        'Cot_montoAsegurable DESC', 'Cot_montoAsegurable ASC'
+    ];
+    if (!in_array($sortBy, $allowedSortColumns)) {
+        $sortBy = 'Cot_fechaCreacion DESC'; // Default seguro
+    }
+
+    // CONSTRUCCIÓN DE CONSULTAS DINÁMICAS
+    $baseSql = "FROM cotizacion c 
+                JOIN cliente cli ON c.idCliente = cli.idCliente 
+                JOIN usuarios u ON c.idUsuario = u.id_usuario";
+    $whereConditions = [];
     $params = [];
     $types = '';
 
-    // Filtro por ID de Usuario
-    if (!empty($_GET['idUsuario'])) {
-        $conditions[] = "c.idUsuario = ?";
-        $params[] = intval($_GET['idUsuario']);
+    if (!empty($search)) {
+        $whereConditions[] = "(cli.Cli_nombre LIKE ? OR cli.Cli_cedula LIKE ? OR c.idCotizacion = ?)";
+        $searchTerm = "%{$search}%";
+        $params[] = $searchTerm;
+        $params[] = $searchTerm;
+        $params[] = $search;
+        $types .= 'ssi';
+    }
+    if (!empty($idUsuario)) {
+        $whereConditions[] = "c.idUsuario = ?";
+        $params[] = (int)$idUsuario;
         $types .= 'i';
     }
-
-    // Filtro por nombre o cédula del cliente
-    if (!empty($_GET['cliente'])) {
-        $cliente_search = '%' . $_GET['cliente'] . '%';
-        $conditions[] = "(cli.Cli_nombre LIKE ? OR cli.Cli_cedula LIKE ?)";
-        $params[] = $cliente_search;
-        $params[] = $cliente_search;
-        $types .= 'ss';
+    if (!empty($startDate)) {
+        $whereConditions[] = "c.Cot_fechaCreacion >= ?";
+        $params[] = $startDate . ' 00:00:00';
+        $types .= 's';
     }
-
-    // Filtro por fecha de inicio
-    if (!empty($_GET['fecha_inicio'])) {
-        $conditions[] = "c.Cot_fechaCreacion >= ?";
-        $params[] = $_GET['fecha_inicio'];
+    if (!empty($endDate)) {
+        $whereConditions[] = "c.Cot_fechaCreacion <= ?";
+        $params[] = $endDate . ' 23:59:59';
         $types .= 's';
     }
 
-    // Filtro por fecha de fin
-    if (!empty($_GET['fecha_fin'])) {
-        // Añadimos la hora final del día para incluir todos los registros de ese día.
-        $fecha_fin = $_GET['fecha_fin'] . ' 23:59:59';
-        $conditions[] = "c.Cot_fechaCreacion <= ?";
-        $params[] = $fecha_fin;
-        $types .= 's';
-    }
+    $whereSql = !empty($whereConditions) ? " WHERE " . implode(" AND ", $whereConditions) : "";
 
-    // Si hay condiciones, las añadimos a la consulta SQL.
-    if (!empty($conditions)) {
-        $sql .= " WHERE " . implode(" AND ", $conditions);
-    }
+    // OBTENER TOTAL DE REGISTROS
+    $countSql = "SELECT COUNT(c.idCotizacion) as total " . $baseSql . $whereSql;
+    $stmtCount = $conn->prepare($countSql);
+    if (!empty($types)) $stmtCount->bind_param($types, ...$params);
+    $stmtCount->execute();
+    $totalRecords = (int)$stmtCount->get_result()->fetch_assoc()['total'];
+    $totalPages = ceil($totalRecords / $limit);
+    $stmtCount->close();
 
-    // Ordenar los resultados
-    $sql .= " ORDER BY c.Cot_fechaCreacion DESC";
+    // OBTENER DATOS DE LA PÁGINA ACTUAL
+    $dataSql = "SELECT c.idCotizacion, c.Cot_montoAsegurable, c.Cot_estado, c.Cot_fechaCreacion, 
+                       cli.Cli_nombre, u.nombre as nombre_usuario "
+             . $baseSql . $whereSql . " ORDER BY " . $sortBy . " LIMIT ? OFFSET ?"; // Se usa $sortBy validado
+    
+    $stmtData = $conn->prepare($dataSql);
+    $dataParams = $params;
+    $dataTypes = $types . 'ii';
+    $dataParams[] = $limit;
+    $dataParams[] = $offset;
 
-    // --- PREPARACIÓN Y EJECUCIÓN DE LA CONSULTA ---
-    $stmt = $conn->prepare($sql);
+    if (!empty($dataTypes)) $stmtData->bind_param($dataTypes, ...$dataParams);
+    $stmtData->execute();
+    $cotizaciones = $stmtData->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmtData->close();
 
-    // Si la preparación falla, es un error de sintaxis SQL.
-    if ($stmt === false) {
-        throw new Exception("Error al preparar la consulta: " . $conn->error);
-    }
-
-    // Si hay parámetros, los vinculamos a la consulta.
-    if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
-    }
-
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $cotizaciones = $result->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-
-    // Enviar la respuesta JSON con los resultados.
-    send_json_response($cotizaciones);
+    // ENVIAR RESPUESTA JSON ESTRUCTURADA
+    send_json_response([
+        'data' => $cotizaciones,
+        'pagination' => [
+            'totalRecords' => $totalRecords,
+            'totalPages' => $totalPages,
+            'currentPage' => $page,
+            'limit' => $limit
+        ]
+    ]);
 
 } catch (Exception $e) {
-    // Captura centralizada de errores para una respuesta JSON limpia.
     send_json_response(['success' => false, 'message' => 'Error interno del servidor.', 'error_details' => $e->getMessage()], 500);
 } finally {
-    // Cierre seguro de la conexión.
-    if ($conn) {
-        $conn->close();
-    }
+    if ($conn) $conn->close();
 }
 ?>

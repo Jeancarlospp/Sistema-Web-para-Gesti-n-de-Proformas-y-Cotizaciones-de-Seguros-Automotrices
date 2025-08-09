@@ -1,75 +1,118 @@
 <?php
-// Iniciar la sesión para futuras validaciones de permisos.
 session_start();
-
-// Requerir el archivo de conexión.
 require_once 'conexion.php';
 
-// Establecer la cabecera para indicar que la respuesta será en formato JSON.
 header('Content-Type: application/json');
 
-// --- FUNCIÓN PARA ENVIAR RESPUESTAS JSON Y TERMINAR EL SCRIPT ---
 function send_json_response($data, $statusCode = 200) {
     http_response_code($statusCode);
     echo json_encode($data);
     exit();
 }
 
-// Inicializar la conexión.
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    send_json_response(['error' => 'Método no permitido'], 405);
+}
+
 $db = new Conexion();
 $conn = $db->getConn();
 
-// Capturar el método de la solicitud. Solo se permite GET para esta API de lectura.
-$method = $_SERVER['REQUEST_METHOD'];
-
-if ($method !== 'GET') {
-    send_json_response(['error' => 'Método no permitido. Solo se aceptan solicitudes GET.'], 405);
-}
-
 try {
-    // --- CONSTRUCCIÓN DE LA CONSULTA SQL ---
-    // Hacemos un LEFT JOIN con la tabla de usuarios para obtener el nombre.
-    // Usamos LEFT JOIN en caso de que un usuario haya sido eliminado pero sus logs permanezcan.
-    $sql = "SELECT 
-                a.idAuditoria,
-                a.idUsuario,
-                u.nombre as nombre_usuario, -- Obtenemos el nombre del usuario desde la tabla `usuarios`
-                a.Aud_accion,
-                a.Aud_tabla,
-                a.Aud_descripcion,
-                a.Aud_fecha,
-                a.Aud_IP
-            FROM 
-                auditoria a
-            LEFT JOIN 
-                usuarios u ON a.idUsuario = u.id_usuario
-            ORDER BY 
-                a.Aud_fecha DESC"; // Ordenar por los más recientes primero
+    // --- PARÁMETROS DE PAGINACIÓN Y FILTRADO ---
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+    $offset = ($page - 1) * $limit;
 
-    // --- PREPARACIÓN Y EJECUCIÓN DE LA CONSULTA ---
-    $stmt = $conn->prepare($sql);
+    $search = $_GET['search'] ?? '';
+    $action = $_GET['action'] ?? '';
+    $startDate = $_GET['startDate'] ?? '';
+    $endDate = $_GET['endDate'] ?? '';
+    $sortBy = $_GET['sortBy'] ?? 'Aud_fecha DESC'; // Parámetro de ordenamiento
 
-    // Si la preparación falla, es un error de sintaxis SQL.
-    if ($stmt === false) {
-        throw new Exception("Error al preparar la consulta de auditoría: " . $conn->error);
+    // --- LISTA BLANCA DE SEGURIDAD PARA `ORDER BY` ---
+    $allowedSortColumns = ['Aud_fecha DESC', 'Aud_fecha ASC', 'idAuditoria DESC', 'idAuditoria ASC'];
+    if (!in_array($sortBy, $allowedSortColumns)) {
+        $sortBy = 'Aud_fecha DESC'; // Valor predeterminado seguro si el parámetro es inválido
     }
 
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    // Obtenemos todos los resultados como un array asociativo.
-    $logs = $result->fetch_all(MYSQLI_ASSOC);
-    
-    $stmt->close();
+    // --- CONSTRUCCIÓN DE LA CONSULTA ---
+    $baseSql = "FROM auditoria a LEFT JOIN usuarios u ON a.idUsuario = u.id_usuario";
+    $whereConditions = [];
+    $params = [];
+    $types = '';
 
-    // Enviar la respuesta JSON con los registros de auditoría.
-    send_json_response($logs);
+    if (!empty($search)) {
+        $whereConditions[] = "(a.Aud_descripcion LIKE ? OR u.nombre LIKE ?)";
+        $searchTerm = "%{$search}%";
+        $params[] = $searchTerm;
+        $params[] = $searchTerm;
+        $types .= 'ss';
+    }
+    if (!empty($action)) {
+        $whereConditions[] = "a.Aud_accion = ?";
+        $params[] = $action;
+        $types .= 's';
+    }
+    if (!empty($startDate)) {
+        $whereConditions[] = "a.Aud_fecha >= ?";
+        $params[] = $startDate . ' 00:00:00';
+        $types .= 's';
+    }
+    if (!empty($endDate)) {
+        $whereConditions[] = "a.Aud_fecha <= ?";
+        $params[] = $endDate . ' 23:59:59';
+        $types .= 's';
+    }
+
+    $whereSql = !empty($whereConditions) ? " WHERE " . implode(" AND ", $whereConditions) : "";
+
+    // --- OBTENER EL TOTAL DE REGISTROS (PARA PAGINACIÓN) ---
+    $countSql = "SELECT COUNT(a.idAuditoria) as total " . $baseSql . $whereSql;
+    $stmtCount = $conn->prepare($countSql);
+    if ($stmtCount === false) throw new Exception("Error al preparar la consulta de conteo: " . $conn->error);
+    if (!empty($types)) {
+        $stmtCount->bind_param($types, ...$params);
+    }
+    $stmtCount->execute();
+    $totalRecords = (int)$stmtCount->get_result()->fetch_assoc()['total'];
+    $totalPages = ceil($totalRecords / $limit);
+    $stmtCount->close();
+
+    // --- OBTENER LOS DATOS DE LA PÁGINA ACTUAL CON ORDENAMIENTO DINÁMICO ---
+    $dataSql = "SELECT a.idAuditoria, a.idUsuario, u.nombre as nombre_usuario, a.Aud_accion, a.Aud_tabla, a.Aud_descripcion, a.Aud_fecha, a.Aud_IP "
+             . $baseSql . $whereSql . " ORDER BY " . $sortBy . " LIMIT ? OFFSET ?"; // Se usa $sortBy validado
+    
+    $stmtData = $conn->prepare($dataSql);
+    if ($stmtData === false) throw new Exception("Error al preparar la consulta de datos: " . $conn->error);
+    
+    $dataParams = $params;
+    $dataTypes = $types . 'ii';
+    $dataParams[] = $limit;
+    $dataParams[] = $offset;
+
+    if (!empty($dataTypes)) {
+      $stmtData->bind_param($dataTypes, ...$dataParams);
+    }
+    $stmtData->execute();
+    $logs = $stmtData->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmtData->close();
+
+    // --- ENVIAR RESPUESTA JSON ESTRUCTURADA ---
+    $response = [
+        'data' => $logs,
+        'pagination' => [
+            'totalRecords' => $totalRecords,
+            'totalPages' => $totalPages,
+            'currentPage' => $page,
+            'limit' => $limit
+        ]
+    ];
+    
+    send_json_response($response);
 
 } catch (Exception $e) {
-    // Captura centralizada de errores para una respuesta JSON limpia.
     send_json_response(['success' => false, 'message' => 'Error interno del servidor.', 'error_details' => $e->getMessage()], 500);
 } finally {
-    // Cierre seguro de la conexión.
     if ($conn) {
         $conn->close();
     }

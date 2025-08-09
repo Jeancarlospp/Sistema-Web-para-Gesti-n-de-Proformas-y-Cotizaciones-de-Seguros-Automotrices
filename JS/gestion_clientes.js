@@ -1,10 +1,9 @@
 /**
  * js/gestionClientes.js
- * Lógica completa con Paginación, Búsqueda, Ordenamiento y CRUD para la Gestión de Clientes.
+ * Lógica avanzada con Paginación, Búsqueda, Ordenamiento y CRUD para la Gestión de Clientes.
  */
 
 // --- ESTADO GLOBAL DE LA TABLA ---
-// Mantiene la configuración actual de la tabla.
 let tableState = {
   currentPage: 1,
   limit: 10,
@@ -19,10 +18,21 @@ let tableState = {
 function renderClientTable(clients, tableBody) {
   tableBody.innerHTML = "";
   if (!clients || clients.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No se encontraron clientes que coincidan con los criterios.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No se encontraron clientes que coincidan con los criterios.</td></tr>`;
     return;
   }
   clients.forEach((client) => {
+    const estadoBadge =
+      client.Cli_estado === "activo"
+        ? '<span class="badge bg-success">Activo</span>'
+        : '<span class="badge bg-secondary">Inactivo</span>';
+    const actionTitle =
+      client.Cli_estado === "activo" ? "Desactivar" : "Activar";
+    const actionButtonClass =
+      client.Cli_estado === "activo" ? "btn-warning" : "btn-success";
+    const actionButtonIcon =
+      client.Cli_estado === "activo" ?  "bi-pause-circle" : "bi-play-circle";
+
     const row = document.createElement("tr");
     row.innerHTML = `
             <td>${client.idCliente}</td>
@@ -30,24 +40,30 @@ function renderClientTable(clients, tableBody) {
             <td>${client.Cli_cedula}</td>
             <td>${client.Cli_correo || "N/A"}</td>
             <td>${client.Cli_telefono || "N/A"}</td>
+            <td>${estadoBadge}</td>
             <td>
                 <button class="btn btn-sm btn-info btn-edit" data-id="${
                   client.idCliente
-                }" title="Editar Cliente"><i class="bi bi-pencil">Editar</i></button>
-                
+                }" title="Editar Cliente"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm ${actionButtonClass} btn-toggle-status ms-1" data-id="${
+      client.idCliente
+    }" data-new-status="${
+      client.Cli_estado === "activo" ? "inactivo" : "activo"
+    }" title="${actionTitle} Cliente">
+                    <i class="bi ${actionButtonIcon}"></i>
+                </button>
             </td>`;
     tableBody.appendChild(row);
   });
 }
 
-/** Dibuja los controles de paginación (botones "Anterior", "1", "2", "Siguiente"). */
-function renderPaginationControls(controlsContainer) {
+/** Dibuja los controles de paginación. */
+function renderPaginationControls(container) {
   const totalPages = Math.ceil(tableState.totalRecords / tableState.limit);
   if (totalPages <= 1) {
-    controlsContainer.innerHTML = "";
+    container.innerHTML = "";
     return;
   }
-
   let buttonsHtml = '<ul class="pagination pagination-sm">';
   buttonsHtml += `<li class="page-item ${
     tableState.currentPage === 1 ? "disabled" : ""
@@ -65,33 +81,30 @@ function renderPaginationControls(controlsContainer) {
     tableState.currentPage + 1
   }">Siguiente</a></li>`;
   buttonsHtml += "</ul>";
-  controlsContainer.innerHTML = buttonsHtml;
+  container.innerHTML = buttonsHtml;
 }
 
 /** Actualiza el texto informativo de la paginación. */
-function updatePaginationInfo(infoElement) {
+function updatePaginationInfo(element) {
   if (tableState.totalRecords === 0) {
-    infoElement.textContent = "No hay registros para mostrar";
+    element.textContent = "No hay registros";
     return;
   }
-  const startRecord = (tableState.currentPage - 1) * tableState.limit + 1;
-  const endRecord = Math.min(
-    startRecord + tableState.limit - 1,
-    tableState.totalRecords
-  );
-  infoElement.textContent = `Mostrando ${startRecord} a ${endRecord} de ${tableState.totalRecords} registros`;
+  const start = (tableState.currentPage - 1) * tableState.limit + 1;
+  const end = Math.min(start + tableState.limit - 1, tableState.totalRecords);
+  element.textContent = `Mostrando ${start} a ${end} de ${tableState.totalRecords} registros`;
 }
 
-// --- LÓGICA DE DATOS (COMUNICACIÓN CON LA API) ---
+// --- LÓGICA DE DATOS ---
 
-/** Función principal para obtener datos de la API aplicando todos los filtros. */
+/** Función principal para obtener datos de la API aplicando filtros. */
 async function fetchAndRenderClients() {
   const tableBody = document.getElementById("client-table-body");
-  const controlsContainer = document.getElementById("pagination-controls");
-  const infoElement = document.getElementById("pagination-info");
-  if (!tableBody || !controlsContainer || !infoElement) return;
+  const controls = document.getElementById("pagination-controls");
+  const info = document.getElementById("pagination-info");
+  if (!tableBody || !controls || !info) return;
 
-  tableBody.innerHTML = `<tr><td colspan="6" class="text-center">Cargando clientes...</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="7" class="text-center">Cargando clientes...</td></tr>`;
 
   const params = new URLSearchParams({
     page: tableState.currentPage,
@@ -111,15 +124,15 @@ async function fetchAndRenderClients() {
 
     tableState.totalRecords = data.total;
     renderClientTable(data.data, tableBody);
-    renderPaginationControls(controlsContainer);
-    updatePaginationInfo(infoElement);
+    renderPaginationControls(controls);
+    updatePaginationInfo(info);
   } catch (error) {
-    console.error("Error al cargar los clientes:", error);
-    tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error al cargar los clientes.</td></tr>`;
+    console.error("Error al cargar clientes:", error);
+    tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error al cargar clientes.</td></tr>`;
   }
 }
 
-/** Abre y llena el modal de edición con los datos de un cliente. */
+/** Abre y llena el modal de edición. */
 async function openEditModal(clientId) {
   try {
     const response = await fetch(`../php/clientes_api.php?id=${clientId}`);
@@ -140,29 +153,34 @@ async function openEditModal(clientId) {
     );
     editModal.show();
   } catch (error) {
-    console.error("Error al preparar la edición:", error);
-    alert("No se pudo cargar la información del cliente para editar.");
+    console.error("Error al preparar edición:", error);
+    alert("No se pudo cargar la información para editar.");
   }
 }
 
 // --- FUNCIÓN PRINCIPAL DE INICIALIZACIÓN ---
 export function loadGestionClientes() {
+  console.log("Módulo de Gestión de Clientes con paginación cargado.");
+
   // Elementos de la interfaz
   const clientTableBody = document.getElementById("client-table-body");
   const searchInput = document.getElementById("search-input");
   const sortSelect = document.getElementById("sort-select");
   const limitSelect = document.getElementById("limit-select");
   const paginationControls = document.getElementById("pagination-controls");
+
   const addClientModalEl = document.getElementById("addClientModal");
   const addClientForm = document.getElementById("add-client-form");
   const btnGuardarCliente = document.getElementById("btnGuardarCliente");
+
+  const editClientModalEl = document.getElementById("editClientModal");
   const editClientForm = document.getElementById("edit-client-form");
   const btnActualizarCliente = document.getElementById("btnActualizarCliente");
 
-  // 1. Cargar datos iniciales
+  // Cargar datos iniciales
   fetchAndRenderClients();
 
-  // 2. Añadir Event Listeners para la interactividad
+  // --- EVENT LISTENERS ---
 
   let searchTimeout;
   searchInput.addEventListener("input", () => {
@@ -194,7 +212,7 @@ export function loadGestionClientes() {
     }
   });
 
-  // 3. Lógica para Añadir, Editar y Eliminar (CRUD)
+  // --- LÓGICA CRUD ---
 
   btnGuardarCliente.addEventListener("click", async () => {
     if (!addClientForm.checkValidity()) {
@@ -249,9 +267,7 @@ export function loadGestionClientes() {
       });
       const result = await response.json();
       if (result.success) {
-        bootstrap.Modal.getInstance(
-          document.getElementById("editClientModal")
-        ).hide();
+        bootstrap.Modal.getInstance(editClientModalEl).hide();
         await fetchAndRenderClients();
         alert("¡Cliente actualizado con éxito!");
       } else {
@@ -262,6 +278,7 @@ export function loadGestionClientes() {
     }
   });
 
+  // Delegación de eventos para botones de la tabla
   clientTableBody.addEventListener("click", async (event) => {
     const button = event.target.closest("button");
     if (!button) return;
@@ -272,42 +289,29 @@ export function loadGestionClientes() {
       openEditModal(clientId);
     }
 
-    if (button.classList.contains("btn-delete")) {
-      if (
-        confirm(
-          `¿Seguro que deseas eliminar permanentemente al cliente ID ${clientId}?`
-        )
-      ) {
+    if (button.classList.contains("btn-toggle-status")) {
+      const newStatus = button.dataset.newStatus;
+      if (confirm(`¿Seguro que deseas ${newStatus} este cliente?`)) {
         try {
           const response = await fetch("../php/clientes_api.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "delete_client", id: clientId }),
+            body: JSON.stringify({
+              action: "update_status",
+              id: clientId,
+              estado: newStatus,
+            }),
           });
           const result = await response.json();
           if (result.success) {
-            alert(result.message);
-            // Vuelve a la primera página si la página actual queda vacía
-            if (
-              clientTableBody.rows.length === 1 &&
-              tableState.currentPage > 1
-            ) {
-              tableState.currentPage--;
-            }
             await fetchAndRenderClients();
           } else {
             throw new Error(result.message);
           }
         } catch (error) {
-          alert("Error al eliminar: " + error.message);
+          alert("Error al cambiar el estado: " + error.message);
         }
       }
-    }
-
-    if (button.classList.contains("btn-history")) {
-      alert(
-        `Funcionalidad "Ver Historial" para el cliente ID ${clientId} pendiente de implementación.`
-      );
     }
   });
 }

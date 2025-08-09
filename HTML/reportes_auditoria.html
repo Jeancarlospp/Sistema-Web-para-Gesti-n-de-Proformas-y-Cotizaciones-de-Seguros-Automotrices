@@ -25,6 +25,8 @@
       <!-- ===== INICIO DE LA CORRECCIÓN: SIDEBAR UNIVERSAL ===== -->
       <!-- ======================================================= -->
       <div id="sidebar">
+        <!-- Este es el contenido completo del sidebar maestro.
+                 El script main.js se encargará de mostrar solo las partes correctas. -->
         <div class="sidebar-wrapper active">
           <div class="sidebar-header position-relative">
             <div class="d-flex justify-content-between align-items-center">
@@ -94,7 +96,7 @@
           <div class="sidebar-menu">
             <ul class="menu">
               <!-- ========== MENÚ ADMINISTRADOR ========== -->
-              <li class="sidebar-title role-admin">Menú Principal</li>
+              <li class="sidebar-title role-admin ">Menú Principal</li>
               <li class="sidebar-item role-admin">
                 <a href="admin_dashboard.html" class="sidebar-link"
                   ><i class="bi bi-grid-fill"></i><span>Dashboard</span></a
@@ -124,7 +126,7 @@
                   ><span>Supervisar Cotizaciones</span></a
                 >
               </li>
-              <li class="sidebar-item role-admin">
+              <li class="sidebar-item role-admin active" >
                 <a href="reportes_auditoria.html" class="sidebar-link"
                   ><i class="bi bi-journal-album"></i
                   ><span>Reportes y Auditoría</span></a
@@ -191,146 +193,224 @@
       <!-- ======================================================= -->
       <!-- ================== FIN DEL SIDEBAR ==================== -->
       <!-- ======================================================= -->
+    </div>
 
-      <div id="main">
-        <header class="mb-3">
-          <a href="#" class="burger-btn d-block d-xl-none"
-            ><i class="bi bi-justify fs-3"></i
-          ></a>
-        </header>
-        <div
-          class="page-heading d-flex justify-content-between align-items-center"
-        >
-          <h3>Reportes y Auditoría del Sistema</h3>
-          <div class="dropdown">
-            <a href="#" data-bs-toggle="dropdown" aria-expanded="false"
-              ><div class="user-menu d-flex">
-                <div class="user-name text-end me-3 d-none d-sm-block">
-                  <h6 class="mb-0 text-gray-600" id="profile-name">
-                    Cargando...
-                  </h6>
-                  <p class="mb-0 text-sm text-gray-600" id="profile-role">
-                    ...
-                  </p>
-                </div>
-                <div class="user-img d-flex align-items-center">
-                  <div class="avatar avatar-md">
-                    <img src="../assets/compiled/jpg/1.jpg" />
-                  </div>
-                </div></div
-            ></a>
-            <ul
-              class="dropdown-menu dropdown-menu-end"
-              aria-labelledby="dropdownMenuButton"
-              style="min-width: 11rem"
-            >
-              <li>
-                <h6 class="dropdown-header">
-                  Hola, <span id="profile-greeting-name">Usuario</span>!
+    <div id="main">
+      <header class="mb-3">
+        <a href="#" class="burger-btn d-block d-xl-none"
+          ><i class="bi bi-justify fs-3"></i
+        ></a>
+      </header>
+      <div
+        class="page-heading d-flex justify-content-between align-items-center"
+      >
+        <h3>Reportes y Auditoría del Sistema</h3>
+        <div class="dropdown">
+          <a href="#" data-bs-toggle="dropdown" aria-expanded="false"
+            ><div class="user-menu d-flex">
+              <div class="user-name text-end me-3 d-none d-sm-block">
+                <h6 class="mb-0 text-gray-600" id="profile-name">
+                  Cargando...
                 </h6>
-              </li>
-              <li>
-                <a class="dropdown-item" href="miPerfil.html"
-                  ><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a
-                >
-              </li>
-              <li><hr class="dropdown-divider" /></li>
-              <li>
-                <a class="dropdown-item" href="#" id="logout-btn"
-                  ><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar
-                  Sesión</a
-                >
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="page-content">
-          <section class="row">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-header">
-                  <h4 class="card-title">Registros de Auditoría</h4>
+                <p class="mb-0 text-sm text-gray-600" id="profile-role">...</p>
+              </div>
+              <div class="user-img d-flex align-items-center">
+                <div class="avatar avatar-md">
+                  <img src="../assets/compiled/jpg/1.jpg" />
                 </div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table table-hover table-sm">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Usuario</th>
-                          <th>Acción</th>
-                          <th>Tabla Afectada</th>
-                          <th>Descripción</th>
-                          <th>Fecha</th>
-                          <th>IP</th>
-                        </tr>
-                      </thead>
-                      <tbody id="audit-log-table-body">
-                        <tr>
-                          <td colspan="7" class="text-center">
-                            Cargando registros de auditoría...
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+              </div></div
+          ></a>
+          <ul
+            class="dropdown-menu dropdown-menu-end"
+            aria-labelledby="dropdownMenuButton"
+            style="min-width: 11rem"
+          >
+            <li>
+              <h6 class="dropdown-header">
+                Hola, <span id="profile-greeting-name">Usuario</span>!
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="miPerfil.html"
+                ><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a
+              >
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item" href="#" id="logout-btn"
+                ><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar
+                Sesión</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="page-content">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Filtros y Herramientas</h4>
+          </div>
+          <div class="card-body">
+            <div class="row gy-3 align-items-end">
+              <!-- Filtro de Búsqueda -->
+              <div class="col-12 col-md-6 col-lg-3">
+                <label for="audit-search-input" class="form-label"
+                  >Buscar por descripción:</label
+                >
+                <div class="input-group">
+                  <span class="input-group-text"
+                    ><i class="bi bi-search"></i
+                  ></span>
+                  <input
+                    type="text"
+                    id="audit-search-input"
+                    class="form-control"
+                    placeholder="Ej: 'creó nuevo producto'"
+                  />
                 </div>
               </div>
 
-              <div class="card">
-                <div class="card-header">
-                  <h4 class="card-title">Generador de Reportes</h4>
+              <!-- Filtro de Acción (MODIFICADO) -->
+              <div class="col-12 col-md-6 col-lg-2">
+                <label for="audit-action-filter" class="form-label"
+                  >Acción:</label
+                >
+                <select id="audit-action-filter" class="form-select">
+                  <option value="" selected>Todas</option>
+                  <option value="INSERT">INSERT</option>
+                  <option value="UPDATE">UPDATE</option>
+                </select>
+              </div>
+
+              <!-- Filtros de Fecha -->
+              <div class="col-12 col-md-6 col-lg-4">
+                <label class="form-label">Rango de Fechas:</label>
+                <div class="input-group">
+                  <input
+                    type="date"
+                    id="audit-start-date"
+                    class="form-control"
+                  />
+                  <span class="input-group-text">a</span>
+                  <input type="date" id="audit-end-date" class="form-control" />
                 </div>
-                <div class="card-body">
-                  <form
-                    id="report-generator-form"
-                    class="row g-3 align-items-end"
+              </div>
+
+              <!-- Botones de Acción -->
+              <div
+                class="col-12 col-md-6 col-lg-3 d-flex justify-content-end gap-2"
+              >
+                <button id="btn-reset-filters" class="btn btn-secondary">
+                  <i class="bi bi-arrow-clockwise">Limpiar</i>
+                </button>
+                <button id="btn-generate-pdf" class="btn btn-danger">
+                  <i class="bi bi-file-earmark-pdf-fill">PDF</i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section class="row">
+          <div class="col-12">
+            <div class="card">
+              <!-- ======================================================= -->
+              <!-- =========== INICIO DE LA SECCIÓN CORREGIDA ============ -->
+              <!-- ======================================================= -->
+              <div
+                class="card-header d-flex justify-content-between align-items-center"
+              >
+                <h4 class="card-title mb-0">Registros de Auditoría</h4>
+                <div class="d-flex align-items-center gap-2">
+                  <label
+                    for="audit-sort-by-select"
+                    class="form-label mb-0 small text-nowrap"
+                    >Ordenar por:</label
                   >
-                    <div class="col-md-4">
-                      <label for="reportType" class="form-label"
-                        >Tipo de Reporte</label
-                      ><select id="reportType" class="form-select">
-                        <option selected value="cotizaciones">
-                          Cotizaciones por Rango de Fechas
-                        </option>
-                        <option value="productos">
-                          Productos más Cotizados
-                        </option>
-                        <option value="usuarios">Actividad por Usuario</option>
+                  <select
+                    class="form-select form-select-sm"
+                    id="audit-sort-by-select"
+                  >
+                    <option value="Aud_fecha DESC" selected>
+                      Más Recientes
+                    </option>
+                    <option value="Aud_fecha ASC">Más Antiguos</option>
+                    <option value="idAuditoria DESC">ID (Desc)</option>
+                    <option value="idAuditoria ASC">ID (Asc)</option>
+                  </select>
+                </div>
+              </div>
+              <!-- ======================================================= -->
+              <!-- ============= FIN DE LA SECCIÓN CORREGIDA ============= -->
+              <!-- ======================================================= -->
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-hover table-sm">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Acción</th>
+                        <th>Tabla Afectada</th>
+                        <th>Descripción</th>
+                        <th>Fecha</th>
+                        <th>IP</th>
+                      </tr>
+                    </thead>
+                    <tbody id="audit-log-table-body">
+                      <!-- Las filas se generarán dinámicamente -->
+                    </tbody>
+                  </table>
+                </div>
+                <hr />
+                <!-- Controles de Paginación y Ordenamiento -->
+                <div
+                  class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-3"
+                >
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                      <label
+                        for="audit-limit-select"
+                        class="form-label mb-0 small text-nowrap"
+                        >Mostrar:</label
+                      >
+                      <select
+                        class="form-select form-select-sm"
+                        id="audit-limit-select"
+                        style="width: 75px"
+                      >
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
                       </select>
                     </div>
-                    <div class="col-md-3">
-                      <label for="startDate" class="form-label"
-                        >Fecha de Inicio</label
-                      ><input type="date" id="startDate" class="form-control" />
-                    </div>
-                    <div class="col-md-3">
-                      <label for="endDate" class="form-label"
-                        >Fecha de Fin</label
-                      ><input type="date" id="endDate" class="form-control" />
-                    </div>
-                    <div class="col-md-2">
-                      <button type="submit" class="btn btn-primary w-100">
-                        Generar
-                      </button>
-                    </div>
-                  </form>
-                  <hr />
-                  <div id="report-results-container" class="mt-4">
-                    <p class="text-muted text-center">
-                      Seleccione los filtros y genere un reporte para ver los
-                      resultados aquí.
-                    </p>
+                  </div>
+                  <div class="d-flex align-items-center gap-3">
+                    <span
+                      id="audit-pagination-info"
+                      class="text-muted small"
+                    ></span>
+                    <nav
+                      id="audit-pagination-controls"
+                      aria-label="Navegación de auditoría"
+                    >
+                      <!-- Los botones de paginación se generarán aquí -->
+                    </nav>
                   </div>
                 </div>
               </div>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
       </div>
     </div>
 
-    <!-- ===== Bloque de Scripts Final y Correcto ===== -->
+    <!-- ===== SCRIPTS ===== -->
+    <!-- Librerías para generar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script type="module" src="../js/main.js"></script>

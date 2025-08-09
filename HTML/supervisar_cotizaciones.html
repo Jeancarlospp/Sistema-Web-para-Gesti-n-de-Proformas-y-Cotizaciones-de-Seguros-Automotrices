@@ -247,75 +247,103 @@
           </div>
         </div>
         <div class="page-content">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">Filtros y Herramientas</h4>
+            </div>
+            <div class="card-body">
+              <div class="row gy-3 align-items-end">
+                <div class="col-12 col-lg-3">
+                  <label for="quote-search-input" class="form-label"
+                    >Buscar por Cliente o ID:</label
+                  >
+                  <div class="input-group">
+                    <span class="input-group-text"
+                      ><i class="bi bi-search"></i
+                    ></span>
+                    <input
+                      type="text"
+                      id="quote-search-input"
+                      class="form-control"
+                      placeholder="Nombre, Cédula o ID..."
+                    />
+                  </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-2">
+                  <label for="filter-user" class="form-label"
+                    >Usuario Creador:</label
+                  >
+                  <select id="filter-user" class="form-select">
+                    <option value="" selected>Todos</option>
+                  </select>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                  <label class="form-label">Fecha de Creación:</label>
+                  <div class="input-group">
+                    <input
+                      type="date"
+                      id="filter-start-date"
+                      class="form-control"
+                    />
+                    <span class="input-group-text">a</span>
+                    <input
+                      type="date"
+                      id="filter-end-date"
+                      class="form-control"
+                    />
+                  </div>
+                </div>
+                <div class="col-12 col-lg-3 d-flex justify-content-end gap-2">
+                  <button
+                    id="btn-reset-filters"
+                    class="btn btn-secondary"
+                    title="Limpiar Filtros"
+                  >
+                    <i class="bi bi-arrow-clockwise"></i> Limpiar
+                  </button>
+                  <button id="btn-generate-pdf" class="btn btn-danger">
+                    <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <section class="row">
             <div class="col-12">
               <div class="card">
-                <div class="card-header">
-                  <h4 class="card-title">Filtros de Búsqueda</h4>
-                </div>
-                <div class="card-body">
-                  <form id="filters-form" class="row g-3 align-items-end">
-                    <div class="col-md-3">
-                      <label for="filter-user" class="form-label"
-                        >Usuario Creador</label
-                      ><select
-                        name="idUsuario"
-                        id="filter-user"
-                        class="form-select"
-                      >
-                        <option value="" selected>Todos los Usuarios</option>
-                      </select>
-                    </div>
-                    <div class="col-md-3">
-                      <label for="filter-client" class="form-label"
-                        >Cliente</label
-                      ><input
-                        name="cliente"
-                        type="text"
-                        id="filter-client"
-                        class="form-control"
-                        placeholder="Nombre o Cédula"
-                      />
-                    </div>
-                    <div class="col-md-2">
-                      <label for="filter-start-date" class="form-label"
-                        >Desde</label
-                      ><input
-                        name="fecha_inicio"
-                        type="date"
-                        id="filter-start-date"
-                        class="form-control"
-                      />
-                    </div>
-                    <div class="col-md-2">
-                      <label for="filter-end-date" class="form-label"
-                        >Hasta</label
-                      ><input
-                        name="fecha_fin"
-                        type="date"
-                        id="filter-end-date"
-                        class="form-control"
-                      />
-                    </div>
-                    <div class="col-md-2 d-flex">
-                      <button type="submit" class="btn btn-primary w-100 me-2">
-                        Buscar</button
-                      ><button
-                        type="reset"
-                        id="btn-reset-filters"
-                        class="btn btn-light"
-                        title="Limpiar Filtros"
-                      >
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-
-              <div class="card">
-                <div class="card-header">
-                  <h4 class="card-title">Resultados de Cotizaciones</h4>
+                <!-- MODIFICACIÓN: Contenedor flex para título y selector de orden -->
+                <div
+                  class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2"
+                >
+                  <h4 class="card-title mb-0">Resultados de Cotizaciones</h4>
+                  <div class="d-flex align-items-center gap-2">
+                    <label
+                      for="quote-sort-by-select"
+                      class="form-label mb-0 small text-nowrap"
+                      >Ordenar por:</label
+                    >
+                    <select
+                      class="form-select form-select-sm"
+                      id="quote-sort-by-select"
+                      style="width: auto"
+                    >
+                      <option value="Cot_fechaCreacion DESC" selected>
+                        Más Recientes
+                      </option>
+                      <option value="Cot_fechaCreacion ASC">
+                        Más Antiguos
+                      </option>
+                      <option value="idCotizacion DESC">ID (Desc)</option>
+                      <option value="idCotizacion ASC">ID (Asc)</option>
+                      <option value="Cot_montoAsegurable DESC">
+                        Monto (Mayor a Menor)
+                      </option>
+                      <option value="Cot_montoAsegurable ASC">
+                        Monto (Menor a Mayor)
+                      </option>
+                    </select>
+                  </div>
                 </div>
                 <div class="card-body">
                   <div class="table-responsive">
@@ -332,13 +360,40 @@
                         </tr>
                       </thead>
                       <tbody id="quotes-table-body">
-                        <tr>
-                          <td colspan="7" class="text-center">
-                            Cargando cotizaciones...
-                          </td>
-                        </tr>
+                        <!-- Las filas se generarán dinámicamente -->
                       </tbody>
                     </table>
+                  </div>
+                  <hr />
+                  <div
+                    class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-3"
+                  >
+                    <div class="d-flex align-items-center gap-2">
+                      <label
+                        for="quote-limit-select"
+                        class="form-label text-nowrap mb-0 small"
+                        >Mostrar por pág:</label
+                      >
+                      <select
+                        class="form-select form-select-sm"
+                        id="quote-limit-select"
+                        style="width: 75px"
+                      >
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                      </select>
+                      <span
+                        id="quote-pagination-info"
+                        class="text-muted small ms-2"
+                      ></span>
+                    </div>
+                    <nav
+                      id="quote-pagination-controls"
+                      aria-label="Navegación de cotizaciones"
+                    >
+                      <!-- Los botones de paginación se generarán aquí -->
+                    </nav>
                   </div>
                 </div>
               </div>
@@ -348,7 +403,10 @@
       </div>
     </div>
 
-    <!-- ===== Bloque de Scripts Final y Correcto ===== -->
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script type="module" src="../js/main.js"></script>

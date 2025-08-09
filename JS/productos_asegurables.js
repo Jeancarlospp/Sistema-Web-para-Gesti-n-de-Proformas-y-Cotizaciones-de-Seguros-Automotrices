@@ -66,9 +66,9 @@ function renderProductCards(products, container) {
     const estadoButtonText =
       product.Pro_estado === "activo" ? "Desactivar" : "Activar";
     const estadoButtonClass =
-      product.Pro_estado === "activo"
-        ? "btn-outline-warning"
-        : "btn-outline-success";
+      product.Pro_estado === "activo" ? "btn-warning" : "btn-success";
+    const actionButtonIcon =
+      product.Pro_estado === "activo" ? "bi-pause-circle" : "bi-play-circle";
 
     const cardHtml = `
             <div class="col-12 col-md-6 col-lg-4 mb-4">
@@ -95,7 +95,7 @@ function renderProductCards(products, container) {
       product.idproducto
     }" data-new-status="${
       product.Pro_estado === "activo" ? "inactivo" : "activo"
-    }" title="${estadoButtonText} Producto">${estadoButtonText}</button></div></div>
+    }" title="${estadoButtonText} Producto"><i class="bi ${actionButtonIcon}"></i></button></div></div>
                 </div>
             </div>`;
     container.innerHTML += cardHtml;
@@ -258,7 +258,6 @@ async function openEditProductModal(productId) {
 export function loadProductosAsegurables() {
   console.log("Módulo de Productos Asegurables con filtros y CRUD cargado.");
 
-  // Elementos de la interfaz
   const container = document.getElementById("product-cards-container");
   const searchInput = document.getElementById("product-search-input");
   const categoryFilter = document.getElementById("product-category-filter");
@@ -277,7 +276,6 @@ export function loadProductosAsegurables() {
     "btnActualizarProducto"
   );
 
-  // Cargar datos iniciales y poblar filtros/modales
   fetchAndRenderProducts();
   populateSelects(
     { element: categoryFilter, type: "category-filter" },
@@ -326,7 +324,6 @@ export function loadProductosAsegurables() {
     }
   });
 
-  // Delegación de eventos para botones en las tarjetas
   container.addEventListener("click", async (event) => {
     const button = event.target.closest("button");
     if (!button) return;
@@ -360,7 +357,6 @@ export function loadProductosAsegurables() {
     }
   });
 
-  // Lógica para el modal de Añadir Producto
   btnGuardarProducto.addEventListener("click", async () => {
     if (!addProductForm.checkValidity()) {
       addProductForm.reportValidity();
@@ -409,7 +405,6 @@ export function loadProductosAsegurables() {
     }
   });
 
-  // Lógica para el modal de Editar Producto
   btnActualizarProducto.addEventListener("click", async () => {
     if (!editProductForm.checkValidity()) {
       editProductForm.reportValidity();

@@ -1,18 +1,19 @@
 /**
  * js/asesor_dashboard.js
  * Lógica 100% dinámica para la página: Dashboard del Asesor,
- * adaptada al esquema SQL de 'sistemas_cotizaciones'.
+ * con generación real de PDF para la comparativa.
  */
 
 // Importamos la función reutilizable para crear la tabla de comparación.
-// ¡Asegúrate de que este nombre de archivo coincida con el tuyo!
 import { buildComparisonTable } from "./comparison_table.js";
 
 /**
- * Muestra un mensaje de carga o error en el contenedor de planes.
+ * Muestra un mensaje de carga o error en un contenedor.
  */
 function showPlansMessage(message, isError = false, container) {
-  container.innerHTML = `<p class="text-${isError ? "danger" : "muted"}">${message}</p>`;
+  container.innerHTML = `<p class="text-center p-3 text-${
+    isError ? "danger" : "muted"
+  }">${message}</p>`;
 }
 
 /**
@@ -20,11 +21,15 @@ function showPlansMessage(message, isError = false, container) {
  */
 async function populateVehicleTypes(selectElement) {
   try {
-    const response = await fetch("../php/productos_api.php?action=get_categories");
-    if (!response.ok) throw new Error("No se pudieron cargar las categorías de vehículos.");
+    const response = await fetch(
+      "../php/productos_api.php?action=get_categories"
+    );
+    if (!response.ok)
+      throw new Error("No se pudieron cargar las categorías de vehículos.");
 
     const categories = await response.json();
-    selectElement.innerHTML = '<option value="" disabled selected>-- Seleccione un tipo --</option>';
+    selectElement.innerHTML =
+      '<option value="" disabled selected>-- Seleccione un tipo --</option>';
 
     categories.forEach((category) => {
       const option = document.createElement("option");
@@ -34,7 +39,8 @@ async function populateVehicleTypes(selectElement) {
     });
   } catch (error) {
     console.error("Error al poblar tipos de vehículo:", error);
-    selectElement.innerHTML = '<option value="" disabled selected>Error al cargar</option>';
+    selectElement.innerHTML =
+      '<option value="" disabled selected>Error al cargar</option>';
   }
 }
 
@@ -42,15 +48,21 @@ async function populateVehicleTypes(selectElement) {
  * Carga los planes (productos) para una categoría específica desde la API.
  */
 async function fetchAndRenderPlans(categoryId, container) {
-  showPlansMessage("Cargando planes...", false, container);
+  showPlansMessage("Cargando planes disponibles...", false, container);
   try {
-    const response = await fetch(`../php/productos_api.php?category_id=${categoryId}`);
+    const response = await fetch(
+      `../php/productos_api.php?category_id=${categoryId}`
+    );
     if (!response.ok) throw new Error("No se pudieron cargar los planes.");
 
     const plans = await response.json();
     container.innerHTML = "";
     if (!plans || plans.length === 0) {
-      showPlansMessage("No hay planes disponibles para este tipo de vehículo.", true, container);
+      showPlansMessage(
+        "No hay planes disponibles para este tipo de vehículo.",
+        true,
+        container
+      );
       return;
     }
 
@@ -63,16 +75,90 @@ async function fetchAndRenderPlans(categoryId, container) {
       container.innerHTML += checkboxHtml;
     });
   } catch (error) {
-    console.error(`Error al cargar planes para la categoría ${categoryId}:`, error);
+    console.error(
+      `Error al cargar planes para la categoría ${categoryId}:`,
+      error
+    );
     showPlansMessage("Error al cargar los planes.", true, container);
   }
 }
+
+// --- INICIO: NUEVA FUNCIÓN PARA GENERAR PDF ---
+/**
+ * Genera un documento PDF a partir de la tabla de comparación visible.
+ */
+function generateComparisonPDF() {
+  // Verificar que las librerías PDF estén cargadas
+  if (
+    typeof window.jspdf === "undefined" ||
+    typeof window.jspdf.jsPDF === "undefined"
+  ) {
+    alert(
+      "Error: La librería para generar PDF no se ha cargado correctamente."
+    );
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const comparisonArea = document.getElementById("comparison-area");
+  const clientName =
+    document.getElementById("client-name-display").textContent || "Cliente";
+  const comparisonTable = document.getElementById("comparison-table");
+
+  // Verificar que la tabla de comparación esté visible
+  if (!comparisonTable || comparisonArea.style.display === "none") {
+    alert(
+      "Por favor, genere primero una comparación para poder exportarla a PDF."
+    );
+    return;
+  }
+
+  const doc = new jsPDF({
+    orientation: "landscape", // Tabla ancha, mejor en horizontal
+  });
+
+  // Añadir Títulos
+  doc.setFontSize(18);
+  doc.text("Comparativa de Planes de Seguros", 14, 22);
+  doc.setFontSize(12);
+  doc.text(`Cliente: ${clientName}`, 14, 30);
+
+  // Usar autoTable para convertir la tabla HTML a PDF
+  doc.autoTable({
+    html: "#comparison-table",
+    startY: 35,
+    theme: "grid",
+    headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Cabecera azul
+    footStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: "bold" },
+    didDrawPage: (data) => {
+      // Añadir pie de página con número de página
+      const pageCount = doc.internal.getNumberOfPages();
+      doc.setFontSize(10);
+      doc.text(
+        `Página ${data.pageNumber} de ${pageCount}`,
+        data.settings.margin.left,
+        doc.internal.pageSize.height - 10
+      );
+    },
+  });
+
+  // Generar nombre de archivo y guardar
+  const date = new Date().toISOString().split("T")[0];
+  const fileName = `comparativa_seguros_${clientName.replace(
+    /\s+/g,
+    "_"
+  )}_${date}.pdf`;
+  doc.save(fileName);
+}
+// --- FIN: NUEVA FUNCIÓN PARA GENERAR PDF ---
 
 /**
  * Función principal que se exporta y se llama desde main.js.
  */
 export function loadAsesorDashboard() {
-  console.log("Módulo del Dashboard del Asesor (sincronizado con SQL) cargado.");
+  console.log(
+    "Módulo del Dashboard del Asesor (sincronizado con SQL) cargado."
+  );
 
   // Elementos del DOM
   const form = document.getElementById("quote-form");
@@ -85,10 +171,21 @@ export function loadAsesorDashboard() {
   const resetBtn = document.getElementById("btn-reset-form");
   const compareBtn = document.getElementById("btn-compare");
 
-  // Verificar que todos los elementos existen antes de continuar.
-  if (!form || !vehicleTypeSelect || !plansContainer || !comparisonArea || !clientNameInput || !clientNameDisplay || !pdfBtn || !resetBtn || !compareBtn) {
-      console.error("Faltan elementos HTML esenciales en el dashboard del asesor. Abortando inicialización.");
-      return;
+  if (
+    !form ||
+    !vehicleTypeSelect ||
+    !plansContainer ||
+    !comparisonArea ||
+    !clientNameInput ||
+    !clientNameDisplay ||
+    !pdfBtn ||
+    !resetBtn ||
+    !compareBtn
+  ) {
+    console.error(
+      "Faltan elementos HTML esenciales en el dashboard del asesor. Abortando inicialización."
+    );
+    return;
   }
 
   // --- LÓGICA DE INICIALIZACIÓN ---
@@ -103,13 +200,17 @@ export function loadAsesorDashboard() {
       fetchAndRenderPlans(selectedCategoryId, plansContainer);
       compareBtn.disabled = false;
     } else {
-      showPlansMessage("Por favor, seleccione primero un tipo de vehículo.", false, plansContainer);
+      showPlansMessage(
+        "Por favor, seleccione primero un tipo de vehículo.",
+        false,
+        plansContainer
+      );
       compareBtn.disabled = true;
     }
     comparisonArea.style.display = "none";
   });
 
-  // 2. Cuando se envía el formulario para cotizar.
+  // 2. Cuando se envía el formulario para cotizar/comparar.
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -124,6 +225,7 @@ export function loadAsesorDashboard() {
 
     const clientName = clientNameInput.value || "Cliente";
 
+    // Llamar a la función que construye la tabla HTML
     await buildComparisonTable(
       selectedPlanIds,
       document.getElementById("comparison-table-head"),
@@ -131,6 +233,7 @@ export function loadAsesorDashboard() {
       document.getElementById("comparison-table-foot")
     );
 
+    // Mostrar los resultados
     clientNameDisplay.textContent = clientName;
     comparisonArea.style.display = "block";
     comparisonArea.scrollIntoView({ behavior: "smooth" });
@@ -139,12 +242,15 @@ export function loadAsesorDashboard() {
   // 3. Cuando se limpia el formulario.
   resetBtn.addEventListener("click", () => {
     comparisonArea.style.display = "none";
-    showPlansMessage("Por favor, seleccione primero un tipo de vehículo.", false, plansContainer);
+    plansContainer.innerHTML = ""; // Limpiar también los checkboxes
+    showPlansMessage(
+      "Por favor, seleccione primero un tipo de vehículo.",
+      false,
+      plansContainer
+    );
     compareBtn.disabled = true;
   });
 
-  // 4. Lógica del botón PDF.
-  pdfBtn.addEventListener("click", () => {
-    alert(`Simulación: PDF generado para ${clientNameDisplay.textContent}.`);
-  });
+  // 4. Lógica del botón PDF (¡CORREGIDA!).
+  pdfBtn.addEventListener("click", generateComparisonPDF);
 }

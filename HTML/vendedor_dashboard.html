@@ -1,20 +1,26 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard Vendedor - CS ENSIGNA</title>
-    
-    <link rel="shortcut icon" href="../assets/compiled/svg/favicon.svg" type="image/x-icon">
-    <link rel="stylesheet" href="../assets/compiled/css/app.css">
-    <link rel="stylesheet" href="../assets/compiled/css/app-dark.css">
-    <link rel="stylesheet" href="../assets/extensions/bootstrap-icons/font/bootstrap-icons.css">
-</head>
 
-<body>
+    <link
+      rel="shortcut icon"
+      href="../assets/compiled/svg/favicon.svg"
+      type="image/x-icon"
+    />
+    <link rel="stylesheet" href="../assets/compiled/css/app.css" />
+    <link rel="stylesheet" href="../assets/compiled/css/app-dark.css" />
+    <link
+      rel="stylesheet"
+      href="../assets/extensions/bootstrap-icons/font/bootstrap-icons.css"
+    />
+  </head>
+
+  <body>
     <script src="../assets/static/js/initTheme.js"></script>
     <div id="app">
-        
       <!-- ======================================================= -->
       <!-- ===== INICIO DE LA CORRECCIÓN: SIDEBAR UNIVERSAL ===== -->
       <!-- ======================================================= -->
@@ -185,64 +191,177 @@
       <!-- ======================================================= -->
       <!-- ================== FIN DEL SIDEBAR ==================== -->
       <!-- ======================================================= -->
-        
-        <div id="main">
-            <header class="mb-3"><a href="#" class="burger-btn d-block d-xl-none"><i class="bi bi-justify fs-3"></i></a></header>
-            <div class="page-heading d-flex justify-content-between align-items-center">
-                <h3>Panel de Vendedor</h3>
-                <div class="dropdown"><a href="#" data-bs-toggle="dropdown" aria-expanded="false"><div class="user-menu d-flex"><div class="user-name text-end me-3 d-none d-sm-block"><h6 class="mb-0 text-gray-600" id="profile-name">Cargando...</h6><p class="mb-0 text-sm text-gray-600" id="profile-role">...</p></div><div class="user-img d-flex align-items-center"><div class="avatar avatar-md"><img src="../assets/compiled/jpg/1.jpg"></div></div></div></a><ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton" style="min-width: 11rem;"><li><h6 class="dropdown-header">Hola, <span id="profile-greeting-name">Usuario</span>!</h6></li><li><a class="dropdown-item" href="miPerfil.html"><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a></li><li><hr class="dropdown-divider"></li><li><a class="dropdown-item" href="#" id="logout-btn"><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar Sesión</a></li></ul></div>
-            </div> 
 
-            <div class="page-content"> 
-                <div class="alert alert-light-info color-info"><i class="bi bi-star-fill"></i> ¡Bienvenido! Este panel está optimizado para agilizar tus ventas.</div>
-                <section class="row">
-                    <div class="col-12">
-                         <div class="card">
-                            <div class="card-header"><h4 class="card-title">1. Ingresar Datos de Cotización Rápida</h4></div>
-                            <div class="card-body">
-                               <form class="form" id="quick-quote-form" novalidate>
-                                    <div class="row">
-                                        <div class="col-md-6 col-12"><div class="form-group"><label for="vendedor-client-name">Nombre del Cliente</label><input type="text" id="vendedor-client-name" class="form-control" required></div></div>
-                                        <div class="col-md-6 col-12">
-                                            <div class="form-group">
-                                                <label for="vendedor-vehicle-type">Tipo de Vehículo</label>
-                                                <select class="form-select" id="vendedor-vehicle-type" required>
-                                                    <option value="" disabled selected>Cargando tipos...</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <label>Seleccione Paquetes a Comparar:</label>
-                                                <div id="vendedor-plans-container" class="mt-2">
-                                                    <p class="text-muted">Por favor, seleccione primero un tipo de vehículo.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-12 d-flex justify-content-end mt-3">
-                                            <button type="submit" id="btn-vendedor-compare" class="btn btn-primary me-1 mb-1" disabled>Ver Comparativa</button>
-                                            <button type="reset" id="btn-vendedor-reset" class="btn btn-light-secondary me-1 mb-1">Limpiar</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
-                        <div class="card" id="vendedor-comparison-area" style="display: none;">
-                            <div class="card-header"><h4 class="card-title">2. Comparativa de Paquetes para <span id="vendedor-client-name-display" class="text-primary"></span></h4></div>
-                            <div class="card-body">
-                                <div class="table-responsive"><table class="table table-bordered text-center"><thead id="vendedor-comparison-head"></thead><tbody id="vendedor-comparison-body"></tbody><tfoot id="vendedor-comparison-foot"></tfoot></table></div>
-                                <div class="col-12 d-flex justify-content-center mt-4"><button id="vendedor-generate-pdf-btn" class="btn btn-success btn-lg"><i class="bi bi-file-earmark-pdf-fill"></i> Generar PDF y Entregar</button></div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
+      <div id="main">
+        <header class="mb-3">
+          <a href="#" class="burger-btn d-block d-xl-none"
+            ><i class="bi bi-justify fs-3"></i
+          ></a>
+        </header>
+        <div
+          class="page-heading d-flex justify-content-between align-items-center"
+        >
+          <h3>Panel de Vendedor</h3>
+          <div class="dropdown">
+            <a href="#" data-bs-toggle="dropdown" aria-expanded="false"
+              ><div class="user-menu d-flex">
+                <div class="user-name text-end me-3 d-none d-sm-block">
+                  <h6 class="mb-0 text-gray-600" id="profile-name">
+                    Cargando...
+                  </h6>
+                  <p class="mb-0 text-sm text-gray-600" id="profile-role">
+                    ...
+                  </p>
+                </div>
+                <div class="user-img d-flex align-items-center">
+                  <div class="avatar avatar-md">
+                    <img src="../assets/compiled/jpg/1.jpg" />
+                  </div>
+                </div></div
+            ></a>
+            <ul
+              class="dropdown-menu dropdown-menu-end"
+              aria-labelledby="dropdownMenuButton"
+              style="min-width: 11rem"
+            >
+              <li>
+                <h6 class="dropdown-header">
+                  Hola, <span id="profile-greeting-name">Usuario</span>!
+                </h6>
+              </li>
+              <li>
+                <a class="dropdown-item" href="miPerfil.html"
+                  ><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a
+                >
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <a class="dropdown-item" href="#" id="logout-btn"
+                  ><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar
+                  Sesión</a
+                >
+              </li>
+            </ul>
+          </div>
         </div>
+
+        <div class="page-content">
+          <div class="alert alert-light-info color-info">
+            <i class="bi bi-star-fill"></i> ¡Bienvenido! Este panel está
+            optimizado para agilizar tus ventas.
+          </div>
+          <section class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h4 class="card-title">
+                    1. Ingresar Datos de Cotización Rápida
+                  </h4>
+                </div>
+                <div class="card-body">
+                  <form class="form" id="quick-quote-form" novalidate>
+                    <div class="row">
+                      <div class="col-md-6 col-12">
+                        <div class="form-group">
+                          <label for="vendedor-client-name"
+                            >Nombre del Cliente</label
+                          ><input
+                            type="text"
+                            id="vendedor-client-name"
+                            class="form-control"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div class="col-md-6 col-12">
+                        <div class="form-group">
+                          <label for="vendedor-vehicle-type"
+                            >Tipo de Vehículo</label
+                          >
+                          <select
+                            class="form-select"
+                            id="vendedor-vehicle-type"
+                            required
+                          >
+                            <option value="" disabled selected>
+                              Cargando tipos...
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-12">
+                        <div class="form-group">
+                          <label>Seleccione Paquetes a Comparar:</label>
+                          <div id="vendedor-plans-container" class="mt-2">
+                            <p class="text-muted">
+                              Por favor, seleccione primero un tipo de vehículo.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-12 d-flex justify-content-end mt-3">
+                        <button
+                          type="submit"
+                          id="btn-vendedor-compare"
+                          class="btn btn-primary me-1 mb-1"
+                          disabled
+                        >
+                          Ver Comparativa
+                        </button>
+                        <button
+                          type="reset"
+                          id="btn-vendedor-reset"
+                          class="btn btn-light-secondary me-1 mb-1"
+                        >
+                          Limpiar
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              <div
+                class="card"
+                id="vendedor-comparison-area"
+                style="display: none"
+              >
+                <div class="card-header">
+                  <h4 class="card-title">
+                    2. Comparativa de Paquetes para
+                    <span
+                      id="vendedor-client-name-display"
+                      class="text-primary"
+                    ></span>
+                  </h4>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered text-center">
+                      <thead id="vendedor-comparison-head"></thead>
+                      <tbody id="vendedor-comparison-body"></tbody>
+                      <tfoot id="vendedor-comparison-foot"></tfoot>
+                    </table>
+                  </div>
+                  <div class="col-12 d-flex justify-content-center mt-4">
+                    <button
+                      id="vendedor-generate-pdf-btn"
+                      class="btn btn-success btn-lg"
+                    >
+                      <i class="bi bi-file-earmark-pdf-fill"></i> Generar PDF y
+                      Entregar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
 
     <!-- ===== Bloque de Scripts Final y Correcto ===== -->
@@ -250,5 +369,5 @@
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script type="module" src="../js/main.js"></script>
     <script src="../assets/compiled/js/app.js" defer></script>
-</body>
+  </body>
 </html>
