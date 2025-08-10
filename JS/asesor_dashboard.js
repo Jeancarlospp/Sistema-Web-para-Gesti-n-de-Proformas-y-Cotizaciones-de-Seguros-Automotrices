@@ -35,45 +35,6 @@ if (clientNameInput && clientList && clientIdInput) {
   });
 }
 
-// --- GUARDAR COTIZACIÓN ---
-// --- Obtener el ID de usuario de la sesión vía API ---
-async function obtenerIdUsuarioSesion() {
-  const resp = await fetch('../php/usuarios_api.php?me=1');
-  const data = await resp.json();
-  return data.id_usuario;
-}
-
-document.getElementById("btnGuardar")?.addEventListener("click", async () => {
-  const idCliente = document.getElementById("client-id")?.value;
-  const selectedPlanIds = Array.from(
-    document.querySelectorAll("#plans-checkbox-container input[type=checkbox]:checked")
-  ).map(cb => parseInt(cb.value));
-
-  // Obtener el idUsuario de la sesión
-  const idUsuario = await obtenerIdUsuarioSesion();
-
-  if (!idCliente || !idUsuario || selectedPlanIds.length === 0) {
-    alert("Debe seleccionar un cliente y al menos un plan.");
-    return;
-  }
-
-  const res = await fetch("../php/cotizaciones_api.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      idCliente,
-      idUsuario,
-      planes: selectedPlanIds
-    })
-  });
-  const data = await res.json();
-  if (data.success) {
-    alert("Cotización guardada correctamente.");
-    // Opcional: limpiar formulario o mostrar detalles
-  } else {
-    alert("Error al guardar cotización: " + (data.message || "Error desconocido"));
-  }
-});
 /**
  * js/asesor_dashboard.js
  * Lógica 100% dinámica para la página: Dashboard del Asesor,
@@ -159,7 +120,91 @@ async function fetchAndRenderPlans(categoryId, container) {
   }
 }
 
-// --- INICIO: NUEVA FUNCIÓN PARA GENERAR PDF ---
+/**
+ * Obtener el ID de usuario de la sesión vía API
+ */
+async function obtenerIdUsuarioSesion() {
+  try {
+    const resp = await fetch('../php/usuarios_api.php?me=1');
+    if (!resp.ok) {
+      throw new Error('No se pudo obtener la información del usuario');
+    }
+    const data = await resp.json();
+    return data.id_usuario;
+  } catch (error) {
+    console.error('Error obteniendo ID de usuario:', error);
+    return null;
+  }
+}
+
+/**
+ * Función para guardar la cotización
+ */
+async function guardarCotizacion() {
+  const idCliente = document.getElementById("client-id")?.value;
+  const selectedPlanIds = Array.from(
+    document.querySelectorAll("#plans-checkbox-container input[type=checkbox]:checked")
+  ).map(cb => parseInt(cb.value));
+
+  // Validaciones básicas
+  if (!idCliente) {
+    alert("Debe seleccionar un cliente válido.");
+    return;
+  }
+
+  if (selectedPlanIds.length === 0) {
+    alert("Debe seleccionar al menos un plan.");
+    return;
+  }
+
+  // Obtener el idUsuario de la sesión
+  const idUsuario = await obtenerIdUsuarioSesion();
+  if (!idUsuario) {
+    alert("Error: No se pudo obtener la información del usuario. Intente cerrar sesión e iniciar nuevamente.");
+    return;
+  }
+
+  // Mostrar loading
+  const btnGuardar = document.getElementById("btnGuardar");
+  const originalText = btnGuardar.innerHTML;
+  btnGuardar.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
+  btnGuardar.disabled = true;
+
+  try {
+    const response = await fetch("../php/cotizaciones_api.php", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        idCliente: parseInt(idCliente),
+        idUsuario: parseInt(idUsuario),
+        planes: selectedPlanIds
+      })
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      alert(`Cotización guardada correctamente con ID: ${data.idCotizacion}`);
+      // Opcional: Limpiar formulario después de guardar
+      // document.getElementById("quote-form").reset();
+      // document.getElementById("comparison-area").style.display = "none";
+    } else {
+      alert("Error al guardar cotización: " + (data.message || "Error desconocido"));
+      console.error("Detalles del error:", data);
+    }
+  } catch (error) {
+    console.error("Error en la petición:", error);
+    alert("Error de conexión al guardar la cotización. Verifique su conexión a internet.");
+  } finally {
+    // Restaurar botón
+    btnGuardar.innerHTML = originalText;
+    btnGuardar.disabled = false;
+  }
+}
+
 /**
  * Genera un documento PDF a partir de la tabla de comparación visible.
  */
@@ -198,11 +243,12 @@ function generateComparisonPDF() {
   doc.text("Comparativa de Planes de Seguros", 14, 22);
   doc.setFontSize(12);
   doc.text(`Cliente: ${clientName}`, 14, 30);
+  doc.text(`Fecha: ${new Date().toLocaleDateString('es-ES')}`, 14, 36);
 
   // Usar autoTable para convertir la tabla HTML a PDF
   doc.autoTable({
     html: "#comparison-table",
-    startY: 35,
+    startY: 42,
     theme: "grid",
     headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Cabecera azul
     footStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: "bold" },
@@ -226,7 +272,6 @@ function generateComparisonPDF() {
   )}_${date}.pdf`;
   doc.save(fileName);
 }
-// --- FIN: NUEVA FUNCIÓN PARA GENERAR PDF ---
 
 /**
  * Función principal que se exporta y se llama desde main.js.
@@ -246,6 +291,7 @@ export function loadAsesorDashboard() {
   const pdfBtn = document.getElementById("generate-pdf-btn");
   const resetBtn = document.getElementById("btn-reset-form");
   const compareBtn = document.getElementById("btn-compare");
+  const btnGuardar = document.getElementById("btnGuardar");
 
   if (
     !form ||
@@ -256,7 +302,8 @@ export function loadAsesorDashboard() {
     !clientNameDisplay ||
     !pdfBtn ||
     !resetBtn ||
-    !compareBtn
+    !compareBtn ||
+    !btnGuardar
   ) {
     console.error(
       "Faltan elementos HTML esenciales en el dashboard del asesor. Abortando inicialización."
@@ -327,6 +374,9 @@ export function loadAsesorDashboard() {
     compareBtn.disabled = true;
   });
 
-  // 4. Lógica del botón PDF (¡CORREGIDA!).
+  // 4. Lógica del botón PDF.
   pdfBtn.addEventListener("click", generateComparisonPDF);
+
+  // 5. Lógica del botón GUARDAR COTIZACIÓN (CORREGIDA)
+  btnGuardar.addEventListener("click", guardarCotizacion);
 }

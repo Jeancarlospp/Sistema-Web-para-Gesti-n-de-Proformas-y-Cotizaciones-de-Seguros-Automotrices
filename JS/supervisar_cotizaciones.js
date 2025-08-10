@@ -35,6 +35,179 @@ function debounce(func, delay = 500) {
   };
 }
 
+// --- FUNCIONES PARA MOSTRAR DETALLES DE COTIZACIÓN ---
+
+/**
+ * Muestra los detalles de una cotización en un modal o área expandida
+ * @param {number} idCotizacion - ID de la cotización a mostrar
+ */
+async function showQuoteDetails(idCotizacion) {
+  try {
+    const response = await fetch(`../php/cotizaciones_api.php?id=${idCotizacion}`);
+    if (!response.ok) throw new Error('Error al cargar los detalles');
+    
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+
+    const { cotizacion, detalles } = result;
+    
+    // Crear contenido HTML para mostrar detalles
+    const modalContent = `
+      <div class="modal fade" id="quoteDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Detalles de Cotización #${cotizacion.idCotizacion}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <strong>Cliente:</strong> ${cotizacion.Cli_nombre}<br>
+                  <strong>Cédula:</strong> ${cotizacion.Cli_cedula}<br>
+                  <strong>Usuario Creador:</strong> ${cotizacion.nombre_usuario}
+                </div>
+                <div class="col-md-6">
+                  <strong>Estado:</strong> <span class="badge bg-${getStatusBadgeClass(cotizacion.Cot_estado)}">${cotizacion.Cot_estado}</span><br>
+                  <strong>Fecha:</strong> ${new Date(cotizacion.Cot_fechaCreacion).toLocaleDateString('es-ES')}<br>
+                  <strong>Monto Total:</strong> ${parseFloat(cotizacion.Cot_montoAsegurable).toLocaleString('es-ES', {minimumFractionDigits: 2})}
+                </div>
+              </div>
+              <hr>
+              <h6>Productos Incluidos:</h6>
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Empresa</th>
+                      <th>Cantidad</th>
+                      <th>Precio Unit.</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${detalles.map(detalle => `
+                      <tr>
+                        <td>${detalle.Pro_nombre}</td>
+                        <td>${detalle.Emp_nombre}</td>
+                        <td>${detalle.Det_numServicios}</td>
+                        <td>${parseFloat(detalle.Det_precioUnitario).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                        <td>${parseFloat(detalle.Det_subtotal).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              <button type="button" class="btn btn-primary" onclick="downloadQuotePDF(${idCotizacion})">
+                <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Eliminar modal anterior si existe
+    const existingModal = document.getElementById('quoteDetailsModal');
+    if (existingModal) existingModal.remove();
+
+    // Agregar modal al DOM
+    document.body.insertAdjacentHTML('beforeend', modalContent);
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('quoteDetailsModal'));
+    modal.show();
+
+  } catch (error) {
+    console.error('Error mostrando detalles:', error);
+    alert('Error al cargar los detalles de la cotización: ' + error.message);
+  }
+}
+
+/**
+ * Retorna la clase CSS apropiada para el badge del estado
+ * @param {string} estado - Estado de la cotización
+ * @returns {string}
+ */
+function getStatusBadgeClass(estado) {
+  const statusMap = {
+    'aceptada': 'success',
+    'enviada': 'info', 
+    'rechazada': 'danger',
+    'borrador': 'secondary',
+    'vencida': 'warning'
+  };
+  return statusMap[estado?.toLowerCase()] || 'secondary';
+}
+
+/**
+ * Descarga el PDF de una cotización específica
+ * @param {number} idCotizacion - ID de la cotización
+ */
+async function downloadQuotePDF(idCotizacion) {
+  try {
+    const response = await fetch(`../php/cotizaciones_api.php?id=${idCotizacion}`);
+    if (!response.ok) throw new Error('Error al cargar los datos');
+    
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+
+    const { cotizacion, detalles } = result;
+    
+    // Verificar que jsPDF esté disponible
+    if (typeof window.jspdf === "undefined" || typeof window.jspdf.jsPDF === "undefined") {
+      alert("Error: La librería para generar PDF no se ha cargado correctamente.");
+      return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Título y información general
+    doc.setFontSize(18);
+    doc.text("Cotización de Seguros", 14, 22);
+    
+    doc.setFontSize(12);
+    doc.text(`ID Cotización: #${cotizacion.idCotizacion}`, 14, 35);
+    doc.text(`Cliente: ${cotizacion.Cli_nombre}`, 14, 42);
+    doc.text(`Cédula: ${cotizacion.Cli_cedula}`, 14, 49);
+    doc.text(`Estado: ${cotizacion.Cot_estado}`, 14, 56);
+    doc.text(`Fecha: ${new Date(cotizacion.Cot_fechaCreacion).toLocaleDateString('es-ES')}`, 14, 63);
+    doc.text(`Monto Total: ${parseFloat(cotizacion.Cot_montoAsegurable).toLocaleString('es-ES', {minimumFractionDigits: 2})}`, 14, 70);
+
+    // Tabla de detalles
+    const tableHeaders = [['Producto', 'Empresa', 'Cant.', 'Precio Unit.', 'Subtotal']];
+    const tableBody = detalles.map(detalle => [
+      detalle.Pro_nombre,
+      detalle.Emp_nombre,
+      detalle.Det_numServicios.toString(),
+      `${parseFloat(detalle.Det_precioUnitario).toFixed(2)}`,
+      `${parseFloat(detalle.Det_subtotal).toFixed(2)}`
+    ]);
+
+    doc.autoTable({
+      head: tableHeaders,
+      body: tableBody,
+      startY: 80,
+      theme: 'grid',
+      headStyles: { fillColor: [41, 128, 185] },
+      footStyles: { fillColor: [230, 230, 230], fontStyle: 'bold' },
+    });
+
+    // Guardar PDF
+    const fileName = `cotizacion_${idCotizacion}_${cotizacion.Cli_nombre.replace(/\s+/g, '_')}.pdf`;
+    doc.save(fileName);
+
+  } catch (error) {
+    console.error('Error generando PDF:', error);
+    alert('Error al generar el PDF: ' + error.message);
+  }
+}
+
 // --- FUNCIONES DE RENDERIZADO (MANEJO DEL DOM) ---
 
 /**
@@ -64,7 +237,7 @@ function renderQuotesTable(quotes, tableBody) {
         estadoBadge = `<span class="badge bg-danger">Rechazada</span>`;
         break;
       case "borrador":
-        estadoBadge = `<span class="badge bg-light-secondary">Borrador</span>`;
+        estadoBadge = `<span class="badge bg-secondary">Borrador</span>`;
         break;
       case "vencida":
         estadoBadge = `<span class="badge bg-warning">Vencida</span>`;
@@ -78,7 +251,7 @@ function renderQuotesTable(quotes, tableBody) {
             <td>#${quote.idCotizacion}</td>
             <td><strong>${quote.Cli_nombre || "N/A"}</strong></td>
             <td>${quote.nombre_usuario || "N/A"}</td>
-            <td>$${parseFloat(quote.Cot_montoAsegurable).toLocaleString(
+            <td>${parseFloat(quote.Cot_montoAsegurable).toLocaleString(
               "es-ES",
               { minimumFractionDigits: 2 }
             )}</td>
@@ -87,15 +260,30 @@ function renderQuotesTable(quotes, tableBody) {
               "es-ES"
             )}</td>
             <td>
-                <button class="btn btn-sm btn-info" data-id="${
+                <button class="btn btn-sm btn-info view-details-btn" data-id="${
                   quote.idCotizacion
                 }" title="Ver Detalles"><i class="bi bi-eye"></i></button>
-                <button class="btn btn-sm btn-secondary ms-1" data-id="${
+                <button class="btn btn-sm btn-secondary ms-1 download-pdf-btn" data-id="${
                   quote.idCotizacion
                 }" title="Descargar PDF"><i class="bi bi-file-earmark-pdf"></i></button>
             </td>
         `;
     tableBody.appendChild(row);
+  });
+
+  // Agregar event listeners a los botones de acción
+  document.querySelectorAll('.view-details-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idCotizacion = parseInt(e.currentTarget.dataset.id);
+      showQuoteDetails(idCotizacion);
+    });
+  });
+
+  document.querySelectorAll('.download-pdf-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idCotizacion = parseInt(e.currentTarget.dataset.id);
+      downloadQuotePDF(idCotizacion);
+    });
   });
 }
 
@@ -233,6 +421,11 @@ async function populateUserFilter() {
  * Genera un PDF con los datos de las cotizaciones actualmente visibles.
  */
 function generatePDF() {
+  if (typeof window.jspdf === "undefined" || typeof window.jspdf.jsPDF === "undefined") {
+    alert("Error: La librería para generar PDF no se ha cargado correctamente.");
+    return;
+  }
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
@@ -257,13 +450,26 @@ function generatePDF() {
 
   doc.setFontSize(18);
   doc.text("Reporte de Cotizaciones", 14, 22);
+  doc.setFontSize(10);
+  doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 14, 30);
+  doc.text(`Total de registros: ${quotesState.totalRecords}`, 14, 36);
 
   doc.autoTable({
     head: tableHeaders,
     body: tableBody,
-    startY: 30,
+    startY: 45,
     theme: "grid",
     headStyles: { fillColor: [22, 160, 133] }, // Color verde azulado
+    didDrawPage: (data) => {
+      // Añadir pie de página
+      const pageCount = doc.internal.getNumberOfPages();
+      doc.setFontSize(10);
+      doc.text(
+        `Página ${data.pageNumber} de ${pageCount}`,
+        data.settings.margin.left,
+        doc.internal.pageSize.height - 10
+      );
+    },
   });
 
   const fecha = new Date().toISOString().split("T")[0];
@@ -296,67 +502,81 @@ export function loadSupervisarCotizaciones() {
   const btnPDF = document.getElementById("btn-generate-pdf");
 
   // Asignación de Event Listeners a todos los filtros
-  searchInput.addEventListener(
-    "input",
-    debounce(() => {
-      quotesState.search = searchInput.value;
-      quotesState.currentPage = 1;
-      fetchAndRenderQuotes();
-    })
-  );
+  if (searchInput) {
+    searchInput.addEventListener(
+      "input",
+      debounce(() => {
+        quotesState.search = searchInput.value;
+        quotesState.currentPage = 1;
+        fetchAndRenderQuotes();
+      })
+    );
+  }
 
   [userFilter, startDate, endDate, limitSelect, sortSelect].forEach((el) => {
-    el.addEventListener("change", () => {
-      quotesState.idUsuario = userFilter.value;
-      quotesState.fecha_inicio = startDate.value;
-      quotesState.fecha_fin = endDate.value;
-      quotesState.limit = limitSelect.value;
-      quotesState.sortBy = sortSelect.value;
-      quotesState.currentPage = 1;
-      fetchAndRenderQuotes();
-    });
-  });
-
-  // Event listener para los botones de paginación
-  paginationControls.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (e.target.tagName === "A" && e.target.dataset.page) {
-      const page = parseInt(e.target.dataset.page, 10);
-      if (
-        page !== quotesState.currentPage &&
-        page > 0 &&
-        page <= quotesState.totalPages
-      ) {
-        quotesState.currentPage = page;
+    if (el) {
+      el.addEventListener("change", () => {
+        if (userFilter) quotesState.idUsuario = userFilter.value;
+        if (startDate) quotesState.fecha_inicio = startDate.value;
+        if (endDate) quotesState.fecha_fin = endDate.value;
+        if (limitSelect) quotesState.limit = limitSelect.value;
+        if (sortSelect) quotesState.sortBy = sortSelect.value;
+        quotesState.currentPage = 1;
         fetchAndRenderQuotes();
-      }
+      });
     }
   });
 
-  // Event listener para el botón de limpiar filtros
-  btnReset.addEventListener("click", () => {
-    // Limpiar los inputs del formulario
-    searchInput.value = "";
-    userFilter.value = "";
-    startDate.value = "";
-    endDate.value = "";
-    limitSelect.value = 10;
-    sortSelect.value = "Cot_fechaCreacion DESC";
+  // Event listener para los botones de paginación
+  if (paginationControls) {
+    paginationControls.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (e.target.tagName === "A" && e.target.dataset.page) {
+        const page = parseInt(e.target.dataset.page, 10);
+        if (
+          page !== quotesState.currentPage &&
+          page > 0 &&
+          page <= quotesState.totalPages
+        ) {
+          quotesState.currentPage = page;
+          fetchAndRenderQuotes();
+        }
+      }
+    });
+  }
 
-    // Resetear el estado y recargar los datos
-    quotesState = {
-      ...quotesState,
-      currentPage: 1,
-      search: "",
-      idUsuario: "",
-      fecha_inicio: "",
-      fecha_fin: "",
-      limit: 10,
-      sortBy: "Cot_fechaCreacion DESC",
-    };
-    fetchAndRenderQuotes();
-  });
+  // Event listener para el botón de limpiar filtros
+  if (btnReset) {
+    btnReset.addEventListener("click", () => {
+      // Limpiar los inputs del formulario
+      if (searchInput) searchInput.value = "";
+      if (userFilter) userFilter.value = "";
+      if (startDate) startDate.value = "";
+      if (endDate) endDate.value = "";
+      if (limitSelect) limitSelect.value = 10;
+      if (sortSelect) sortSelect.value = "Cot_fechaCreacion DESC";
+
+      // Resetear el estado y recargar los datos
+      quotesState = {
+        ...quotesState,
+        currentPage: 1,
+        search: "",
+        idUsuario: "",
+        fecha_inicio: "",
+        fecha_fin: "",
+        limit: 10,
+        sortBy: "Cot_fechaCreacion DESC",
+      };
+      fetchAndRenderQuotes();
+    });
+  }
 
   // Event listener para el botón de generar PDF
-  btnPDF.addEventListener("click", generatePDF);
+  if (btnPDF) {
+    btnPDF.addEventListener("click", generatePDF);
+  }
+
+  // Hacer las funciones disponibles globalmente para uso en modales
+  window.showQuoteDetails = showQuoteDetails;
+  window.downloadQuotePDF = downloadQuotePDF;
 }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 09-08-2025 a las 17:12:24
+-- Tiempo de generación: 10-08-2025 a las 22:44:39
 -- Versión del servidor: 8.0.17
 -- Versión de PHP: 7.3.10
 
@@ -43,7 +43,34 @@ CREATE TABLE `auditoria` (
 --
 
 INSERT INTO `auditoria` (`idAuditoria`, `idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_fecha`, `Aud_IP`) VALUES
-(1, 4, 'INSERT', 'usuarios', 'Nuevo usuario creado: ariel@sistema.com', '2025-08-07 22:06:29', '127.0.0.1');
+(1, 4, 'INSERT', 'usuarios', 'Nuevo usuario creado: ariel@sistema.com', '2025-08-07 22:06:29', '127.0.0.1'),
+(11, 14, 'INSERT', 'usuarios', 'Nuevo usuario creado: alonso@sistema.com', '2025-08-10 10:34:17', 'root@localhost'),
+(12, 14, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'alonso\' ha iniciado sesión.', '2025-08-10 10:45:48', '::1'),
+(13, 14, 'INSERT', 'empresas_proveedora', 'Creación de nueva empresa: claude (RUC: 1753324449001, Razón Social: ser existir)', '2025-08-10 10:47:08', '127.0.0.1'),
+(14, 14, 'UPDATE', 'usuarios', 'Cambio de estado de usuario:\nID: 1\nNuevo estado: activo\nModificado por: alonso', '2025-08-10 10:50:24', '127.0.0.1'),
+(15, 14, 'UPDATE', 'cliente', 'Cambio de estado del cliente Ana Lucio (ID: 1) de activo a inactivo', '2025-08-10 10:50:50', '127.0.0.1'),
+(16, 14, 'UPDATE', 'cliente', 'Cambio de estado del cliente Ana Lucio (ID: 1) de inactivo a activo', '2025-08-10 10:50:57', '127.0.0.1'),
+(17, 14, 'UPDATE', 'cliente', 'Actualización del cliente ID: 1. Cambios: Ana Lucio -> Ana Lucio', '2025-08-10 10:51:06', '127.0.0.1'),
+(18, 14, 'UPDATE', 'empresas_proveedora', 'Actualización de empresa ID 7. Cambios: Nombre: Aseguradora Pichincha -> Aseguradora Pichincha, RUC: 1790011122001 -> 1720073830001, Razón Social: Aseguradora del Pichincha S.A. -> Aseguradora del Pichincha S.A.', '2025-08-10 10:51:53', '127.0.0.1'),
+(19, 1, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Danna Andrade\' ha iniciado sesión.', '2025-08-10 10:58:53', '::1'),
+(20, 1, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Danna Andrade\' ha iniciado sesión.', '2025-08-10 11:56:08', '::1'),
+(21, 2, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Zaith Manangon\' ha iniciado sesión.', '2025-08-10 11:56:53', '::1'),
+(22, 2, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Zaith Manangon\' ha iniciado sesión.', '2025-08-10 12:24:30', '::1'),
+(23, 1, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Danna Andrade\' ha iniciado sesión.', '2025-08-10 12:31:43', '::1'),
+(24, 3, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Jeancarlo Santi\' ha iniciado sesión.', '2025-08-10 12:32:11', '::1'),
+(25, 3, 'UPDATE', 'cliente', 'Cambio de estado del cliente Ana Lucio (ID: 1) de activo a inactivo', '2025-08-10 12:32:46', '127.0.0.1'),
+(26, 1, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Danna Andrade\' ha iniciado sesión.', '2025-08-10 12:32:54', '::1'),
+(27, 2, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Zaith Manangon\' ha iniciado sesión.', '2025-08-10 12:37:57', '::1'),
+(28, 1, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Danna Andrade\' ha iniciado sesión.', '2025-08-10 12:52:17', '::1'),
+(29, 2, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Zaith Manangon\' ha iniciado sesión.', '2025-08-10 12:54:00', '::1'),
+(30, 2, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Zaith Manangon\' ha iniciado sesión.', '2025-08-10 12:55:32', '::1'),
+(31, 2, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Zaith Manangon\' ha iniciado sesión.', '2025-08-10 13:34:36', '::1'),
+(32, 2, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Zaith Manangon\' ha iniciado sesión.', '2025-08-10 13:47:22', '::1'),
+(33, 2, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Zaith Manangon\' ha iniciado sesión.', '2025-08-10 14:11:16', '::1'),
+(34, 1, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Danna Andrade\' ha iniciado sesión.', '2025-08-10 14:25:43', '::1'),
+(35, 2, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Zaith Manangon\' ha iniciado sesión.', '2025-08-10 14:32:36', '::1'),
+(36, 2, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Zaith Manangon\' ha iniciado sesión.', '2025-08-10 14:41:10', '::1'),
+(37, 2, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Zaith Manangon\' ha iniciado sesión.', '2025-08-10 17:38:14', '::1');
 
 -- --------------------------------------------------------
 
@@ -90,24 +117,24 @@ CREATE TABLE `cliente` (
 -- Volcado de datos para la tabla `cliente`
 --
 
-INSERT INTO `cliente` (`idCliente`, `Cli_nombre`, `Cli_cedula`, `Cli_correo`, `Cli_telefono`, `Cli_fechaRegistro`) VALUES
-(1, 'Ana Lucio', '1309481925', 'anaR@gmail.com', '0998745632', '2025-08-07 09:46:49'),
-(2, 'Carlos Mena', '0103456789', 'carlos_mena@gmail.com', '0991234567', '2025-08-07 09:52:47'),
-(3, 'Lucía Torres', '0923456781', 'lucia_torres@gmail.com', '0987654321', '2025-08-07 09:52:47'),
-(4, 'Andrés Cevallos', '1102345673', 'andres_cevallos@gmail.com', '0961122334', '2025-08-07 09:52:47'),
-(5, 'María Jaramillo', '0209876542', 'maria_jaramillo@gmail.com', '0953344556', '2025-08-07 09:52:47'),
-(6, 'Pedro Chávez', '0601234566', 'pedro_chavez@gmail.com', '0942233445', '2025-08-07 09:52:47'),
-(7, 'Diana Salazar', '1704567894', 'diana_salazar@gmail.com', '0931122334', '2025-08-07 09:52:47'),
-(8, 'Juan Pérez', '0109988774', 'juan_perez@gmail.com', '0987766554', '2025-08-07 09:52:47'),
-(9, 'Gabriela León', '1205678905', 'gabriela_leon@gmail.com', '0994455667', '2025-08-07 09:52:47'),
-(10, 'Esteban Romero', '0911223347', 'esteban_romero@gmail.com', '0972233445', '2025-08-07 09:52:47'),
-(11, 'Carla Andrade', '1003344551', 'carla_andrade@gmail.com', '0967788990', '2025-08-07 09:52:47'),
-(12, 'David Paredes', '0809988776', 'david_paredes@gmail.com', '0956677889', '2025-08-07 09:52:47'),
-(13, 'Andrea Villacís', '0701234982', 'andrea_villacis@gmail.com', '0945566778', '2025-08-07 09:52:47'),
-(14, 'Daniela López', '0302345679', 'daniela_lopez@gmail.com', '0934455667', '2025-08-07 09:52:47'),
-(15, 'Kevin Jiménez', '1503456783', 'kevin_jimenez@gmail.com', '0923344556', '2025-08-07 09:52:47'),
-(16, 'Fernanda Ríos', '0404567891', 'fernanda_rios@gmail.com', '0912233445', '2025-08-07 09:52:47'),
-(17, 'Juan García', '1234567890', 'juan.garcia@email.com', '0991122334', '2025-08-07 21:55:32');
+INSERT INTO `cliente` (`idCliente`, `Cli_nombre`, `Cli_cedula`, `Cli_correo`, `Cli_telefono`, `Cli_estado`, `Cli_fechaRegistro`) VALUES
+(1, 'Ana Lucio', '1309481925', 'anaRocio@gmail.com', '0998745632', 'inactivo', '2025-08-07 09:46:49'),
+(2, 'Carlos Mena', '0103456789', 'carlos_mena@gmail.com', '0991234567', 'activo', '2025-08-07 09:52:47'),
+(3, 'Lucía Torres', '0923456781', 'lucia_torres@gmail.com', '0987654321', 'activo', '2025-08-07 09:52:47'),
+(4, 'Andrés Cevallos', '1102345673', 'andres_cevallos@gmail.com', '0961122334', 'activo', '2025-08-07 09:52:47'),
+(5, 'María Jaramillo', '0209876542', 'maria_jaramillo@gmail.com', '0953344556', 'activo', '2025-08-07 09:52:47'),
+(6, 'Pedro Chávez', '0601234566', 'pedro_chavez@gmail.com', '0942233445', 'activo', '2025-08-07 09:52:47'),
+(7, 'Diana Salazar', '1704567894', 'diana_salazar@gmail.com', '0931122334', 'activo', '2025-08-07 09:52:47'),
+(8, 'Juan Pérez', '0109988774', 'juan_perez@gmail.com', '0987766554', 'activo', '2025-08-07 09:52:47'),
+(9, 'Gabriela León', '1205678905', 'gabriela_leon@gmail.com', '0994455667', 'activo', '2025-08-07 09:52:47'),
+(10, 'Esteban Romero', '0911223347', 'esteban_romero@gmail.com', '0972233445', 'activo', '2025-08-07 09:52:47'),
+(11, 'Carla Andrade', '1003344551', 'carla_andrade@gmail.com', '0967788990', 'activo', '2025-08-07 09:52:47'),
+(12, 'David Paredes', '0809988776', 'david_paredes@gmail.com', '0956677889', 'activo', '2025-08-07 09:52:47'),
+(13, 'Andrea Villacís', '0701234982', 'andrea_villacis@gmail.com', '0945566778', 'activo', '2025-08-07 09:52:47'),
+(14, 'Daniela López', '0302345679', 'daniela_lopez@gmail.com', '0934455667', 'activo', '2025-08-07 09:52:47'),
+(15, 'Kevin Jiménez', '1503456783', 'kevin_jimenez@gmail.com', '0923344556', 'activo', '2025-08-07 09:52:47'),
+(16, 'Fernanda Ríos', '0404567891', 'fernanda_rios@gmail.com', '0912233445', 'activo', '2025-08-07 09:52:47'),
+(17, 'Juan García', '1234567890', 'juan.garcia@email.com', '0991122334', 'activo', '2025-08-07 21:55:32');
 
 -- --------------------------------------------------------
 
@@ -183,12 +210,13 @@ INSERT INTO `empresas_proveedora` (`idEmpresas_Proveedora`, `Emp_nombre`, `Emp_r
 (4, 'Seguros Sucre', '0998765432001', 'info@segurossucre.fin.ec', '042345678', 'activo', 'Seguros Sucre C.A.', 'Malecón Simón Bolívar, Guayaquil', '2025-08-07 10:07:18'),
 (5, 'Hispana de Seguros', '1799988776001', 'servicio@hispanaseguros.ec', '023456789', 'activo', 'Hispana Compañía de Seguros S.A.', 'Av. República y Shyris, Quito', '2025-08-07 10:07:18'),
 (6, 'Confianza Seguros', '0891234567001', 'clientes@confianzaseguros.com', '032233445', 'activo', 'Confianza Seguros Cía. Ltda.', 'Av. 10 de Agosto, Ambato', '2025-08-07 10:07:18'),
-(7, 'Aseguradora Pichincha', '1790011122001', 'info@aseguradorapichincha.ec', '022245678', 'activo', 'Aseguradora del Pichincha S.A.', 'Av. Patria y 6 de Diciembre, Quito', '2025-08-07 10:07:18'),
+(7, 'Aseguradora Pichincha', '1720073830001', 'info@aseguradorapichincha.ec', '0222456789', 'activo', 'Aseguradora del Pichincha S.A.', 'Av. Patria y 6 de Diciembre, Quito', '2025-08-07 10:07:18'),
 (8, 'Latina Seguros', '0992233445001', 'soporte@latinaseguros.com.ec', '042998877', 'activo', 'Latina Compañía de Seguros S.A.', 'Av. Kennedy y Víctor Emilio Estrada, Guayaquil', '2025-08-07 10:07:18'),
 (9, 'Colvida Seguros', '1793344556001', 'contacto@colvida.ec', '022112233', 'activo', 'Colvida Seguros de Vida S.A.', 'Av. Eloy Alfaro, Quito', '2025-08-07 10:07:18'),
 (10, 'Oriente Seguros', '0895544332001', 'info@orienteseguros.com.ec', '033334455', 'activo', 'Oriente Compañía de Seguros S.A.', 'Av. Atahualpa y Av. El Rey, Riobamba', '2025-08-07 10:07:18'),
 (11, 'Liberty Seguros', '1098765432001', 'atencion@libertyseguros.ec', '042112233', 'activo', 'Liberty Compañía de Seguros S.A.', 'Av. Francisco de Orellana, Guayaquil', '2025-08-07 10:07:18'),
-(12, 'Rimac Seguros', '0996655443001', 'contacto@rimac.ec', '025556677', 'activo', 'Rimac Seguros Generales S.A.', 'Av. Los Shyris, Quito', '2025-08-07 10:07:18');
+(12, 'Rimac Seguros', '0996655443001', 'contacto@rimac.ec', '025556677', 'activo', 'Rimac Seguros Generales S.A.', 'Av. Los Shyris, Quito', '2025-08-07 10:07:18'),
+(13, 'claude', '1753324449001', 'wola@nose.com', '0967951982', 'activo', 'ser existir', 'quito', '2025-08-10 10:47:08');
 
 -- --------------------------------------------------------
 
@@ -354,7 +382,8 @@ INSERT INTO `usuarios` (`id_usuario`, `correo`, `contrasena`, `nombre`, `cedula`
 (1, 'admin@sistema.com', '$2y$10$YrA4YVCvUovZOYmVy6rNDuq8iUR3/dYnPCugPjKYJhsDNIL/WQUfm', 'Danna Andrade', '1722651567', 1, '2025-08-09 09:58:09', 'activo', '2025-08-07 07:30:39'),
 (2, 'zaith@sistema.com', '$2y$10$P2dCDUaHYhFJsxK8hdBPHuw2lV/06fkmPLRvHNAemL.mS0s7gIdia', 'Zaith Manangon', '1111111111', 2, '2025-08-09 09:10:02', 'activo', '2025-08-07 07:30:39'),
 (3, 'jean@sistema.com', '$2y$10$An9mQo.5qbhbKwpRLyjxOukoGmdhNmCrrBPTdYu.Qpfm17k5JYFZm', 'Jeancarlo Santi', '2222222222', 3, '2025-08-09 08:16:35', 'activo', '2025-08-07 07:30:39'),
-(4, 'ariel@sistema.com', '$2y$10$pHuPwePSjo0KxSSLPBlW5OCgsLdb5Kg9Hx1rbqMrTyX3qvjC7WIh.', 'Ariel Llumiquinga', '5555555555', 2, '2025-08-09 04:18:55', 'activo', '2025-08-07 22:06:29');
+(4, 'ariel@sistema.com', '$2y$10$pHuPwePSjo0KxSSLPBlW5OCgsLdb5Kg9Hx1rbqMrTyX3qvjC7WIh.', 'Ariel Llumiquinga', '5555555555', 2, '2025-08-09 04:18:55', 'activo', '2025-08-07 22:06:29'),
+(14, 'alonso@sistema.com', '$2y$10$rOGoc2mcVVC.xx49ioc33e540e1dmS19RaG6gqZwrxxXWqQZqoXxW', 'alonso', '0350180907', 1, NULL, 'activo', '2025-08-10 10:34:17');
 
 --
 -- Disparadores `usuarios`
@@ -474,7 +503,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `auditoria`
 --
 ALTER TABLE `auditoria`
-  MODIFY `idAuditoria` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `idAuditoria` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT de la tabla `categoria`
@@ -504,7 +533,7 @@ ALTER TABLE `detalle_cotizacion`
 -- AUTO_INCREMENT de la tabla `empresas_proveedora`
 --
 ALTER TABLE `empresas_proveedora`
-  MODIFY `idEmpresas_Proveedora` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `idEmpresas_Proveedora` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_cotizacion`
@@ -534,7 +563,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- Restricciones para tablas volcadas

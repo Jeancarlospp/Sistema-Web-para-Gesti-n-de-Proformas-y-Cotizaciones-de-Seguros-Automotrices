@@ -1,4 +1,3 @@
-
 <?php
 // Mostrar errores para depuración
 ini_set('display_errors', 1);
@@ -15,7 +14,6 @@ function send_json_response($data, $statusCode = 200) {
     exit();
 }
 
-
 $db = new Conexion();
 $conn = $db->getConn();
 if (!$conn) {
@@ -23,10 +21,8 @@ if (!$conn) {
 }
 
 try {
-
     // LISTAR COTIZACIONES (GET)
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-
         // Parámetros de paginación
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
@@ -120,89 +116,181 @@ try {
 
     // GUARDAR COTIZACIÓN (POST)
     elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
         $input = json_decode(file_get_contents("php://input"), true);
-        // Depuración: mostrar datos recibidos
+        
+        // Validar JSON
         if (!is_array($input)) {
-            send_json_response(['success' => false, 'message' => 'No se recibió un JSON válido', 'debug_input' => $input], 400);
+            send_json_response([
+                'success' => false, 
+                'message' => 'No se recibió un JSON válido',
+                'debug_input' => file_get_contents("php://input")
+            ], 400);
         }
 
         $idCliente = intval($input['idCliente'] ?? 0);
         $idUsuario = intval($input['idUsuario'] ?? 0);
         $planes = $input['planes'] ?? [];
 
-        // Verificar existencia de cliente
-        $stmt = $conn->prepare('SELECT 1 FROM cliente WHERE idCliente = ?');
-        $stmt->bind_param('i', $idCliente);
-        $stmt->execute();
-        if (!$stmt->get_result()->fetch_assoc()) {
-            send_json_response(['success' => false, 'message' => 'Cliente no existe', 'idCliente' => $idCliente], 400);
+        // Validaciones iniciales
+        if ($idCliente <= 0) {
+            send_json_response(['success' => false, 'message' => 'ID de cliente inválido'], 400);
         }
-        $stmt->close();
-
-        // Verificar existencia de usuario
-        $stmt = $conn->prepare('SELECT 1 FROM usuarios WHERE id_usuario = ?');
-        $stmt->bind_param('i', $idUsuario);
-        $stmt->execute();
-        if (!$stmt->get_result()->fetch_assoc()) {
-            send_json_response(['success' => false, 'message' => 'Usuario no existe', 'idUsuario' => $idUsuario], 400);
+        if ($idUsuario <= 0) {
+            send_json_response(['success' => false, 'message' => 'ID de usuario inválido'], 400);
         }
-        $stmt->close();
-
-        // Validar que planes sea un array de enteros
         if (!is_array($planes) || count($planes) === 0) {
-            send_json_response(['success' => false, 'message' => 'El array de planes está vacío o no es válido', 'debug_planes' => $planes, 'debug_input' => $input], 400);
+            send_json_response(['success' => false, 'message' => 'Debe seleccionar al menos un plan'], 400);
         }
+
+        // Validar que planes sea un array de enteros válidos
         foreach ($planes as $i => $planId) {
             if (!is_numeric($planId) || intval($planId) <= 0) {
-                send_json_response(['success' => false, 'message' => 'ID de plan inválido', 'plan_index' => $i, 'plan_value' => $planId, 'debug_planes' => $planes], 400);
+                send_json_response([
+                    'success' => false, 
+                    'message' => 'ID de plan inválido en posición ' . $i,
+                    'plan_value' => $planId
+                ], 400);
             }
             $planes[$i] = intval($planId);
         }
 
-        if ($idCliente <= 0 || $idUsuario <= 0) {
-            send_json_response(['success' => false, 'message' => 'ID de cliente o usuario inválido', 'debug_idCliente' => $idCliente, 'debug_idUsuario' => $idUsuario, 'debug_input' => $input], 400);
+        // Verificar existencia de cliente
+        $stmt = $conn->prepare('SELECT Cli_nombre FROM cliente WHERE idCliente = ? AND Cli_estado = "activo"');
+        $stmt->bind_param('i', $idCliente);
+        $stmt->execute();
+        $clientResult = $stmt->get_result()->fetch_assoc();
+        if (!$clientResult) {
+            send_json_response(['success' => false, 'message' => 'Cliente no existe o está inactivo'], 400);
+        }
+        $stmt->close();
+
+        // Verificar existencia de usuario
+        $stmt = $conn->prepare('SELECT nombre FROM usuarios WHERE id_usuario = ? AND estado = "activo"');
+        $stmt->bind_param('i', $idUsuario);
+        $stmt->execute();
+        $userResult = $stmt->get_result()->fetch_assoc();
+        if (!$userResult) {
+            send_json_response(['success' => false, 'message' => 'Usuario no existe o está inactivo'], 400);
+        }
+        $stmt->close();
+
+        // Verificar que todos los productos existen y están activos
+        $placeholders = implode(',', array_fill(0, count($planes), '?'));
+        $types = str_repeat('i', count($planes));
+        $stmt = $conn->prepare("SELECT idproducto, Pro_nombre, Pro_precioTotal FROM producto WHERE idproducto IN ($placeholders) AND Pro_estado = 'activo'");
+        $stmt->bind_param($types, ...$planes);
+        $stmt->execute();
+        $productResults = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        if (count($productResults) !== count($planes)) {
+            send_json_response(['success' => false, 'message' => 'Algunos productos seleccionados no existen o están inactivos'], 400);
         }
 
         // Calcular monto total
-        $placeholders = implode(',', array_fill(0, count($planes), '?'));
-        $types = str_repeat('i', count($planes));
-        $stmt = $conn->prepare("SELECT SUM(Pro_precioTotal) as total FROM producto WHERE idproducto IN ($placeholders)");
-        $stmt->bind_param($types, ...$planes);
+        $montoTotal = 0;
+        $productosValidos = [];
+        foreach ($productResults as $product) {
+            $montoTotal += floatval($product['Pro_precioTotal']);
+            $productosValidos[$product['idproducto']] = $product;
+        }
+
+        // Iniciar transacción para garantizar consistencia
+        $conn->autocommit(false);
+
+        try {
+            // Insertar cotización principal
+            $stmt = $conn->prepare("INSERT INTO cotizacion (Cot_montoAsegurable, idCliente, idUsuario, Cot_estado, Cot_descripcion) VALUES (?, ?, ?, 'borrador', ?)");
+            $descripcion = "Cotización para " . $clientResult['Cli_nombre'] . " - " . count($planes) . " plan(es) seleccionado(s)";
+            $stmt->bind_param('diis', $montoTotal, $idCliente, $idUsuario, $descripcion);
+            
+            if (!$stmt->execute()) {
+                throw new Exception('Error insertando cotización: ' . $stmt->error);
+            }
+            
+            $idCotizacion = $stmt->insert_id;
+            $stmt->close();
+
+            // Insertar detalles de cotización
+            $stmt = $conn->prepare("INSERT INTO detalle_cotizacion (idCotizacion, idProducto, Det_numServicios, Det_precioUnitario, Det_subtotal) VALUES (?, ?, 1, ?, ?)");
+            
+            foreach ($planes as $idProd) {
+                if (!isset($productosValidos[$idProd])) {
+                    throw new Exception("Producto ID $idProd no encontrado en validación");
+                }
+                
+                $producto = $productosValidos[$idProd];
+                $precio = floatval($producto['Pro_precioTotal']);
+                
+                $stmt->bind_param('iidd', $idCotizacion, $idProd, $precio, $precio);
+                if (!$stmt->execute()) {
+                    throw new Exception('Error insertando detalle de cotización: ' . $stmt->error);
+                }
+            }
+            $stmt->close();
+
+            // Confirmar transacción
+            $conn->commit();
+            
+            send_json_response([
+                'success' => true, 
+                'idCotizacion' => $idCotizacion,
+                'montoTotal' => $montoTotal,
+                'message' => 'Cotización guardada exitosamente'
+            ]);
+
+        } catch (Exception $e) {
+            // Rollback en caso de error
+            $conn->rollback();
+            throw $e;
+        } finally {
+            $conn->autocommit(true);
+        }
+    }
+
+    // OBTENER DETALLES DE UNA COTIZACIÓN ESPECÍFICA (GET con ID)
+    elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
+        $idCotizacion = intval($_GET['id']);
+        
+        if ($idCotizacion <= 0) {
+            send_json_response(['success' => false, 'message' => 'ID de cotización inválido'], 400);
+        }
+
+        // Obtener información principal de la cotización
+        $stmt = $conn->prepare("
+            SELECT c.*, cli.Cli_nombre, cli.Cli_cedula, u.nombre as nombre_usuario 
+            FROM cotizacion c 
+            JOIN cliente cli ON c.idCliente = cli.idCliente 
+            JOIN usuarios u ON c.idUsuario = u.id_usuario 
+            WHERE c.idCotizacion = ?
+        ");
+        $stmt->bind_param('i', $idCotizacion);
         $stmt->execute();
-        $totalRow = $stmt->get_result()->fetch_assoc();
-        $montoTotal = $totalRow['total'] ?? 0;
+        $cotizacion = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
-        // Insertar cotización
-        $stmt = $conn->prepare("INSERT INTO cotizacion (Cot_montoAsegurable, idCliente, idUsuario, Cot_estado) VALUES (?, ?, ?, 'borrador')");
-        $stmt->bind_param('dii', $montoTotal, $idCliente, $idUsuario);
-        if (!$stmt->execute()) {
-            send_json_response(['success' => false, 'message' => 'Error insertando cotización', 'error' => $stmt->error], 500);
+        if (!$cotizacion) {
+            send_json_response(['success' => false, 'message' => 'Cotización no encontrada'], 404);
         }
-        $idCotizacion = $stmt->insert_id;
+
+        // Obtener detalles de la cotización
+        $stmt = $conn->prepare("
+            SELECT dc.*, p.Pro_nombre, p.Pro_descripcion, ep.Emp_nombre 
+            FROM detalle_cotizacion dc 
+            JOIN producto p ON dc.idProducto = p.idproducto 
+            JOIN empresas_proveedora ep ON p.idEmpresaProveedora = ep.idEmpresas_Proveedora 
+            WHERE dc.idCotizacion = ?
+        ");
+        $stmt->bind_param('i', $idCotizacion);
+        $stmt->execute();
+        $detalles = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
-
-        // Insertar detalles
-        $stmt = $conn->prepare("INSERT INTO detalle_cotizacion (idCotizacion, idProducto, Det_numServicios, Det_precioUnitario, Det_subtotal) VALUES (?, ?, 1, ?, ?)");
-        if (!$stmt) {
-            die('Error SQL detalle_cotizacion: ' . $conn->error);
-        }
-        foreach ($planes as $idProd) {
-            $pstmt = $conn->prepare("SELECT Pro_precioTotal FROM producto WHERE idproducto = ?");
-            $pstmt->bind_param('i', $idProd);
-            $pstmt->execute();
-            $prodRow = $pstmt->get_result()->fetch_assoc();
-            $precio = $prodRow['Pro_precioTotal'] ?? 0;
-            $pstmt->close();
-
-            $stmt->bind_param('iidd', $idCotizacion, $idProd, $precio, $precio);
-            $stmt->execute();
-        }
-        $stmt->close();
-
-        send_json_response(['success' => true, 'idCotizacion' => $idCotizacion]);
+        send_json_response([
+            'success' => true,
+            'cotizacion' => $cotizacion,
+            'detalles' => $detalles
+        ]);
     }
 
     //MÉTODO NO PERMITIDO
@@ -211,7 +299,18 @@ try {
     }
 
 } catch (Exception $e) {
-    send_json_response(['success' => false, 'message' => 'Error interno del servidor.', 'error_details' => $e->getMessage()], 500);
+    // Si hay una transacción activa, hacer rollback
+    if (!$conn->autocommit(null)) {
+        $conn->rollback();
+        $conn->autocommit(true);
+    }
+    
+    send_json_response([
+        'success' => false, 
+        'message' => 'Error interno del servidor.',
+        'error_details' => $e->getMessage()
+    ], 500);
 } finally {
     if ($conn) $conn->close();
 }
+?>
