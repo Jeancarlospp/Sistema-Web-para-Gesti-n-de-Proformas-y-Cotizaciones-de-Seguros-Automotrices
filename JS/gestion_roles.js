@@ -3,6 +3,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnSaveRole = document.getElementById("btn-save-role");
   const selectRole = document.getElementById("add-userRole");
 
+  // === Función para cargar roles en el select de usuarios ===
+  function cargarRoles() {
+    if (!selectRole) return;
+    fetch("../php/roles_api.php?action=get_roles")
+      .then(response => response.json())
+      .then(data => {
+        selectRole.innerHTML = ""; // Limpia opciones
+        data.forEach(role => {
+          const option = document.createElement("option");
+          option.value = role.id;
+          option.textContent = role.nombre;
+          selectRole.appendChild(option);
+        });
+      })
+      .catch(error => {
+        console.error("Error cargando roles:", error);
+      });
+  }
+
+  // Cargar roles al iniciar
+  cargarRoles();
+
   // === Guardar nuevo rol ===
   if (form && btnSaveRole) {
     btnSaveRole.addEventListener("click", async () => {
@@ -36,7 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
           alert("Rol creado correctamente.");
           form.reset();
           document.getElementById("addRoleModal").querySelector(".btn-close").click();
-          // Aquí puedes recargar la lista de roles si lo necesitas
+          
+          // Recargar lista de roles
+          cargarRoles();
         } else {
           alert(result.message || "Error al crear el rol.");
         }
@@ -46,24 +70,4 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-
-  // === Cargar roles en el select de usuarios ===
-  if (selectRole) {
-    fetch("../php/roles_api.php?action=get_roles")
-      .then(response => response.json())
-      .then(data => {
-        selectRole.innerHTML = ""; // Limpia opciones
-        data.forEach(role => {
-          const option = document.createElement("option");
-          option.value = role.id;
-          option.textContent = role.nombre;
-          selectRole.appendChild(option);
-        });
-      })
-      .catch(error => {
-        console.error("Error cargando roles:", error);
-      });
-  }
-
-  
 });
