@@ -396,4 +396,42 @@ export function loadGestionUsuarios() {
   // Agregar validaciones a los campos de cédula
   agregarValidacionCedula('add-userCedula');
   agregarValidacionCedula('edit-userCedula');
+
+  // Delegación de eventos para botones de la tabla
+  usersTableBody.addEventListener("click", async (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    const userId = button.dataset.id;
+    if (!userId) return;
+
+    if (button.classList.contains("btn-edit")) {
+      openEditModal(userId);
+    }
+
+    if (button.classList.contains("btn-toggle-on")) {
+      const newStatus = button.dataset.newStatus;
+      if (confirm(`¿Seguro que deseas ${newStatus === 'activo' ? 'activar' : 'desactivar'} este usuario?`)) {
+        try {
+          const response = await fetch("../php/usuarios_api.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "update_estado",
+              id: userId,
+              estado: newStatus
+            }),
+          });
+          const result = await response.json();
+          if (result.success) {
+            await fetchAndRenderUsers();
+            alert("¡Estado del usuario actualizado con éxito!");
+          } else {
+            throw new Error(result.message);
+          }
+        } catch (error) {
+          alert("Error al cambiar el estado: " + error.message);
+        }
+      }
+    }
+  });
 }

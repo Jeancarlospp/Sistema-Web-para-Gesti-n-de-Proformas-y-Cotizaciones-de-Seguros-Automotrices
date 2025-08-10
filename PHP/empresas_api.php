@@ -6,6 +6,8 @@ error_reporting(E_ALL);
 
 session_start();
 require_once 'conexion.php';
+require_once 'utils.php';
+require_once 'auditoria_helper.php';
 header('Content-Type: application/json');
 
 function send_json_response($data, $statusCode = 200) {
@@ -98,8 +100,58 @@ try {
             }
 
             switch ($data['action']) {
+                case 'update_status':
+                    if (!isset($_SESSION['usuario_id'])) {
+                        send_json_response(['success' => false, 'message' => 'Usuario no autenticado.'], 401);
+                    }
+                    if (empty($data['id'])) {
+                        send_json_response(['success' => false, 'message' => 'ID de empresa no proporcionado.'], 400);
+                    }
+                    if (empty($data['estado'])) {
+                        send_json_response(['success' => false, 'message' => 'Estado no proporcionado.'], 400);
+                    }
+
+                    $id = intval($data['id']);
+                    $estado = $data['estado'];
+
+                    // Obtener datos antiguos de la empresa para la auditoría
+                    $stmtOld = $conn->prepare("SELECT Emp_nombre, Emp_estado FROM empresas_proveedora WHERE idEmpresas_Proveedora = ?");
+                    $stmtOld->bind_param("i", $id);
+                    $stmtOld->execute();
+                    $oldData = $stmtOld->get_result()->fetch_assoc();
+                    $stmtOld->close();
+
+                    $stmt = $conn->prepare("UPDATE empresas_proveedora SET Emp_estado = ? WHERE idEmpresas_Proveedora = ?");
+                    $stmt->bind_param("si", $estado, $id);
+                    
+                    if (!$stmt->execute()) {
+                        throw new Exception("Error al actualizar el estado de la empresa.");
+                    }
+
+                    // Registrar en auditoría
+                    $descripcion = sprintf(
+                        "Cambio de estado de la empresa %s (ID: %d) de %s a %s",
+                        $oldData['Emp_nombre'],
+                        $id,
+                        $oldData['Emp_estado'],
+                        $estado
+                    );
+                    
+                    registrarAuditoria(
+                        $conn,
+                        $_SESSION['usuario_id'],
+                        'UPDATE',
+                        'empresas_proveedora',
+                        $descripcion
+                    );
+
+                    send_json_response(['success' => true, 'message' => 'Estado de la empresa actualizado con éxito.']);
+                    break;
                 // --- ACCIÓN: Crear una nueva empresa ---
                 case 'create_company':
+                    if (!isset($_SESSION['usuario_id'])) {
+                        send_json_response(['success' => false, 'message' => 'Usuario no autenticado.'], 401);
+                    }
                     if (empty($data['Emp_nombre']) || empty($data['Emp_ruc']) || empty($data['Emp_razonSocial'])) {
                         send_json_response(['success' => false, 'message' => 'El nombre, RUC y razón social son requeridos.'], 400);
                     }
@@ -119,15 +171,47 @@ try {
                         }
                         throw new Exception("Error al crear la empresa.");
                     }
+
+                    // Obtener el ID de la empresa recién creada
+                    $nuevoId = $conn->insert_id;
+
+                    // Registrar en auditoría
+                    $descripcion = sprintf(
+                        "Creación de nueva empresa: %s (RUC: %s, Razón Social: %s)",
+                        $nombre,
+                        $ruc,
+                        $razonSocial
+                    );
+                    
+                    registrarAuditoria(
+                        $conn,
+                        $_SESSION['usuario_id'],
+                        'INSERT',
+                        'empresas_proveedora',
+                        $descripcion
+                    );
+
                     send_json_response(['success' => true, 'message' => 'Empresa creada con éxito.']);
                     break;
                 
                 // --- ACCIÓN: Actualizar una empresa existente ---
                 case 'update_company':
+                    if (!isset($_SESSION['usuario_id'])) {
+                        send_json_response(['success' => false, 'message' => 'Usuario no autenticado.'], 401);
+                    }
                     if (empty($data['idEmpresas_Proveedora'])) {
                          send_json_response(['success' => false, 'message' => 'ID de empresa no proporcionado.'], 400);
                     }
+
                     $id = intval($data['idEmpresas_Proveedora']);
+
+                    // Obtener datos antiguos de la empresa para la auditoría
+                    $stmtOld = $conn->prepare("SELECT Emp_nombre, Emp_ruc, Emp_razonSocial FROM empresas_proveedora WHERE idEmpresas_Proveedora = ?");
+                    $stmtOld->bind_param("i", $id);
+                    $stmtOld->execute();
+                    $oldData = $stmtOld->get_result()->fetch_assoc();
+                    $stmtOld->close();
+
                     $nombre = $data['Emp_nombre'];
                     $ruc = $data['Emp_ruc'];
                     $correo = $data['Emp_correo'];
@@ -144,6 +228,27 @@ try {
                         }
                         throw new Exception("Error al actualizar la empresa.");
                     }
+
+                    // Registrar en auditoría
+                    $descripcion = sprintf(
+                        "Actualización de empresa ID %d. Cambios: Nombre: %s -> %s, RUC: %s -> %s, Razón Social: %s -> %s",
+                        $id,
+                        $oldData['Emp_nombre'],
+                        $nombre,
+                        $oldData['Emp_ruc'],
+                        $ruc,
+                        $oldData['Emp_razonSocial'],
+                        $razonSocial
+                    );
+                    
+                    registrarAuditoria(
+                        $conn,
+                        $_SESSION['usuario_id'],
+                        'UPDATE',
+                        'empresas_proveedora',
+                        $descripcion
+                    );
+
                     send_json_response(['success' => true, 'message' => 'Empresa actualizada con éxito.']);
                     break;
                 

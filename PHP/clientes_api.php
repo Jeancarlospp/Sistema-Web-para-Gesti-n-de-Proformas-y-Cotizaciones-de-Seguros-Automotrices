@@ -6,6 +6,8 @@ error_reporting(E_ALL);
 
 session_start();
 require_once 'conexion.php';
+require_once 'utils.php';
+require_once 'auditoria_helper.php';
 header('Content-Type: application/json');
 
 function send_json_response($data, $statusCode = 200) {
@@ -103,27 +105,132 @@ try {
 
             switch ($data['action']) {
                 case 'create_client':
+                    if (!isset($_SESSION['usuario_id'])) {
+                        send_json_response(['success' => false, 'message' => 'Usuario no autenticado.'], 401);
+                    }
                     if (empty($data['Cli_nombre']) || empty($data['Cli_cedula'])) {
                         send_json_response(['success' => false, 'message' => 'El nombre y la cédula son requeridos.'], 400);
                     }
-                    $stmt = $conn->prepare("INSERT INTO cliente (Cli_nombre, Cli_cedula, Cli_correo, Cli_telefono) VALUES (?, ?, ?, ?)");
-                    $stmt->bind_param("ssss", $data['Cli_nombre'], $data['Cli_cedula'], $data['Cli_correo'], $data['Cli_telefono']);
+
+                    $nombre = $data['Cli_nombre'];
+                    $cedula = $data['Cli_cedula'];
+                    $correo = $data['Cli_correo'];
+                    $telefono = $data['Cli_telefono'];
+
+                    $stmt = $conn->prepare("INSERT INTO cliente (Cli_nombre, Cli_cedula, Cli_correo, Cli_telefono, Cli_estado) VALUES (?, ?, ?, ?, 'activo')");
+                    $stmt->bind_param("ssss", $nombre, $cedula, $correo, $telefono);
+                    
                     if (!$stmt->execute()) {
                         if ($conn->errno == 1062) throw new Exception("La cédula ingresada ya está registrada.");
                         throw new Exception("Error al crear el cliente.");
                     }
+
+                    $nuevoId = $conn->insert_id;
+
+                    // Registrar en auditoría
+                    $descripcion = sprintf(
+                        "Creación de nuevo cliente: %s (Cédula: %s, Correo: %s, Teléfono: %s)",
+                        $nombre,
+                        $cedula,
+                        $correo ?: 'No especificado',
+                        $telefono ?: 'No especificado'
+                    );
+                    
+                    registrarAuditoria(
+                        $conn,
+                        $_SESSION['usuario_id'],
+                        'INSERT',
+                        'cliente',
+                        $descripcion
+                    );
+
                     send_json_response(['success' => true, 'message' => 'Cliente creado con éxito.']);
                     break;
                 
                 case 'update_client':
-                    if (empty($data['idCliente'])) send_json_response(['success' => false, 'message' => 'ID de cliente no proporcionado.'], 400);
+                    if (!isset($_SESSION['usuario_id'])) {
+                        send_json_response(['success' => false, 'message' => 'Usuario no autenticado.'], 401);
+                    }
+                    if (empty($data['idCliente'])) {
+                        send_json_response(['success' => false, 'message' => 'ID de cliente no proporcionado.'], 400);
+                    }
+
+                    // Obtener datos antiguos del cliente para la auditoría
+                    $stmtOld = $conn->prepare("SELECT Cli_nombre, Cli_cedula FROM cliente WHERE idCliente = ?");
+                    $stmtOld->bind_param("i", $data['idCliente']);
+                    $stmtOld->execute();
+                    $oldData = $stmtOld->get_result()->fetch_assoc();
+                    $stmtOld->close();
+
+                    // Realizar la actualización
                     $stmt = $conn->prepare("UPDATE cliente SET Cli_nombre = ?, Cli_cedula = ?, Cli_correo = ?, Cli_telefono = ? WHERE idCliente = ?");
                     $stmt->bind_param("ssssi", $data['Cli_nombre'], $data['Cli_cedula'], $data['Cli_correo'], $data['Cli_telefono'], $data['idCliente']);
+                    
                     if (!$stmt->execute()) {
-                         if ($conn->errno == 1062) throw new Exception("La cédula ingresada ya pertenece a otro cliente.");
+                        if ($conn->errno == 1062) throw new Exception("La cédula ingresada ya pertenece a otro cliente.");
                         throw new Exception("Error al actualizar el cliente.");
                     }
+
+                    // Registrar en auditoría
+                    $descripcion = sprintf(
+                        "Actualización del cliente ID: %d. Cambios: %s -> %s", 
+                        $data['idCliente'],
+                        $oldData['Cli_nombre'],
+                        $data['Cli_nombre']
+                    );
+                    
+                    registrarAuditoria(
+                        $conn,
+                        $_SESSION['usuario_id'],
+                        'UPDATE',
+                        'cliente',
+                        $descripcion
+                    );
+
                     send_json_response(['success' => true, 'message' => 'Cliente actualizado con éxito.']);
+                    break;
+                    
+                case 'update_status':
+                    if (!isset($_SESSION['usuario_id'])) {
+                        send_json_response(['success' => false, 'message' => 'Usuario no autenticado.'], 401);
+                    }
+                    if (empty($data['id'])) send_json_response(['success' => false, 'message' => 'ID de cliente no proporcionado.'], 400);
+                    if (empty($data['estado'])) send_json_response(['success' => false, 'message' => 'Estado no proporcionado.'], 400);
+                    
+                    $id = intval($data['id']);
+                    $estado = $data['estado'];
+                    
+                    // Obtener datos antiguos del cliente para la auditoría
+                    $stmtOld = $conn->prepare("SELECT Cli_nombre, Cli_estado FROM cliente WHERE idCliente = ?");
+                    $stmtOld->bind_param("i", $id);
+                    $stmtOld->execute();
+                    $oldData = $stmtOld->get_result()->fetch_assoc();
+                    $stmtOld->close();
+                    
+                    $stmt = $conn->prepare("UPDATE cliente SET Cli_estado = ? WHERE idCliente = ?");
+                    $stmt->bind_param("si", $estado, $id);
+                    if (!$stmt->execute()) {
+                        throw new Exception("Error al actualizar el estado del cliente.");
+                    }
+
+                    // Registrar en auditoría
+                    $descripcion = sprintf(
+                        "Cambio de estado del cliente %s (ID: %d) de %s a %s",
+                        $oldData['Cli_nombre'],
+                        $id,
+                        $oldData['Cli_estado'],
+                        $estado
+                    );
+                    
+                    registrarAuditoria(
+                        $conn,
+                        $_SESSION['usuario_id'],
+                        'UPDATE',
+                        'cliente',
+                        $descripcion
+                    );
+
+                    send_json_response(['success' => true, 'message' => 'Estado del cliente actualizado con éxito.']);
                     break;
                 
                 case 'delete_client':

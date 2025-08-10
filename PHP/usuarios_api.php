@@ -114,6 +114,9 @@ try {
             switch ($data['action']) {
                 // --- ACCIÓN: Crear un nuevo usuario (desde gestion_usuarios.html) ---
                 case 'create_user':
+                    if (!isset($_SESSION['usuario_id'])) {
+                        send_json_response(['success' => false, 'message' => 'Usuario no autenticado.'], 401);
+                    }
                     if (empty($data['nombre']) || empty($data['correo']) || empty($data['contrasena']) || empty($data['rol_id'])) {
                         send_json_response(['success' => false, 'message' => 'Nombre, correo, contraseña y rol son requeridos.'], 400);
                     }
@@ -123,7 +126,15 @@ try {
                     $contrasena_hash = password_hash($data['contrasena'], PASSWORD_DEFAULT);
                     $rol_id = intval($data['rol_id']);
 
-                    $stmt = $conn->prepare("INSERT INTO usuarios (nombre, cedula, correo, contrasena, rol_id) VALUES (?, ?, ?, ?, ?)");
+                    // Obtener el nombre del rol para el registro de auditoría
+                    $stmt_rol = $conn->prepare("SELECT nombre FROM roles WHERE id = ?");
+                    $stmt_rol->bind_param("i", $rol_id);
+                    $stmt_rol->execute();
+                    $rol_result = $stmt_rol->get_result();
+                    $rol_nombre = $rol_result->fetch_assoc()['nombre'] ?? 'Rol desconocido';
+                    $stmt_rol->close();
+
+                    $stmt = $conn->prepare("INSERT INTO usuarios (nombre, cedula, correo, contrasena, rol_id, estado, fecha_creacion) VALUES (?, ?, ?, ?, ?, 'activo', CURRENT_TIMESTAMP)");
                     if ($stmt === false) {
                         throw new Exception("Error en la preparación de la consulta INSERT: " . $conn->error);
                     }
@@ -135,6 +146,28 @@ try {
                         }
                         throw new Exception("Error al ejecutar la consulta para crear el usuario: " . $stmt->error);
                     }
+
+                    $nuevoId = $conn->insert_id;
+
+                    // Registrar en auditoría con información más detallada
+                    $descripcion = sprintf(
+                        "Creación de nuevo usuario:\nNombre: %s\nCédula: %s\nCorreo: %s\nRol: %s (ID: %d)\nCreado por: %s",
+                        $nombre,
+                        $cedula ?: 'No especificada',
+                        $correo,
+                        $rol_nombre,
+                        $rol_id,
+                        $_SESSION['nombre'] ?? 'Usuario del sistema'
+                    );
+                    
+                    registrarAuditoria(
+                        $conn,
+                        $_SESSION['usuario_id'],
+                        'INSERT',
+                        'usuarios',
+                        $descripcion
+                    );
+
                     send_json_response(['success' => true, 'message' => 'Usuario creado con éxito.']);
                     break;
                 

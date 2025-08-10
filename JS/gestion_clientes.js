@@ -309,7 +309,7 @@ export function loadGestionClientes() {
 
     if (button.classList.contains("btn-toggle-status")) {
       const newStatus = button.dataset.newStatus;
-      if (confirm(`¿Seguro que deseas ${newStatus} este cliente?`)) {
+      if (confirm(`¿Seguro que deseas ${newStatus === 'activo' ? 'activar' : 'desactivar'} este cliente?`)) {
         try {
           const response = await fetch("../php/clientes_api.php", {
             method: "POST",

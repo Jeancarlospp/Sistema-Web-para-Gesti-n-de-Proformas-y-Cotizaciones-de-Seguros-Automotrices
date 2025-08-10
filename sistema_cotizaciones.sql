@@ -82,6 +82,7 @@ CREATE TABLE `cliente` (
   `Cli_cedula` varchar(10) NOT NULL,
   `Cli_correo` varchar(100) DEFAULT NULL,
   `Cli_telefono` varchar(10) DEFAULT NULL,
+  `Cli_estado` enum('activo','inactivo') NOT NULL DEFAULT 'activo',
   `Cli_fechaRegistro` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -360,10 +361,11 @@ INSERT INTO `usuarios` (`id_usuario`, `correo`, `contrasena`, `nombre`, `cedula`
 --
 DELIMITER $$
 CREATE TRIGGER `tr_usuario_insert` AFTER INSERT ON `usuarios` FOR EACH ROW BEGIN
-  INSERT INTO `sistema_cotizaciones`.`auditoria` 
-  (`idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_IP`)
-  VALUES 
-  (NEW.id_usuario, 'INSERT', 'usuarios', CONCAT('Nuevo usuario creado: ', NEW.correo), '127.0.0.1');
+    SET @client_ip = (SELECT COALESCE(USER(), '127.0.0.1'));
+    INSERT INTO `sistema_cotizaciones`.`auditoria` 
+    (`idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_IP`)
+    VALUES 
+    (NEW.id_usuario, 'INSERT', 'usuarios', CONCAT('Nuevo usuario creado: ', NEW.correo), @client_ip);
 END
 $$
 DELIMITER ;
