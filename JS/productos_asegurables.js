@@ -307,7 +307,7 @@ async function fetchAndRenderProducts() {
 
   try {
     const response = await fetch(
-      `../php/productos_api.php?${params.toString()}`
+      `../PHP/productos_api.php?${params.toString()}`
     );
     if (!response.ok)
       throw new Error("La respuesta de la red no fue correcta.");
@@ -328,10 +328,10 @@ async function fetchAndRenderProducts() {
 async function populateSelects(...elements) {
   try {
     const [categories, companies] = await Promise.all([
-      fetch("../php/productos_api.php?action=get_categories").then((res) =>
+      fetch("../PHP/productos_api.php?action=get_categories").then((res) =>
         res.json()
       ),
-      fetch("../php/empresas_api.php").then((res) => res.json()),
+      fetch("../PHP/productos_api.php?action=get_empresas").then((res) => res.json()),
     ]);
 
     elements.forEach(({ element, type }) => {
@@ -427,20 +427,11 @@ export async function loadProductosAsegurables() {
     "btnActualizarProducto"
   );
 
+  // Poblar selects de categorías y empresas
+  await loadFormSelects();
+  
+  // Cargar productos inicialmente
   await fetchAndRenderProducts();
-  populateSelects(
-    { element: categoryFilter, type: "category-filter" },
-    { element: document.getElementById("add-idCategoria"), type: "category" },
-    {
-      element: document.getElementById("add-idEmpresaProveedora"),
-      type: "company",
-    },
-    { element: document.getElementById("edit-idCategoria"), type: "category" },
-    {
-      element: document.getElementById("edit-idEmpresaProveedora"),
-      type: "company",
-    }
-  );
   
   console.log("✅ Gestión de Productos inicializada correctamente");
 
@@ -476,6 +467,12 @@ export async function loadProductosAsegurables() {
       fetchAndRenderProducts();
     }
   });
+
+  // Event listener para cálculo automático del precio total
+  setupAutomaticCalculations();
+
+  // Event listener para validación del formulario
+  setupFormValidation();
 
   container.addEventListener("click", async (event) => {
     // Verificar si es un clic en tarjeta para Asesor (solo consulta)
@@ -539,50 +536,65 @@ export async function loadProductosAsegurables() {
       return;
     }
     
-    if (!addProductForm.checkValidity()) {
-      addProductForm.reportValidity();
+    const form = document.getElementById("formNuevoProducto");
+    if (!form.checkValidity()) {
+      form.reportValidity();
       return;
     }
-    const nuevoProducto = {
-      action: "create_product",
-      Pro_nombre: document.getElementById("add-Pro_nombre").value,
-      Pro_precioMensual: document.getElementById("add-Pro_precioMensual").value,
-      idCategoria: document.getElementById("add-idCategoria").value,
-      idEmpresaProveedora: document.getElementById("add-idEmpresaProveedora")
-        .value,
-      Pro_descripcion: document.getElementById("add-Pro_descripcion").value,
-      Pro_responsabilidadCivil: document.getElementById(
-        "add-Pro_responsabilidadCivil"
-      ).value,
-      Pro_asistenciaVial: document.getElementById("add-Pro_asistenciaVial")
-        .value,
-      Pro_dañosColision: document.getElementById("add-Pro_dañosColision").value,
-      Pro_gastosMedicos: document.getElementById("add-Pro_gastosMedicos").value,
-      Pro_roboTotal: document.getElementById("add-Pro_roboTotal").checked
-        ? "si"
-        : "no",
-      Pro_autoReemplazo: document.getElementById("add-Pro_autoReemplazo")
-        .checked
-        ? "si"
-        : "no",
-    };
+
+    // Mostrar indicador de carga
+    const originalText = btnGuardarProducto.innerHTML;
+    btnGuardarProducto.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Guardando...';
+    btnGuardarProducto.disabled = true;
+
     try {
-      const response = await fetch("../php/productos_api.php", {
+      const nuevoProducto = {
+        action: "create_product",
+        Pro_nombre: document.getElementById("nombreProducto").value.trim(),
+        Pro_descripcion: document.getElementById("descripcionProducto").value.trim(),
+        Pro_precioMensual: parseFloat(document.getElementById("precioMensual").value),
+        Pro_mesesCobertura: parseInt(document.getElementById("mesesCobertura").value) || 12,
+        Pro_precioTotal: parseFloat(document.getElementById("precioTotal").value),
+        Pro_responsabilidadCivil: parseFloat(document.getElementById("responsabilidadCivil").value) || null,
+        Pro_dañosColision: parseFloat(document.getElementById("danosColision").value) || null,
+        Pro_gastosLegales: parseFloat(document.getElementById("gastosLegales").value) || null,
+        Pro_gastosMedicos: parseFloat(document.getElementById("gastosMedicos").value) || null,
+        Pro_roboTotal: document.querySelector('input[name="roboTotal"]:checked').value,
+        Pro_autoReemplazo: document.querySelector('input[name="autoReemplazo"]:checked').value,
+        Pro_asistenciaVial: document.getElementById("asistenciaVial").value,
+        idCategoria: parseInt(document.getElementById("categoriaProducto").value),
+        idEmpresaProveedora: parseInt(document.getElementById("empresaProducto").value),
+        Pro_estado: document.getElementById("estadoProducto").value
+      };
+
+      console.log('📝 Datos del producto a crear:', nuevoProducto);
+
+      const response = await fetch("../PHP/productos_api.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(nuevoProducto),
       });
+
       const result = await response.json();
+      console.log('📥 Respuesta del servidor:', result);
+
       if (result.success) {
         bootstrap.Modal.getInstance(addProductModalEl).hide();
-        addProductForm.reset();
+        resetAddProductForm();
         await fetchAndRenderProducts();
-        alert("¡Producto guardado!");
+        
+        // Mostrar mensaje de éxito
+        showSuccessMessage("¡Producto guardado exitosamente!");
       } else {
-        throw new Error(result.message);
+        throw new Error(result.message || "Error desconocido al guardar el producto");
       }
     } catch (error) {
-      alert("Error al guardar: " + error.message);
+      console.error("Error al guardar producto:", error);
+      showErrorMessage("Error al guardar el producto: " + error.message);
+    } finally {
+      // Restaurar botón
+      btnGuardarProducto.innerHTML = originalText;
+      btnGuardarProducto.disabled = false;
     }
   });
 
@@ -713,4 +725,199 @@ async function showProductInfoModal(productId) {
     console.error('Error al mostrar información del producto:', error);
     alert('No se pudo cargar la información del producto: ' + error.message);
   }
+}
+
+/**
+ * Carga los selects de categorías y empresas
+ */
+async function loadFormSelects() {
+  try {
+    console.log('🔄 Cargando categorías y empresas...');
+    
+    const [categoriesResponse, empresasResponse] = await Promise.all([
+      fetch("../PHP/productos_api.php?action=get_categories"),
+      fetch("../PHP/productos_api.php?action=get_empresas")
+    ]);
+
+    const categories = await categoriesResponse.json();
+    const empresas = await empresasResponse.json();
+
+    console.log('📊 Categorías cargadas:', categories);
+    console.log('🏢 Empresas cargadas:', empresas);
+
+    // Poblar select de categorías (filtro)
+    const categoryFilter = document.getElementById("product-category-filter");
+    if (categoryFilter) {
+      categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
+      categories.forEach(cat => {
+        categoryFilter.innerHTML += `<option value="${cat.idcategoria}">${cat.Cat_nombre}</option>`;
+      });
+    }
+
+    // Poblar select de categorías (modal agregar)
+    const categoriaProducto = document.getElementById("categoriaProducto");
+    if (categoriaProducto) {
+      categoriaProducto.innerHTML = '<option value="">Seleccione una categoría...</option>';
+      categories.forEach(cat => {
+        categoriaProducto.innerHTML += `<option value="${cat.idcategoria}">${cat.Cat_nombre}</option>`;
+      });
+    }
+
+    // Poblar select de empresas (modal agregar)
+    const empresaProducto = document.getElementById("empresaProducto");
+    if (empresaProducto) {
+      empresaProducto.innerHTML = '<option value="">Seleccione una empresa...</option>';
+      empresas.forEach(emp => {
+        empresaProducto.innerHTML += `<option value="${emp.idEmpresas_Proveedora}">${emp.Emp_nombre}</option>`;
+      });
+    }
+
+    console.log('✅ Selects cargados correctamente');
+    
+  } catch (error) {
+    console.error('❌ Error al cargar selects:', error);
+    showErrorMessage('Error al cargar las opciones del formulario');
+  }
+}
+
+/**
+ * Configura los cálculos automáticos del formulario
+ */
+function setupAutomaticCalculations() {
+  const precioMensual = document.getElementById("precioMensual");
+  const mesesCobertura = document.getElementById("mesesCobertura");
+  const precioTotal = document.getElementById("precioTotal");
+
+  function calcularPrecioTotal() {
+    const mensual = parseFloat(precioMensual.value) || 0;
+    const meses = parseInt(mesesCobertura.value) || 12;
+    const total = mensual * meses;
+    
+    precioTotal.value = total.toFixed(2);
+  }
+
+  if (precioMensual && mesesCobertura && precioTotal) {
+    precioMensual.addEventListener('input', calcularPrecioTotal);
+    mesesCobertura.addEventListener('input', calcularPrecioTotal);
+    
+    // Calcular inicialmente
+    calcularPrecioTotal();
+  }
+}
+
+/**
+ * Configura la validación del formulario
+ */
+function setupFormValidation() {
+  const form = document.getElementById("formNuevoProducto");
+  
+  if (form) {
+    // Validación personalizada para campos numéricos
+    const numericInputs = form.querySelectorAll('input[type="number"]');
+    numericInputs.forEach(input => {
+      input.addEventListener('input', function() {
+        if (this.value < 0) {
+          this.setCustomValidity('El valor no puede ser negativo');
+        } else {
+          this.setCustomValidity('');
+        }
+      });
+    });
+
+    // Validación para campos requeridos
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      if (!this.checkValidity()) {
+        e.stopPropagation();
+        this.classList.add('was-validated');
+      }
+    });
+  }
+}
+
+/**
+ * Resetea el formulario de agregar producto
+ */
+function resetAddProductForm() {
+  const form = document.getElementById("formNuevoProducto");
+  if (form) {
+    form.reset();
+    form.classList.remove('was-validated');
+    
+    // Resetear valores por defecto
+    document.getElementById("mesesCobertura").value = 12;
+    document.getElementById("estadoProducto").value = 'activo';
+    document.getElementById("asistenciaVial").value = 'basica';
+    document.querySelector('#roboNo').checked = true;
+    document.querySelector('#reemplazoNo').checked = true;
+    
+    // Limpiar precio total
+    document.getElementById("precioTotal").value = '';
+  }
+}
+
+/**
+ * Muestra un mensaje de éxito
+ */
+function showSuccessMessage(message) {
+  // Usar Toast de Bootstrap si está disponible, sino usar alert
+  if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
+    showToast(message, 'success');
+  } else {
+    alert(message);
+  }
+}
+
+/**
+ * Muestra un mensaje de error
+ */
+function showErrorMessage(message) {
+  // Usar Toast de Bootstrap si está disponible, sino usar alert
+  if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
+    showToast(message, 'error');
+  } else {
+    alert(message);
+  }
+}
+
+/**
+ * Función auxiliar para mostrar toasts
+ */
+function showToast(message, type = 'info') {
+  // Crear container de toasts si no existe
+  let toastContainer = document.querySelector('.toast-container');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+    toastContainer.style.zIndex = '9999';
+    document.body.appendChild(toastContainer);
+  }
+
+  // Crear toast
+  const toastId = 'toast-' + Date.now();
+  const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+  const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+
+  const toastHtml = `
+    <div id="${toastId}" class="toast ${bgClass} text-white" role="alert">
+      <div class="toast-body d-flex align-items-center">
+        <i class="bi ${iconClass} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  `;
+
+  toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+  
+  // Mostrar toast
+  const toastElement = document.getElementById(toastId);
+  const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
+  toast.show();
+  
+  // Limpiar después de mostrar
+  toastElement.addEventListener('hidden.bs.toast', () => {
+    toastElement.remove();
+  });
 }

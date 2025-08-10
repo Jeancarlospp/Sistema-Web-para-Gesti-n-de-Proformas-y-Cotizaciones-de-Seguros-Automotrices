@@ -33,6 +33,16 @@ try {
                 send_json_response($categories);
             }
             
+            // 1.1. Obtener las empresas proveedoras (para los <select>)
+            elseif (isset($_GET['action']) && $_GET['action'] === 'get_empresas') {
+                $stmt = $conn->prepare("SELECT idEmpresas_Proveedora, Emp_nombre FROM empresas_proveedora WHERE Emp_estado = 'activo' ORDER BY Emp_nombre ASC");
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $empresas = $result->fetch_all(MYSQLI_ASSOC);
+                $stmt->close();
+                send_json_response($empresas);
+            }
+            
             // --- CORRECCIÓN: Se añade un 'elseif' específico para esta petición ---
             // 2. Obtener los planes de una categoría específica (para los checkboxes del asesor)
             elseif (isset($_GET['category_id']) && !isset($_GET['page'])) {
