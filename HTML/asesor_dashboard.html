@@ -328,34 +328,41 @@
                 </div>
               </div>
 
-              <div class="card" id="comparison-area" style="display: none">
-                <div class="card-header">
-                  <h4 class="card-title">
-                    2. Comparativa de Seguros para
-                    <span id="client-name-display" class="text-primary"></span>
-                  </h4>
-                </div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table id="comparison-table" class="table table-bordered text-center">
-                      <thead id="comparison-table-head"></thead>
-                      <tbody id="comparison-table-body"></tbody>
-                      <tfoot id="comparison-table-foot"></tfoot>
-                    </table>
-                  </div>
-                  <div class="col-12 d-flex justify-content-center mt-4">
-                    <button
-                      id="generate-pdf-btn"
-                      class="btn btn-success btn-lg"
-                    >
-                      <i class="bi bi-file-earmark-pdf-fill"></i> Generar PDF
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
+<div class="card" id="comparison-area" style="display: none">
+  <div class="card-header">
+    <h4 class="card-title">
+      2. Comparativa de Seguros para
+      <span id="client-name-display" class="text-primary"></span>
+    </h4>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table id="comparison-table" class="table table-bordered text-center">
+        <thead id="comparison-table-head"></thead>
+        <tbody id="comparison-table-body"></tbody>
+        <tfoot id="comparison-table-foot"></tfoot>
+      </table>
+    </div>
+    <div class="col-12 d-flex justify-content-center mt-4 gap-3">
+      <!-- Botón Guardar Cotización -->
+      <button
+        id="btnGuardar"
+        class="btn btn-primary btn-lg"
+      >
+        <i class="bi bi-save-fill"></i> Guardar Cotización
+      </button>
+
+      <!-- Botón Generar PDF -->
+      <button
+        id="generate-pdf-btn"
+        class="btn btn-success btn-lg"
+      >
+        <i class="bi bi-file-earmark-pdf-fill"></i> Generar PDF
+      </button>
+    </div>
+  </div>
+</div>
+
 
         <footer>
           <div class="footer clearfix mb-0 text-muted">
@@ -376,5 +383,6 @@
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script type="module" src="../js/main.js"></script>
     <script src="../assets/compiled/js/app.js" defer></script>
+    
   </body>
 </html>

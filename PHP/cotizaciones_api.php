@@ -14,7 +14,7 @@ $conn = $db->getConn();
 
 try {
 
-    //LISTAR COTIZACIONES (GET)
+    // LISTAR COTIZACIONES (GET)
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // Parámetros de paginación
