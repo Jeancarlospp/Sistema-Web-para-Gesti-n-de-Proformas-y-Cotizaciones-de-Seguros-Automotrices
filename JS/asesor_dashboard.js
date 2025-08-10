@@ -87,7 +87,7 @@ async function fetchAndRenderPlans(categoryId, container) {
 /**
  * Genera un documento PDF a partir de la tabla de comparación visible.
  */
-function generateComparisonPDF() {
+async function generateComparisonPDF() {
   // Verificar que las librerías PDF estén cargadas
   if (
     typeof window.jspdf === "undefined" ||
@@ -113,25 +113,59 @@ function generateComparisonPDF() {
     return;
   }
 
-  const doc = new jsPDF({
-    orientation: "landscape", // Tabla ancha, mejor en horizontal
-  });
+  //1. OBTENER LOS PLANES SELECCIONADOS
+  const selectedPlanIds = Array.from(
+    document.querySelectorAll(
+      "#plans-checkbox-container input[type=checkbox]:checked"
+    )
+  ).map((cb) => cb.value);
 
-  // Añadir Títulos
+  if (selectedPlanIds.length === 0) {
+    alert("No hay planes seleccionados para guardar la cotización.");
+    return;
+  }
+
+  //2. GUARDAR EN EL SERVIDOR (cotizacion + detalle_cotizacion)
+  try {
+    const saveResponse = await fetch("../php/cotizacion_api.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        idCliente: document.getElementById("client-id").value, // Asegúrate de tener este campo oculto en el HTML
+        idUsuario: document.getElementById("user-id").value,   // Lo mismo para el usuario
+        clienteNombre: clientName,
+        planes: selectedPlanIds
+      }),
+    });
+
+    const saveResult = await saveResponse.json();
+    if (!saveResult.success) {
+      alert("La cotización no pudo guardarse en el servidor.");
+      console.error(saveResult.error || saveResult.message);
+      return;
+    }
+    console.log("Cotización guardada con ID:", saveResult.idCotizacion);
+  } catch (error) {
+    console.error("Error guardando la cotización:", error);
+    alert("Error al guardar la cotización en el servidor.");
+    return;
+  }
+
+  // 📌 3. GENERAR EL PDF
+  const doc = new jsPDF({ orientation: "landscape" });
+
   doc.setFontSize(18);
   doc.text("Comparativa de Planes de Seguros", 14, 22);
   doc.setFontSize(12);
   doc.text(`Cliente: ${clientName}`, 14, 30);
 
-  // Usar autoTable para convertir la tabla HTML a PDF
   doc.autoTable({
     html: "#comparison-table",
     startY: 35,
     theme: "grid",
-    headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Cabecera azul
+    headStyles: { fillColor: [41, 128, 185], textColor: 255 },
     footStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: "bold" },
     didDrawPage: (data) => {
-      // Añadir pie de página con número de página
       const pageCount = doc.internal.getNumberOfPages();
       doc.setFontSize(10);
       doc.text(
@@ -142,14 +176,11 @@ function generateComparisonPDF() {
     },
   });
 
-  // Generar nombre de archivo y guardar
   const date = new Date().toISOString().split("T")[0];
-  const fileName = `comparativa_seguros_${clientName.replace(
-    /\s+/g,
-    "_"
-  )}_${date}.pdf`;
+  const fileName = `comparativa_seguros_${clientName.replace(/\s+/g, "_")}_${date}.pdf`;
   doc.save(fileName);
 }
+
 // --- FIN: NUEVA FUNCIÓN PARA GENERAR PDF ---
 
 /**

@@ -274,6 +274,8 @@
                               class="form-control"
                               required
                             />
+                            <input type="hidden" id="client-id" value="">
+                            <input type="hidden" id="user-id" value="<?php echo $_SESSION['id_usuario']; ?>">
                           </div>
                         </div>
                         <div class="col-md-6">
@@ -335,7 +337,7 @@
                 </div>
                 <div class="card-body">
                   <div class="table-responsive">
-                    <table class="table table-bordered text-center">
+                    <table id="comparison-table" class="table table-bordered text-center">
                       <thead id="comparison-table-head"></thead>
                       <tbody id="comparison-table-body"></tbody>
                       <tfoot id="comparison-table-foot"></tfoot>
