@@ -4,8 +4,10 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+
 session_start();
 require_once 'conexion.php';
+require_once 'auditoria_helper.php';
 header('Content-Type: application/json');
 
 function send_json_response($data, $statusCode = 200) {
@@ -113,6 +115,7 @@ try {
 
             switch ($data['action']) {
                 // --- ACCIÓN: Crear un nuevo usuario (desde gestion_usuarios.html) ---
+
                 case 'create_user':
                     if (!isset($_SESSION['usuario_id'])) {
                         send_json_response(['success' => false, 'message' => 'Usuario no autenticado.'], 401);
@@ -149,7 +152,7 @@ try {
 
                     $nuevoId = $conn->insert_id;
 
-                    // Registrar en auditoría con información más detallada
+                    // Auditoría: registrar creación
                     $descripcion = sprintf(
                         "Creación de nuevo usuario:\nNombre: %s\nCédula: %s\nCorreo: %s\nRol: %s (ID: %d)\nCreado por: %s",
                         $nombre,
@@ -159,19 +162,13 @@ try {
                         $rol_id,
                         $_SESSION['nombre'] ?? 'Usuario del sistema'
                     );
-                    
-                    registrarAuditoria(
-                        $conn,
-                        $_SESSION['usuario_id'],
-                        'INSERT',
-                        'usuarios',
-                        $descripcion
-                    );
+                    registrarAuditoria($conn, $_SESSION['usuario_id'], 'INSERT', 'usuarios', $descripcion);
 
                     send_json_response(['success' => true, 'message' => 'Usuario creado con éxito.']);
                     break;
                 
                 // --- ACCIÓN: Actualizar un usuario existente (desde gestion_usuarios.html) ---
+
                 case 'update_user':
                     if (empty($data['id']) || empty($data['nombre']) || empty($data['correo']) || empty($data['rol_id'])) {
                         send_json_response(['success' => false, 'message' => 'ID, Nombre, correo y rol son requeridos para actualizar.'], 400);
@@ -195,24 +192,53 @@ try {
                     }
 
                     if (!$stmt->execute()) {
-                         if ($conn->errno == 1062) throw new Exception("El correo o la cédula ingresados ya pertenecen a otro usuario.");
+                        if ($conn->errno == 1062) throw new Exception("El correo o la cédula ingresados ya pertenecen a otro usuario.");
                         throw new Exception("Error al ejecutar la actualización del usuario: " . $stmt->error);
                     }
+
+                    // Auditoría: registrar modificación
+                    $descripcion = sprintf(
+                        "Modificación de usuario:\nID: %d\nNombre: %s\nCédula: %s\nCorreo: %s\nRol: %d\nModificado por: %s",
+                        $id,
+                        $nombre,
+                        $cedula ?: 'No especificada',
+                        $correo,
+                        $rol_id,
+                        $_SESSION['nombre'] ?? 'Usuario del sistema'
+                    );
+                    registrarAuditoria($conn, $_SESSION['usuario_id'], 'UPDATE', 'usuarios', $descripcion);
+
                     send_json_response(['success' => true, 'message' => 'Usuario actualizado con éxito.']);
                     break;
                 
                 // --- ACCIÓN: Actualizar el estado de un usuario (desde gestion_usuarios.html) ---
+
                 case 'update_estado':
                     if (empty($data['id']) || empty($data['estado'])) {
                         send_json_response(['success' => false, 'message' => 'ID y nuevo estado son requeridos.'], 400);
                     }
                     $id = intval($data['id']);
                     $estado = ($data['estado'] === 'activo') ? 'activo' : 'inactivo';
-                    
+
+                    // Impedir que un usuario se desactive a sí mismo
+                    if ($id === $_SESSION['usuario_id'] && $estado === 'inactivo') {
+                        send_json_response(['success' => false, 'message' => 'No puedes desactivar tu propio usuario.'], 403);
+                    }
+
                     $stmt = $conn->prepare("UPDATE usuarios SET estado = ? WHERE id_usuario = ?");
                     $stmt->bind_param("si", $estado, $id);
-                    
+
                     if (!$stmt->execute()) throw new Exception("Error al actualizar el estado del usuario.");
+
+                    // Auditoría: registrar inactivación/activación
+                    $descripcion = sprintf(
+                        "Cambio de estado de usuario:\nID: %d\nNuevo estado: %s\nModificado por: %s",
+                        $id,
+                        $estado,
+                        $_SESSION['nombre'] ?? 'Usuario del sistema'
+                    );
+                    registrarAuditoria($conn, $_SESSION['usuario_id'], 'UPDATE', 'usuarios', $descripcion);
+
                     send_json_response(['success' => true, 'message' => 'Estado del usuario actualizado.']);
                     break;
                 
