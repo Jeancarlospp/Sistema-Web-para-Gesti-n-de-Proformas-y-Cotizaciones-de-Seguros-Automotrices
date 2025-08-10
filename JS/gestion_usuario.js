@@ -135,40 +135,78 @@ async function fetchAndRenderUsers() {
   }
 }
 
-/** Pobla los selects de los modales. */
+/** Pobla los selects de los modales con los roles disponibles. */
 async function populateRolesSelects(...elements) {
   try {
-    const response = await fetch("../php/roles_api.php");
-    if (!response.ok) throw new Error("No se pudieron cargar los roles.");
+    console.log("Cargando roles desde la API...");
+    const response = await fetch("../php/roles_api.php?action=get_roles");
+    
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+    }
+    
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await response.text();
+      console.error("Respuesta no es JSON:", text);
+      throw new Error("La respuesta no es JSON válido");
+    }
+    
     const roles = await response.json();
+    console.log("Roles recibidos:", roles);
+
+    // Verificar si roles es un array
+    if (!Array.isArray(roles)) {
+      console.error("La respuesta no es un array de roles:", roles);
+      throw new Error("Formato de respuesta inválido");
+    }
 
     elements.forEach((selectElement) => {
       if (selectElement) {
-        selectElement.innerHTML =
-          '<option value="" disabled selected>-- Seleccione un rol --</option>';
+        selectElement.innerHTML = '<option value="" disabled selected>-- Seleccione un rol --</option>';
         roles.forEach((rol) => {
-          selectElement.innerHTML += `<option value="${rol.id}">${rol.nombre}</option>`;
+          // Verificar que el rol tiene las propiedades necesarias
+          if (rol.id && rol.nombre) {
+            selectElement.innerHTML += `<option value="${rol.id}">${rol.nombre}</option>`;
+          }
         });
+        console.log(`Roles cargados en select: ${selectElement.id}`);
       }
     });
   } catch (error) {
-    console.error("Error al poblar roles:", error);
+    console.error("Error detallado al poblar roles:", error);
     elements.forEach((el) => {
-      if (el) el.innerHTML = '<option value="">Error</option>';
+      if (el) {
+        el.innerHTML = '<option value="" disabled>Error al cargar roles</option>';
+      }
     });
+    
+    // Mostrar alerta al usuario
+    alert("Error al cargar los roles. Por favor, recargue la página e intente nuevamente.");
   }
 }
 
 /** Abre y llena el modal de edición. */
 async function openEditModal(userId) {
   try {
+    console.log("Abriendo modal de edición para usuario ID:", userId);
+    
+    // Primero cargar los roles en el select del modal de edición
+    const editRoleSelect = document.getElementById("edit-userRole");
+    await populateRolesSelects(editRoleSelect);
+    
+    // Luego cargar los datos del usuario
     const response = await fetch(`../php/usuarios_api.php?id=${userId}`);
     if (!response.ok)
       throw new Error("No se pudo obtener la info del usuario.");
+    
     const user = await response.json();
     if (!user || user.error)
       throw new Error(user.error || "Usuario no encontrado.");
 
+    console.log("Datos del usuario cargados:", user);
+
+    // Llenar los campos del formulario
     document.getElementById("edit-userId").value = user.id_usuario;
     document.getElementById("edit-userName").value = user.nombre;
     document.getElementById("edit-userCedula").value = user.cedula;
@@ -176,13 +214,14 @@ async function openEditModal(userId) {
     document.getElementById("edit-userRole").value = user.rol_id;
     document.getElementById("edit-userPassword").value = "";
 
+    // Mostrar el modal
     const editModal = new bootstrap.Modal(
       document.getElementById("editUserModal")
     );
     editModal.show();
   } catch (error) {
     console.error("Error al preparar edición:", error);
-    alert("No se pudo cargar la info para editar.");
+    alert("No se pudo cargar la información para editar: " + error.message);
   }
 }
 
@@ -223,13 +262,23 @@ export function loadGestionUsuarios() {
     return;
   }
 
+  // Cargar datos iniciales
   fetchAndRenderUsers();
-  populateRolesSelects(
-    document.getElementById("add-userRole"),
-    document.getElementById("edit-userRole")
-  );
 
   // --- EVENT LISTENERS ---
+
+  // Event listener para cuando se abre el modal de añadir usuario
+  addUserModalEl.addEventListener('show.bs.modal', async function (event) {
+    console.log("Modal de añadir usuario se está abriendo...");
+    const addRoleSelect = document.getElementById("add-userRole");
+    await populateRolesSelects(addRoleSelect);
+  });
+
+  // Event listener para cuando se abre el modal de editar usuario
+  editUserModalEl.addEventListener('show.bs.modal', function (event) {
+    console.log("Modal de editar usuario se está abriendo...");
+    // Los roles ya se cargan en openEditModal
+  });
 
   let searchTimeout;
   searchInput.addEventListener("input", () => {
@@ -261,6 +310,7 @@ export function loadGestionUsuarios() {
     }
   });
 
+  // Delegación de eventos para botones de la tabla
   usersTableBody.addEventListener("click", async (event) => {
     const button = event.target.closest("button");
     if (!button) return;
@@ -268,12 +318,12 @@ export function loadGestionUsuarios() {
     if (!userId) return;
 
     if (button.classList.contains("btn-edit")) {
-      openEditModal(userId);
+      await openEditModal(userId);
     }
 
-    if (button.classList.contains("btn-toggle-status")) {
+    if (button.classList.contains("btn-toggle-on")) {
       const newStatus = button.dataset.newStatus;
-      if (confirm(`¿Seguro que deseas ${newStatus} este usuario?`)) {
+      if (confirm(`¿Seguro que deseas ${newStatus === 'activo' ? 'activar' : 'desactivar'} este usuario?`)) {
         try {
           const response = await fetch("../php/usuarios_api.php", {
             method: "POST",
@@ -281,17 +331,18 @@ export function loadGestionUsuarios() {
             body: JSON.stringify({
               action: "update_estado",
               id: userId,
-              estado: newStatus,
+              estado: newStatus
             }),
           });
           const result = await response.json();
           if (result.success) {
             await fetchAndRenderUsers();
+            alert("¡Estado del usuario actualizado con éxito!");
           } else {
             throw new Error(result.message);
           }
         } catch (error) {
-          alert("Error al cambiar estado: " + error.message);
+          alert("Error al cambiar el estado: " + error.message);
         }
       }
     }
@@ -333,12 +384,12 @@ export function loadGestionUsuarios() {
         bootstrap.Modal.getInstance(addUserModalEl).hide();
         addUserForm.reset();
         await fetchAndRenderUsers();
-        alert("¡Usuario creado!");
+        alert("¡Usuario creado con éxito!");
       } else {
         throw new Error(result.message);
       }
     } catch (error) {
-      alert("Error al crear: " + error.message);
+      alert("Error al crear usuario: " + error.message);
     } finally {
       btnSaveUser.disabled = false;
       btnSaveUser.innerHTML = "Guardar Usuario";
@@ -381,12 +432,12 @@ export function loadGestionUsuarios() {
       if (result.success) {
         bootstrap.Modal.getInstance(editUserModalEl).hide();
         await fetchAndRenderUsers();
-        alert("¡Usuario actualizado!");
+        alert("¡Usuario actualizado con éxito!");
       } else {
         throw new Error(result.message);
       }
     } catch (error) {
-      alert("Error al actualizar: " + error.message);
+      alert("Error al actualizar usuario: " + error.message);
     } finally {
       btnUpdateUser.disabled = false;
       btnUpdateUser.innerHTML = "Actualizar Usuario";
@@ -396,42 +447,4 @@ export function loadGestionUsuarios() {
   // Agregar validaciones a los campos de cédula
   agregarValidacionCedula('add-userCedula');
   agregarValidacionCedula('edit-userCedula');
-
-  // Delegación de eventos para botones de la tabla
-  usersTableBody.addEventListener("click", async (event) => {
-    const button = event.target.closest("button");
-    if (!button) return;
-    const userId = button.dataset.id;
-    if (!userId) return;
-
-    if (button.classList.contains("btn-edit")) {
-      openEditModal(userId);
-    }
-
-    if (button.classList.contains("btn-toggle-on")) {
-      const newStatus = button.dataset.newStatus;
-      if (confirm(`¿Seguro que deseas ${newStatus === 'activo' ? 'activar' : 'desactivar'} este usuario?`)) {
-        try {
-          const response = await fetch("../php/usuarios_api.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "update_estado",
-              id: userId,
-              estado: newStatus
-            }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            await fetchAndRenderUsers();
-            alert("¡Estado del usuario actualizado con éxito!");
-          } else {
-            throw new Error(result.message);
-          }
-        } catch (error) {
-          alert("Error al cambiar el estado: " + error.message);
-        }
-      }
-    }
-  });
 }
