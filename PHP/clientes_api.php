@@ -1,4 +1,5 @@
 <?php
+// ...existing code remains (solo la segunda versión, limpia y funcional)...
 // --- MODO DE DEPURACIÓN (DESACTIVAR EN PRODUCCIÓN) ---
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -16,10 +17,23 @@ function send_json_response($data, $statusCode = 200) {
     exit();
 }
 
+
 try {
     $db = new Conexion();
     $conn = $db->getConn();
     $method = $_SERVER['REQUEST_METHOD'];
+
+    // --- AUTOCOMPLETADO DE CLIENTES ---
+    if ($method === 'GET' && isset($_GET['search']) && !isset($_GET['page'])) {
+        $search = '%' . $conn->real_escape_string($_GET['search']) . '%';
+        $sql = "SELECT idCliente, Cli_nombre, Cli_cedula FROM cliente WHERE Cli_nombre LIKE ? OR Cli_cedula LIKE ? LIMIT 10";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('ss', $search, $search);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        send_json_response($result);
+    }
 
     switch ($method) {
         case 'GET':

@@ -1,4 +1,10 @@
+
 <?php
+// Mostrar errores para depuración
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 require_once 'conexion.php';
 header('Content-Type: application/json');
@@ -9,8 +15,12 @@ function send_json_response($data, $statusCode = 200) {
     exit();
 }
 
+
 $db = new Conexion();
 $conn = $db->getConn();
+if (!$conn) {
+    send_json_response(['success' => false, 'message' => 'No se pudo conectar a la base de datos'], 500);
+}
 
 try {
 
@@ -112,12 +122,46 @@ try {
     elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $input = json_decode(file_get_contents("php://input"), true);
+        // Depuración: mostrar datos recibidos
+        if (!is_array($input)) {
+            send_json_response(['success' => false, 'message' => 'No se recibió un JSON válido', 'debug_input' => $input], 400);
+        }
+
         $idCliente = intval($input['idCliente'] ?? 0);
         $idUsuario = intval($input['idUsuario'] ?? 0);
         $planes = $input['planes'] ?? [];
 
-        if ($idCliente <= 0 || $idUsuario <= 0 || empty($planes)) {
-            send_json_response(['success' => false, 'message' => 'Datos incompletos'], 400);
+        // Verificar existencia de cliente
+        $stmt = $conn->prepare('SELECT 1 FROM cliente WHERE idCliente = ?');
+        $stmt->bind_param('i', $idCliente);
+        $stmt->execute();
+        if (!$stmt->get_result()->fetch_assoc()) {
+            send_json_response(['success' => false, 'message' => 'Cliente no existe', 'idCliente' => $idCliente], 400);
+        }
+        $stmt->close();
+
+        // Verificar existencia de usuario
+        $stmt = $conn->prepare('SELECT 1 FROM usuarios WHERE id_usuario = ?');
+        $stmt->bind_param('i', $idUsuario);
+        $stmt->execute();
+        if (!$stmt->get_result()->fetch_assoc()) {
+            send_json_response(['success' => false, 'message' => 'Usuario no existe', 'idUsuario' => $idUsuario], 400);
+        }
+        $stmt->close();
+
+        // Validar que planes sea un array de enteros
+        if (!is_array($planes) || count($planes) === 0) {
+            send_json_response(['success' => false, 'message' => 'El array de planes está vacío o no es válido', 'debug_planes' => $planes, 'debug_input' => $input], 400);
+        }
+        foreach ($planes as $i => $planId) {
+            if (!is_numeric($planId) || intval($planId) <= 0) {
+                send_json_response(['success' => false, 'message' => 'ID de plan inválido', 'plan_index' => $i, 'plan_value' => $planId, 'debug_planes' => $planes], 400);
+            }
+            $planes[$i] = intval($planId);
+        }
+
+        if ($idCliente <= 0 || $idUsuario <= 0) {
+            send_json_response(['success' => false, 'message' => 'ID de cliente o usuario inválido', 'debug_idCliente' => $idCliente, 'debug_idUsuario' => $idUsuario, 'debug_input' => $input], 400);
         }
 
         // Calcular monto total
@@ -139,8 +183,12 @@ try {
         $idCotizacion = $stmt->insert_id;
         $stmt->close();
 
+
         // Insertar detalles
         $stmt = $conn->prepare("INSERT INTO detalle_cotizacion (idCotizacion, idProducto, Det_numServicios, Det_precioUnitario, Det_subtotal) VALUES (?, ?, 1, ?, ?)");
+        if (!$stmt) {
+            die('Error SQL detalle_cotizacion: ' . $conn->error);
+        }
         foreach ($planes as $idProd) {
             $pstmt = $conn->prepare("SELECT Pro_precioTotal FROM producto WHERE idproducto = ?");
             $pstmt->bind_param('i', $idProd);

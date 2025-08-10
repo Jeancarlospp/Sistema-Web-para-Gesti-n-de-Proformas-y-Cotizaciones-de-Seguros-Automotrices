@@ -1,3 +1,79 @@
+// --- AUTOCOMPLETADO DE CLIENTES POR NOMBRE O CÉDULA ---
+async function searchClients(query) {
+  const response = await fetch(`../php/clientes_api.php?search=${encodeURIComponent(query)}`);
+  if (!response.ok) return [];
+  return await response.json();
+}
+
+const clientNameInput = document.getElementById("client-name");
+const clientList = document.getElementById("client-list");
+const clientIdInput = document.getElementById("client-id");
+
+if (clientNameInput && clientList && clientIdInput) {
+  clientNameInput.addEventListener("input", async () => {
+    const query = clientNameInput.value.trim();
+    if (query.length < 2) return;
+    const clients = await searchClients(query);
+    clientList.innerHTML = "";
+    clients.forEach(cli => {
+      const option = document.createElement("option");
+      option.value = `${cli.Cli_nombre} (${cli.Cli_cedula})`;
+      option.dataset.id = cli.idCliente;
+      clientList.appendChild(option);
+    });
+  });
+
+  clientNameInput.addEventListener("change", () => {
+    const selected = Array.from(clientList.options).find(
+      opt => opt.value === clientNameInput.value
+    );
+    if (selected) {
+      clientIdInput.value = selected.dataset.id;
+    } else {
+      clientIdInput.value = "";
+    }
+  });
+}
+
+// --- GUARDAR COTIZACIÓN ---
+// --- Obtener el ID de usuario de la sesión vía API ---
+async function obtenerIdUsuarioSesion() {
+  const resp = await fetch('../php/usuarios_api.php?me=1');
+  const data = await resp.json();
+  return data.id_usuario;
+}
+
+document.getElementById("btnGuardar")?.addEventListener("click", async () => {
+  const idCliente = document.getElementById("client-id")?.value;
+  const selectedPlanIds = Array.from(
+    document.querySelectorAll("#plans-checkbox-container input[type=checkbox]:checked")
+  ).map(cb => parseInt(cb.value));
+
+  // Obtener el idUsuario de la sesión
+  const idUsuario = await obtenerIdUsuarioSesion();
+
+  if (!idCliente || !idUsuario || selectedPlanIds.length === 0) {
+    alert("Debe seleccionar un cliente y al menos un plan.");
+    return;
+  }
+
+  const res = await fetch("../php/cotizaciones_api.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      idCliente,
+      idUsuario,
+      planes: selectedPlanIds
+    })
+  });
+  const data = await res.json();
+  if (data.success) {
+    alert("Cotización guardada correctamente.");
+    // Opcional: limpiar formulario o mostrar detalles
+  } else {
+    alert("Error al guardar cotización: " + (data.message || "Error desconocido"));
+  }
+});
 /**
  * js/asesor_dashboard.js
  * Lógica 100% dinámica para la página: Dashboard del Asesor,

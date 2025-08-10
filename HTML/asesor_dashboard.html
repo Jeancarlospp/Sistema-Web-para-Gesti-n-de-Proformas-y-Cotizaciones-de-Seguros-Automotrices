@@ -267,15 +267,17 @@
                       <div class="row">
                         <div class="col-md-6">
                           <div class="form-group">
-                            <label for="client-name">Nombre del Cliente</label>
+                            <label for="client-name">Nombre o Cédula del Cliente</label>
                             <input
                               type="text"
                               id="client-name"
                               class="form-control"
+                              list="client-list"
+                              autocomplete="off"
                               required
                             />
+                            <datalist id="client-list"></datalist>
                             <input type="hidden" id="client-id" value="">
-                            <input type="hidden" id="user-id" value="<?php echo $_SESSION['id_usuario']; ?>">
                           </div>
                         </div>
                         <div class="col-md-6">
