@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 08-08-2025 a las 20:55:51
+-- Tiempo de generación: 09-08-2025 a las 17:12:24
 -- Versión del servidor: 8.0.17
 -- Versión de PHP: 7.3.10
 
@@ -43,9 +43,7 @@ CREATE TABLE `auditoria` (
 --
 
 INSERT INTO `auditoria` (`idAuditoria`, `idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_fecha`, `Aud_IP`) VALUES
-(1, 1, 'INSERT', 'usuarios', 'Nuevo usuario creado: zuli@sistema.com', '2025-08-07 22:40:07', '127.0.0.1'),
-(2, 4, 'INSERT', 'usuarios', 'Nuevo usuario creado: ariel@sistema.com', '2025-08-07 22:59:00', '127.0.0.1'),
-(3, 6, 'INSERT', 'usuarios', 'Nuevo usuario creado: juan@sistema.com', '2025-08-08 15:10:46', '127.0.0.1');
+(1, 4, 'INSERT', 'usuarios', 'Nuevo usuario creado: ariel@sistema.com', '2025-08-07 22:06:29', '127.0.0.1');
 
 -- --------------------------------------------------------
 
@@ -92,7 +90,7 @@ CREATE TABLE `cliente` (
 --
 
 INSERT INTO `cliente` (`idCliente`, `Cli_nombre`, `Cli_cedula`, `Cli_correo`, `Cli_telefono`, `Cli_fechaRegistro`) VALUES
-(1, 'Ana Lucio', '1309481925', 'ana@gmail.com', '0998745632', '2025-08-07 09:46:49'),
+(1, 'Ana Lucio', '1309481925', 'anaR@gmail.com', '0998745632', '2025-08-07 09:46:49'),
 (2, 'Carlos Mena', '0103456789', 'carlos_mena@gmail.com', '0991234567', '2025-08-07 09:52:47'),
 (3, 'Lucía Torres', '0923456781', 'lucia_torres@gmail.com', '0987654321', '2025-08-07 09:52:47'),
 (4, 'Andrés Cevallos', '1102345673', 'andres_cevallos@gmail.com', '0961122334', '2025-08-07 09:52:47'),
@@ -107,7 +105,8 @@ INSERT INTO `cliente` (`idCliente`, `Cli_nombre`, `Cli_cedula`, `Cli_correo`, `C
 (13, 'Andrea Villacís', '0701234982', 'andrea_villacis@gmail.com', '0945566778', '2025-08-07 09:52:47'),
 (14, 'Daniela López', '0302345679', 'daniela_lopez@gmail.com', '0934455667', '2025-08-07 09:52:47'),
 (15, 'Kevin Jiménez', '1503456783', 'kevin_jimenez@gmail.com', '0923344556', '2025-08-07 09:52:47'),
-(16, 'Fernanda Ríos', '0404567891', 'fernanda_rios@gmail.com', '0912233445', '2025-08-07 09:52:47');
+(16, 'Fernanda Ríos', '0404567891', 'fernanda_rios@gmail.com', '0912233445', '2025-08-07 09:52:47'),
+(17, 'Juan García', '1234567890', 'juan.garcia@email.com', '0991122334', '2025-08-07 21:55:32');
 
 -- --------------------------------------------------------
 
@@ -207,6 +206,38 @@ CREATE TABLE `historial_cotizacion` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `permisos`
+--
+
+CREATE TABLE `permisos` (
+  `id_permiso` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` text
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `permisos`
+--
+
+INSERT INTO `permisos` (`id_permiso`, `nombre`, `descripcion`) VALUES
+(1, 'ver_clientes', 'Permite ver la lista de clientes'),
+(2, 'agregar_clientes', 'Permite agregar nuevos clientes'),
+(3, 'editar_clientes', 'Permite editar la información de los clientes'),
+(4, 'ver_productos', 'Permite ver la lista de productos'),
+(5, 'agregar_productos', 'Permite agregar nuevos productos'),
+(6, 'editar_productos', 'Permite editar la información de los productos'),
+(7, 'ver_usuarios', 'Permite ver la lista de usuarios'),
+(8, 'agregar_usuarios', 'Permite agregar nuevos usuarios'),
+(9, 'editar_usuarios', 'Permite editar la información de los usuarios'),
+(10, 'ver_empresas', 'Permite ver la lista de empresas proveedoras'),
+(11, 'agregar_empresas', 'Permite agregar nuevas empresas proveedoras'),
+(12, 'editar_empresas', 'Permite editar la información de las empresas proveedoras'),
+(13, 'ver_cotizaciones', 'Permite ver las cotizaciones'),
+(14, 'ver_auditoria', 'Permite ver los registros de auditoría');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `producto`
 --
 
@@ -288,6 +319,17 @@ INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `estado`, `fecha_creacion`) 
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `roles_permisos`
+--
+
+CREATE TABLE `roles_permisos` (
+  `rol_id` int(11) NOT NULL,
+  `permiso_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `usuarios`
 --
 
@@ -308,12 +350,10 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id_usuario`, `correo`, `contrasena`, `nombre`, `cedula`, `rol_id`, `ultimo_login`, `estado`, `fecha_creacion`) VALUES
-(1, 'admin@sistema.com', '$2y$10$YrA4YVCvUovZOYmVy6rNDuq8iUR3/dYnPCugPjKYJhsDNIL/WQUfm', 'Danna Andrade', '1722651567', 1, '2025-08-08 15:22:56', 'activo', '2025-08-07 07:30:39'),
-(2, 'zaith@sistema.com', '$2y$10$P2dCDUaHYhFJsxK8hdBPHuw2lV/06fkmPLRvHNAemL.mS0s7gIdia', 'Zaith Manangon', '1111111111', 2, '2025-08-08 15:49:56', 'activo', '2025-08-07 07:30:39'),
-(3, 'jean@sistema.com', '$2y$10$An9mQo.5qbhbKwpRLyjxOukoGmdhNmCrrBPTdYu.Qpfm17k5JYFZm', 'Jeancarlo Santi', '2222222221', 3, '2025-08-08 15:50:08', 'activo', '2025-08-07 07:30:39'),
-(4, 'ariel@sistema.com', '12345678', 'Ariel Llumiquinga', '1212121212', 3, NULL, 'inactivo', '2025-08-07 22:59:00'),
-(5, 'zuli@sistema.com', '$2y$10$0hNOKL0MtbdhBgpiddWXpu9tjEb41eFZj/Sds0seDFPVlRrEReBzi', 'Zuli Lucio', '1726651567', 1, NULL, 'activo', '2025-08-07 22:40:07'),
-(6, 'juan@sistema.com', '$2y$10$NH98AxUUvdOqskRxPomzJe1QfzmdGXS7o66qr0Xnr6VNd0uzL4cM2', 'Juan Erazo', '0147852369', 2, NULL, 'activo', '2025-08-08 15:10:46');
+(1, 'admin@sistema.com', '$2y$10$YrA4YVCvUovZOYmVy6rNDuq8iUR3/dYnPCugPjKYJhsDNIL/WQUfm', 'Danna Andrade', '1722651567', 1, '2025-08-09 09:58:09', 'activo', '2025-08-07 07:30:39'),
+(2, 'zaith@sistema.com', '$2y$10$P2dCDUaHYhFJsxK8hdBPHuw2lV/06fkmPLRvHNAemL.mS0s7gIdia', 'Zaith Manangon', '1111111111', 2, '2025-08-09 09:10:02', 'activo', '2025-08-07 07:30:39'),
+(3, 'jean@sistema.com', '$2y$10$An9mQo.5qbhbKwpRLyjxOukoGmdhNmCrrBPTdYu.Qpfm17k5JYFZm', 'Jeancarlo Santi', '2222222222', 3, '2025-08-09 08:16:35', 'activo', '2025-08-07 07:30:39'),
+(4, 'ariel@sistema.com', '$2y$10$pHuPwePSjo0KxSSLPBlW5OCgsLdb5Kg9Hx1rbqMrTyX3qvjC7WIh.', 'Ariel Llumiquinga', '5555555555', 2, '2025-08-09 04:18:55', 'activo', '2025-08-07 22:06:29');
 
 --
 -- Disparadores `usuarios`
@@ -388,6 +428,12 @@ ALTER TABLE `historial_cotizacion`
   ADD KEY `fk_historial_usuario_idx` (`idUsuario`);
 
 --
+-- Indices de la tabla `permisos`
+--
+ALTER TABLE `permisos`
+  ADD PRIMARY KEY (`id_permiso`);
+
+--
 -- Indices de la tabla `producto`
 --
 ALTER TABLE `producto`
@@ -401,6 +447,13 @@ ALTER TABLE `producto`
 ALTER TABLE `roles`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `nombre_UNIQUE` (`nombre`);
+
+--
+-- Indices de la tabla `roles_permisos`
+--
+ALTER TABLE `roles_permisos`
+  ADD PRIMARY KEY (`rol_id`,`permiso_id`),
+  ADD KEY `fk_roles_permisos_permiso` (`permiso_id`);
 
 --
 -- Indices de la tabla `usuarios`
@@ -419,7 +472,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `auditoria`
 --
 ALTER TABLE `auditoria`
-  MODIFY `idAuditoria` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idAuditoria` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `categoria`
@@ -431,7 +484,7 @@ ALTER TABLE `categoria`
 -- AUTO_INCREMENT de la tabla `cliente`
 --
 ALTER TABLE `cliente`
-  MODIFY `idCliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `idCliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de la tabla `cotizacion`
@@ -449,13 +502,19 @@ ALTER TABLE `detalle_cotizacion`
 -- AUTO_INCREMENT de la tabla `empresas_proveedora`
 --
 ALTER TABLE `empresas_proveedora`
-  MODIFY `idEmpresas_Proveedora` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `idEmpresas_Proveedora` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_cotizacion`
 --
 ALTER TABLE `historial_cotizacion`
   MODIFY `idHistorial_Cotizacion` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `permisos`
+--
+ALTER TABLE `permisos`
+  MODIFY `id_permiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `producto`
@@ -467,13 +526,13 @@ ALTER TABLE `producto`
 -- AUTO_INCREMENT de la tabla `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Restricciones para tablas volcadas
@@ -512,6 +571,13 @@ ALTER TABLE `historial_cotizacion`
 ALTER TABLE `producto`
   ADD CONSTRAINT `fk_producto_categoria` FOREIGN KEY (`idCategoria`) REFERENCES `categoria` (`idcategoria`) ON DELETE RESTRICT ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_producto_empresa` FOREIGN KEY (`idEmpresaProveedora`) REFERENCES `empresas_proveedora` (`idEmpresas_Proveedora`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `roles_permisos`
+--
+ALTER TABLE `roles_permisos`
+  ADD CONSTRAINT `fk_roles_permisos_permiso` FOREIGN KEY (`permiso_id`) REFERENCES `permisos` (`id_permiso`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_roles_permisos_rol` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `usuarios`
