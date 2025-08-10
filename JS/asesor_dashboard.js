@@ -1,8 +1,13 @@
 // --- AUTOCOMPLETADO DE CLIENTES POR NOMBRE O CÉDULA ---
 async function searchClients(query) {
-  const response = await fetch(`../php/clientes_api.php?search=${encodeURIComponent(query)}`);
-  if (!response.ok) return [];
-  return await response.json();
+  try {
+    const response = await fetch(`../php/clientes_api.php?search=${encodeURIComponent(query)}`);
+    if (!response.ok) return [];
+    return await response.json();
+  } catch (error) {
+    console.error("Error al buscar clientes:", error);
+    return [];
+  }
 }
 
 const clientNameInput = document.getElementById("client-name");
@@ -138,7 +143,7 @@ async function obtenerIdUsuarioSesion() {
 }
 
 /**
- * Función para guardar la cotización
+ * Función para guardar la cotización - COMPLETAMENTE CORREGIDA
  */
 async function guardarCotizacion() {
   const idCliente = document.getElementById("client-id")?.value;
@@ -171,6 +176,12 @@ async function guardarCotizacion() {
   btnGuardar.disabled = true;
 
   try {
+    console.log("Enviando datos:", {
+      idCliente: parseInt(idCliente),
+      idUsuario: parseInt(idUsuario),
+      planes: selectedPlanIds
+    });
+
     const response = await fetch("../php/cotizaciones_api.php", {
       method: "POST",
       headers: { 
@@ -184,13 +195,33 @@ async function guardarCotizacion() {
       })
     });
 
-    const data = await response.json();
+    console.log("Response status:", response.status);
+    console.log("Response headers:", response.headers);
+
+    // Verificar si la respuesta es válida
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error response text:", errorText);
+      throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+    }
+
+    // Leer la respuesta como texto primero para debug
+    const responseText = await response.text();
+    console.log("Response text:", responseText);
+
+    // Intentar parsear como JSON
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (jsonError) {
+      console.error("Error parsing JSON:", jsonError);
+      console.error("Response that failed to parse:", responseText);
+      throw new Error("La respuesta del servidor no es un JSON válido. Posible error PHP.");
+    }
     
     if (data.success) {
       alert(`Cotización guardada correctamente con ID: ${data.idCotizacion}`);
-      // Opcional: Limpiar formulario después de guardar
-      // document.getElementById("quote-form").reset();
-      // document.getElementById("comparison-area").style.display = "none";
+      console.log("Cotización guardada exitosamente:", data);
     } else {
       alert("Error al guardar cotización: " + (data.message || "Error desconocido"));
       console.error("Detalles del error:", data);
@@ -223,7 +254,7 @@ function generateComparisonPDF() {
   const { jsPDF } = window.jspdf;
   const comparisonArea = document.getElementById("comparison-area");
   const clientName =
-    document.getElementById("client-name-display").textContent || "Cliente";
+    document.getElementById("client-name-display")?.textContent || "Cliente";
   const comparisonTable = document.getElementById("comparison-table");
 
   // Verificar que la tabla de comparación esté visible
@@ -348,18 +379,34 @@ export function loadAsesorDashboard() {
 
     const clientName = clientNameInput.value || "Cliente";
 
-    // Llamar a la función que construye la tabla HTML
-    await buildComparisonTable(
-      selectedPlanIds,
-      document.getElementById("comparison-table-head"),
-      document.getElementById("comparison-table-body"),
-      document.getElementById("comparison-table-foot")
-    );
+    try {
+      // Llamar a la función que construye la tabla HTML
+      await buildComparisonTable(
+        selectedPlanIds,
+        document.getElementById("comparison-table-head"),
+        document.getElementById("comparison-table-body"),
+        document.getElementById("comparison-table-foot")
+      );
 
-    // Mostrar los resultados
-    clientNameDisplay.textContent = clientName;
-    comparisonArea.style.display = "block";
-    comparisonArea.scrollIntoView({ behavior: "smooth" });
+      // Mostrar los resultados
+      clientNameDisplay.textContent = clientName;
+      comparisonArea.style.display = "block";
+      
+      // Scroll seguro sin getBoundingClientRect
+      setTimeout(() => {
+        try {
+          if (comparisonArea && comparisonArea.scrollIntoView) {
+            comparisonArea.scrollIntoView({ behavior: "smooth" });
+          }
+        } catch (scrollError) {
+          console.warn("No se pudo hacer scroll automático:", scrollError);
+        }
+      }, 200);
+      
+    } catch (error) {
+      console.error("Error al generar la comparación:", error);
+      alert("Error al generar la comparación. Por favor, intente nuevamente.");
+    }
   });
 
   // 3. Cuando se limpia el formulario.
