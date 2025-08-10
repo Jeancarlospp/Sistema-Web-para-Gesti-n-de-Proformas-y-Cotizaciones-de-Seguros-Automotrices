@@ -1,195 +1,140 @@
 <?php
-// Iniciar la sesión al principio de todo.
-session_start();
+/**
+ * =================================================================================
+ * login.php - Corregido para coincidir con la estructura de la base de datos
+ * =================================================================================
+ */
 
-// Requerir el archivo de conexión a la base de datos.
-require_once 'php/conexion.php';
+// Ya no necesitamos las líneas de depuración, puedes eliminarlas.
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 
-// Inicializar variables para evitar errores.
-$error = '';
-$correo = '';
+ob_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+header('Content-Type: application/json');
+require_once __DIR__ . '/php/Conexion.php';
 
-// Procesar el formulario solo si se envía por método POST.
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $correo = $_POST['correo'] ?? '';
-    $contrasena = $_POST['contrasena'] ?? '';
-
-    // Validar que los campos no estén vacíos.
-    if (empty($correo) || empty($contrasena)) {
-        $error = "Por favor, ingrese correo y contraseña.";
-    } else {
-        $db = new Conexion();
-        $conn = $db->getConn();
-
-        // --- CONSULTA CORREGIDA ---
-        // 1. Se selecciona `u.id_usuario` (nombre correcto de la columna).
-        // 2. Se añade `AND u.estado = 'activo'` para seguridad.
-        $stmt = $conn->prepare(
-            "SELECT u.id_usuario, u.nombre, u.contrasena, r.nombre as rol 
-             FROM usuarios u 
-             JOIN roles r ON u.rol_id = r.id 
-             WHERE u.correo = ? AND u.estado = 'activo'"
-        );
-        $stmt->bind_param("s", $correo);
+/**
+ * Función de auditoría CORREGIDA para coincidir con los nombres de tus columnas.
+ */
+function registrarAuditoria($conn, $accion, $descripcion, $usuarioId = null) {
+    $tablaAfectada = 'usuarios';
+    $ip = $_SERVER['REMOTE_ADDR'];
+    // ===== CORRECCIÓN AQUÍ: Se usa `idUsuario` en lugar de `Aud_idUsuario` =====
+    $sql = "INSERT INTO auditoria (idUsuario, Aud_accion, Aud_tabla, Aud_descripcion, Aud_IP) VALUES (?, ?, ?, ?, ?)";
+    
+    if ($stmt = $conn->prepare($sql)) {
+        $stmt->bind_param("issss", $usuarioId, $accion, $tablaAfectada, $descripcion, $ip);
         $stmt->execute();
-        $stmt->store_result();
-
-        // Verificar si se encontró un usuario.
-        if ($stmt->num_rows > 0) {
-            // --- BINDING CORREGIDO ---
-            // Se asocian los resultados a variables con nombres claros.
-            $stmt->bind_result($id_usuario, $nombre, $hash_contrasena, $rol_bd);
-            $stmt->fetch();
-
-            // Verificar la contraseña.
-            if (password_verify($contrasena, $hash_contrasena)) {
-                // --- ACTUALIZACIÓN CORREGIDA ---
-                // Se usa `id_usuario` para la condición WHERE.
-                $update_stmt = $conn->prepare("UPDATE usuarios SET ultimo_login = NOW() WHERE id_usuario = ?");
-                $update_stmt->bind_param("i", $id_usuario);
-                $update_stmt->execute();
-                $update_stmt->close();
-
-                // --- SESIÓN CORREGIDA ---
-                // Se guardan los datos correctos en la sesión de PHP.
-                $_SESSION['usuario_id'] = $id_usuario;
-                $_SESSION['rol'] = $rol_bd; // Rol de la BD (ej: 'admin')
-                $_SESSION['nombre'] = $nombre;
-                $_SESSION['usuario_email'] = $correo; // Guardar email también
-                $_SESSION['last_activity'] = time(); // Timestamp para control de sesión
-                $_SESSION['ultimo_acceso'] = time(); // Para compatibilidad con check_session.php
-                
-                // --- MAPEO DE ROLES PARA JAVASCRIPT ---
-                // Mapea el rol de la BD al nombre que espera el frontend.
-                $rolMapping = [
-                    'admin' => 'Administrador',
-                    'asesor' => 'Asesor', 
-                    'vendedor' => 'Vendedor',
-                ];
-                
-                // Se usa strtolower para más seguridad y se da un valor por defecto.
-                $rolJS = $rolMapping[strtolower($rol_bd)] ?? 'Usuario';
-                
-                // --- SCRIPT DE SINCRONIZACIÓN Y REDIRECCIÓN ---
-                // Genera una página mínima para ejecutar JavaScript en el navegador.
-                echo "
-                <!DOCTYPE html>
-                <html lang='es'>
-                <head>
-                    <title>Redirigiendo...</title>
-                </head>
-                <body>
-                    <script>
-                        // Es una buena práctica limpiar cualquier dato anterior.
-                        localStorage.clear();
-                        
-                        // Guardamos los datos para que main.js los pueda usar en la siguiente página.
-                        localStorage.setItem('userRole', '{$rolJS}');
-                        localStorage.setItem('userName', '{$nombre}');
-                        
-                        // Redirigimos a la página correcta según el rol.
-                        switch('{$rol_bd}') {
-                            case 'admin':
-                                window.location.href = 'HTML/admin_dashboard.html';
-                                break;
-                            case 'asesor':
-                                window.location.href = 'HTML/asesor_dashboard.html';
-                                break;
-                            case 'vendedor':
-                                window.location.href = 'HTML/vendedor_dashboard.html';
-                                break;
-                            default:
-                                // Si el rol no coincide, redirige de vuelta al login.
-                                window.location.href = 'login.php'; 
-                        }
-                    </script>
-                    <noscript>
-                        <p>Por favor, active JavaScript para continuar.</p>
-                        <meta http-equiv='refresh' content='0;url=HTML/admin_dashboard.html' />
-                    </noscript>
-                </body>
-                </html>";
-                // Detener la ejecución del script PHP después de la redirección.
-                exit();
-
-            } else {
-                $error = "Contraseña incorrecta.";
-            }
-        } else {
-            $error = "Usuario no encontrado o se encuentra inactivo.";
-        }
         $stmt->close();
-        $db->close();
     }
 }
-?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - CS ENSIGNA</title>
-    <link rel="shortcut icon" href="assets/compiled/svg/favicon.svg" type="image/x-icon">
-    <link rel="stylesheet" href="assets/compiled/css/app.css">
-    <link rel="stylesheet" href="assets/compiled/css/app-dark.css">
-    <link rel="stylesheet" href="assets/compiled/css/auth.css">
-</head>
-<body>
-    <script src="assets/static/js/initTheme.js"></script>
-    <div id="auth">
-        <div class="row h-100">
-            <div class="col-lg-5 col-12">
-                <div id="auth-left">
-                    <div class="auth-logo">
-                        <a href="index.html"><img src="assets/compiled/svg/logo.svg" alt="Logo"></a>
-                    </div>
-                    <div class="theme-toggle d-flex gap-2 align-items-center mt-2">
-                        <svg class="iconify iconify--system-uicons" width="20" height="20" viewBox="0 0 21 21"><g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 14.5c2.219 0 4-1.763 4-3.982a4.003 4.003 0 0 0-4-4.018c-2.219 0-4 1.781-4 4c0 2.219 1.781 4 4 4zM4.136 4.136L5.55 5.55m9.9 9.9l1.414 1.414M1.5 10.5h2m14 0h2M4.135 16.863L5.55 15.45m9.899-9.9l1.414-1.415M10.5 19.5v-2m0-14v-2" opacity=".3"></path><g transform="translate(-210 -1)"><path d="M220.5 2.5v2m6.5.5l-1.5 1.5"></path><circle cx="220.5" cy="11.5" r="4"></circle><path d="m214 5l1.5 1.5m5 14v-2m6.5-.5l-1.5-1.5M214 18l1.5-1.5m-4-5h2m14 0h2"></path></g></g></svg>
-                        <div class="form-check form-switch fs-6">
-                            <input class="form-check-input me-0" type="checkbox" id="toggle-dark" style="cursor: pointer">
-                            <label class="form-check-label"></label>
-                        </div>
-                        <svg class="iconify iconify--mdi" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="m17.75 4.09l-2.53 1.94l.91 3.06l-2.63-1.81l-2.63 1.81l.91-3.06l-2.53-1.94L12.44 4l1.06-3l1.06 3l3.19.09m3.5 6.91l-1.64 1.25l.59 1.98l-1.7-1.17l-1.7 1.17l.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95l2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85c-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14c.4-.4.82-.76 1.27-1.08c.75-.53 1.93.36 1.85 1.19c-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82c-2.81 3.14-2.7 7.96.31 10.98c3.02 3.01 7.84 3.12 10.98.31Z"></path></svg>
-                    </div>
-                    <br>
-                    <h1 class="auth-title">Iniciar Sesión</h1>
-                    <p class="auth-subtitle mb-5">Ingrese sus credenciales para acceder al sistema.</p>
-                    
-                    <?php if (!empty($error)): ?>
-                        <div class="alert alert-danger" role="alert">
-                            <?php echo htmlspecialchars($error); ?>
-                        </div>
-                    <?php endif; ?>
 
-                    <form id="login-form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-                        <div class="form-group position-relative has-icon-left mb-4">
-                            <input type="email" name="correo" class="form-control form-control-xl" placeholder="Correo" required value="<?php echo htmlspecialchars($correo); ?>">
-                            <div class="form-control-icon">
-                                <i class="bi bi-person"></i>
-                            </div>
-                        </div>
-                        <div class="form-group position-relative has-icon-left mb-4">
-                            <input type="password" name="contrasena" class="form-control form-control-xl" placeholder="Contraseña" required>
-                            <div class="form-control-icon">
-                                <i class="bi bi-shield-lock"></i>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block btn-lg shadow-lg mt-5">Ingresar</button>
-                    </form>
 
-                    <div class="text-center mt-5 text-lg fs-4">
-                        <p class="text-gray-600">Sistema de Gestión de Cotizaciones Multiempresa.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-7 d-none d-lg-block">
-                <div id="auth-right"></div>
-            </div>
-        </div>
-    </div>
+// --- LÓGICA PRINCIPAL ---
+$response = ['success' => false, 'message' => 'Error no identificado.'];
+$httpStatusCode = 400;
+
+try {
+    // --- 1. VALIDACIÓN DE LA SOLICITUD (sin cambios) ---
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        $httpStatusCode = 405;
+        throw new Exception('Método no permitido.');
+    }
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (json_last_error() !== JSON_ERROR_NONE || !isset($data['correo']) || !isset($data['contrasena'])) {
+        throw new Exception('Solicitud malformada o datos incompletos.');
+    }
+    $correo = trim($data['correo']);
+    $contrasena = $data['contrasena'];
+    if (empty($correo) || empty($contrasena)) {
+        throw new Exception('El correo y la contraseña son obligatorios.');
+    }
+    if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+        throw new Exception('El formato del correo electrónico no es válido.');
+    }
     
-    <script src="assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-    <script src="assets/static/js/components/dark.js"></script>
-    <script src="assets/compiled/js/app.js"></script>
-</body>
-</html>
+    // --- 2. PROCESAMIENTO DE LA BASE DE DATOS ---
+    $conexion = new Conexion();
+    $conn = $conexion->getConn();
+
+    // ===== CORRECCIÓN CRÍTICA EN LA CONSULTA SQL =====
+    // 1. Hacemos un LEFT JOIN a la tabla 'roles' (asumiendo que se llama así) para obtener el nombre del rol.
+    // 2. Seleccionamos u.rol_id y r.nombre (y le damos un alias 'rol_nombre').
+    // 3. Ya no seleccionamos una columna 'rol' que no existe.
+    $sql = "SELECT u.id_usuario, u.nombre, u.contrasena, u.estado, r.nombre as rol_nombre
+            FROM usuarios u
+            LEFT JOIN roles r ON u.rol_id = r.id
+            WHERE u.correo = ? 
+            LIMIT 1";
+    // ===============================================
+    
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        throw new Exception("Error interno del servidor al preparar la consulta. Verifique los nombres de las tablas y columnas.");
+    }
+    
+    $stmt->bind_param("s", $correo);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        $usuario = $result->fetch_assoc();
+
+        if (password_verify($contrasena, $usuario['contrasena'])) {
+            if ($usuario['estado'] === 'activo') {
+                // ¡ÉXITO!
+                session_regenerate_id(true);
+
+                $_SESSION['usuario_id'] = $usuario['id_usuario'];
+                $_SESSION['nombre'] = $usuario['nombre'];
+                // ===== CORRECCIÓN AQUÍ: Guardamos el nombre del rol obtenido del JOIN =====
+                $_SESSION['rol'] = $usuario['rol_nombre'];
+                $_SESSION['last_activity'] = time();
+
+                registrarAuditoria($conn, 'LOGIN_EXITOSO', "Usuario '{$usuario['nombre']}' ha iniciado sesión.", $usuario['id_usuario']);
+                
+                // Mapeo de roles para el frontend
+                $rolMapping = ['admin' => 'Administrador', 'asesor' => 'Asesor', 'vendedor' => 'Vendedor'];
+                // ===== CORRECCIÓN AQUÍ: Usamos la variable de sesión que ya tiene el nombre correcto =====
+                $rolFrontend = $rolMapping[strtolower($_SESSION['rol'])] ?? 'Usuario';
+                
+                $httpStatusCode = 200;
+                $response = [
+                    'success' => true,
+                    'message' => 'Inicio de sesión exitoso.',
+                    'user' => ['userName' => $usuario['nombre'], 'userRole' => $rolFrontend]
+                ];
+
+            } else {
+                registrarAuditoria($conn, 'LOGIN_FALLIDO', "Intento a cuenta inactiva: " . $correo, $usuario['id_usuario']);
+                $httpStatusCode = 403;
+                $response['message'] = 'Esta cuenta ha sido desactivada.';
+            }
+        } else {
+            registrarAuditoria($conn, 'LOGIN_FALLIDO', "Contraseña incorrecta para: " . $correo, $usuario['id_usuario']);
+            $httpStatusCode = 401;
+            $response['message'] = 'Credenciales inválidas.';
+        }
+    } else {
+        registrarAuditoria($conn, 'LOGIN_FALLIDO', "Intento para correo no registrado: " . $correo);
+        $httpStatusCode = 401;
+        $response['message'] = 'Credenciales inválidas.';
+    }
+
+} catch (Exception $e) {
+    $httpStatusCode = 500;
+    error_log("Error en login.php: " . $e->getMessage());
+    $response['message'] = $e->getMessage();
+} finally {
+    if (isset($stmt) && $stmt instanceof mysqli_stmt) { $stmt->close(); }
+    if (isset($conexion)) { $conexion->close(); }
+    
+    http_response_code($httpStatusCode);
+    echo json_encode($response);
+    ob_end_flush();
+}
+?>
