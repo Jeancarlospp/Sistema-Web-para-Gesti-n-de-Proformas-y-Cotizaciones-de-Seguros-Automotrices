@@ -21,12 +21,7 @@
   <body>
     <script src="../assets/static/js/initTheme.js"></script>
     <div id="app">
-      <!-- ======================================================= -->
-      <!-- ===== INICIO DE LA CORRECCIÓN: SIDEBAR UNIVERSAL ===== -->
-      <!-- ======================================================= -->
       <div id="sidebar">
-        <!-- Este es el contenido completo del sidebar maestro.
-                 El script main.js se encargará de mostrar solo las partes correctas. -->
         <div class="sidebar-wrapper active">
           <div class="sidebar-header position-relative">
             <div class="d-flex justify-content-between align-items-center">
@@ -120,7 +115,7 @@
                   ><span>Gestión Clientes</span></a
                 >
               </li>
-              <li class="sidebar-item role-admin">
+              <li class="sidebar-item role-admin active">
                 <a href="supervisar_cotizaciones.html" class="sidebar-link"
                   ><i class="bi bi-file-earmark-text-fill"></i
                   ><span>Supervisar Cotizaciones</span></a
@@ -196,9 +191,6 @@
           </div>
         </div>
       </div>
-      <!-- ======================================================= -->
-      <!-- ================== FIN DEL SIDEBAR ==================== -->
-      <!-- ======================================================= -->
 
       <div id="main">
         <header class="mb-3">
@@ -206,52 +198,64 @@
             ><i class="bi bi-justify fs-3"></i
           ></a>
         </header>
-        <div
-          class="page-heading d-flex justify-content-between align-items-center"
-        >
-          <h3>Historial Completo de Cotizaciones</h3>
-          <div class="dropdown">
-            <a href="#" data-bs-toggle="dropdown" aria-expanded="false"
-              ><div class="user-menu d-flex">
-                <div class="user-name text-end me-3 d-none d-sm-block">
-                  <h6 class="mb-0 text-gray-600" id="profile-name">
-                    Cargando...
-                  </h6>
-                  <p class="mb-0 text-sm text-gray-600" id="profile-role">
-                    ...
-                  </p>
-                </div>
-                <div class="user-img d-flex align-items-center">
-                  <div class="avatar avatar-md">
-                    <img src="../assets/compiled/jpg/1.jpg" />
+        
+        <div class="page-heading">
+          <div class="d-flex justify-content-between align-items-center">
+            <h3>Historial Completo de Cotizaciones</h3>
+            <div class="dropdown">
+              <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="user-menu d-flex">
+                  <div class="user-name text-end me-3 d-none d-sm-block">
+                    <h6 class="mb-0 text-gray-600" id="profile-name">
+                      Cargando...
+                    </h6>
+                    <p class="mb-0 text-sm text-gray-600" id="profile-role">
+                      ...
+                    </p>
                   </div>
-                </div></div
-            ></a>
-            <ul
-              class="dropdown-menu dropdown-menu-end"
-              aria-labelledby="dropdownMenuButton"
-              style="min-width: 11rem"
-            >
-              <li>
-                <h6 class="dropdown-header">
-                  Hola, <span id="profile-greeting-name">Usuario</span>!
-                </h6>
-              </li>
-              <li>
-                <a class="dropdown-item" href="miPerfil.html"
-                  ><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a
-                >
-              </li>
-              <li><hr class="dropdown-divider" /></li>
-              <li>
-                <a class="dropdown-item" href="#" id="logout-btn"
-                  ><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar
-                  Sesión</a
-                >
-              </li>
-            </ul>
+                  <div class="user-img d-flex align-items-center">
+                    <div class="avatar avatar-md">
+                      <img src="../assets/compiled/jpg/1.jpg" />
+                    </div>
+                  </div>
+                </div>
+              </a>
+              <ul
+                class="dropdown-menu dropdown-menu-end"
+                aria-labelledby="dropdownMenuButton"
+                style="min-width: 11rem"
+              >
+                <li>
+                  <h6 class="dropdown-header">
+                    Hola, <span id="profile-greeting-name">Usuario</span>!
+                  </h6>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="miPerfil.html"
+                    ><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a
+                  >
+                </li>
+                <li>
+                  <div class="dropdown-item-text d-flex align-items-center justify-content-between">
+                    <span class="small text-muted">
+                      <i class="bi bi-shield-check me-1"></i>
+                      Estado de sesión
+                    </span>
+                    <span id="session-status" class="badge bg-success small">Activa</span>
+                  </div>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="#" id="logout-btn"
+                    ><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar
+                    Sesión</a
+                  >
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
+
         <div class="page-content">
           <div class="card">
             <div class="card-header">
@@ -318,7 +322,6 @@
           <section class="row">
             <div class="col-12">
               <div class="card">
-                <!-- MODIFICACIÓN: Contenedor flex para título y selector de orden -->
                 <div
                   class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2"
                 >
@@ -366,7 +369,9 @@
                         </tr>
                       </thead>
                       <tbody id="quotes-table-body">
-                        <!-- Las filas se generarán dinámicamente -->
+                        <tr>
+                          <td colspan="7" class="text-center py-4">Cargando cotizaciones...</td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>
@@ -398,7 +403,6 @@
                       id="quote-pagination-controls"
                       aria-label="Navegación de cotizaciones"
                     >
-                      <!-- Los botones de paginación se generarán aquí -->
                     </nav>
                   </div>
                 </div>
@@ -406,16 +410,38 @@
             </div>
           </section>
         </div>
+
+        <footer>
+          <div class="footer clearfix mb-0 text-muted">
+            <div class="float-start"><p>2025 © CS ENSIGNA</p></div>
+            <div class="float-end">
+              <p>Desarrollado por <a href="#">Grupo 2</a></p>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
 
-    <!-- ===== SCRIPTS ===== -->
+    <!-- Scripts para PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
+    <!-- Scripts del sistema -->
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script type="module" src="../js/main.js"></script>
     <script src="../assets/compiled/js/app.js" defer></script>
+
+    <!-- Script específico para esta página -->
+    <script type="module">
+      import { loadSupervisarCotizaciones } from '../js/supervisar_cotizaciones.js';
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        // Esperar a que main.js se cargue completamente
+        setTimeout(() => {
+          loadSupervisarCotizaciones();
+        }, 100);
+      });
+    </script>
   </body>
 </html>

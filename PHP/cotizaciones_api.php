@@ -22,7 +22,7 @@ if (!$conn) {
 
 try {
     // LISTAR COTIZACIONES (GET)
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($_GET['id'])) {
         // Parámetros de paginación
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
@@ -81,9 +81,27 @@ try {
         // Obtener total de registros
         $countSql = "SELECT COUNT(c.idCotizacion) as total " . $baseSql . $whereSql;
         $stmtCount = $conn->prepare($countSql);
-        if (!empty($types)) $stmtCount->bind_param($types, ...$params);
-        $stmtCount->execute();
-        $totalRecords = (int)$stmtCount->get_result()->fetch_assoc()['total'];
+        
+        if ($stmtCount === false) {
+            send_json_response(['success' => false, 'message' => 'Error preparando consulta de conteo: ' . $conn->error], 500);
+        }
+        
+        if (!empty($types)) {
+            if (!$stmtCount->bind_param($types, ...$params)) {
+                send_json_response(['success' => false, 'message' => 'Error binding parámetros de conteo: ' . $stmtCount->error], 500);
+            }
+        }
+        
+        if (!$stmtCount->execute()) {
+            send_json_response(['success' => false, 'message' => 'Error ejecutando consulta de conteo: ' . $stmtCount->error], 500);
+        }
+        
+        $result = $stmtCount->get_result();
+        if ($result === false) {
+            send_json_response(['success' => false, 'message' => 'Error obteniendo resultado de conteo: ' . $stmtCount->error], 500);
+        }
+        
+        $totalRecords = (int)$result->fetch_assoc()['total'];
         $totalPages = ceil($totalRecords / $limit);
         $stmtCount->close();
 
@@ -93,14 +111,31 @@ try {
                  . $baseSql . $whereSql . " ORDER BY " . $sortBy . " LIMIT ? OFFSET ?";
 
         $stmtData = $conn->prepare($dataSql);
+        if ($stmtData === false) {
+            send_json_response(['success' => false, 'message' => 'Error preparando consulta de datos: ' . $conn->error], 500);
+        }
+        
         $dataParams = $params;
         $dataTypes = $types . 'ii';
         $dataParams[] = $limit;
         $dataParams[] = $offset;
 
-        if (!empty($dataTypes)) $stmtData->bind_param($dataTypes, ...$dataParams);
-        $stmtData->execute();
-        $cotizaciones = $stmtData->get_result()->fetch_all(MYSQLI_ASSOC);
+        if (!empty($dataTypes)) {
+            if (!$stmtData->bind_param($dataTypes, ...$dataParams)) {
+                send_json_response(['success' => false, 'message' => 'Error binding parámetros de datos: ' . $stmtData->error], 500);
+            }
+        }
+        
+        if (!$stmtData->execute()) {
+            send_json_response(['success' => false, 'message' => 'Error ejecutando consulta de datos: ' . $stmtData->error], 500);
+        }
+        
+        $result = $stmtData->get_result();
+        if ($result === false) {
+            send_json_response(['success' => false, 'message' => 'Error obteniendo resultado de datos: ' . $stmtData->error], 500);
+        }
+        
+        $cotizaciones = $result->fetch_all(MYSQLI_ASSOC);
         $stmtData->close();
 
         send_json_response([
@@ -156,9 +191,24 @@ try {
 
         // Verificar existencia de cliente
         $stmt = $conn->prepare('SELECT Cli_nombre FROM cliente WHERE idCliente = ? AND Cli_estado = "activo"');
-        $stmt->bind_param('i', $idCliente);
-        $stmt->execute();
-        $clientResult = $stmt->get_result()->fetch_assoc();
+        if ($stmt === false) {
+            send_json_response(['success' => false, 'message' => 'Error preparando consulta de cliente: ' . $conn->error], 500);
+        }
+        
+        if (!$stmt->bind_param('i', $idCliente)) {
+            send_json_response(['success' => false, 'message' => 'Error binding parámetros de cliente: ' . $stmt->error], 500);
+        }
+        
+        if (!$stmt->execute()) {
+            send_json_response(['success' => false, 'message' => 'Error ejecutando consulta de cliente: ' . $stmt->error], 500);
+        }
+        
+        $result = $stmt->get_result();
+        if ($result === false) {
+            send_json_response(['success' => false, 'message' => 'Error obteniendo resultado de cliente: ' . $stmt->error], 500);
+        }
+        
+        $clientResult = $result->fetch_assoc();
         if (!$clientResult) {
             send_json_response(['success' => false, 'message' => 'Cliente no existe o está inactivo'], 400);
         }
@@ -166,9 +216,24 @@ try {
 
         // Verificar existencia de usuario
         $stmt = $conn->prepare('SELECT nombre FROM usuarios WHERE id_usuario = ? AND estado = "activo"');
-        $stmt->bind_param('i', $idUsuario);
-        $stmt->execute();
-        $userResult = $stmt->get_result()->fetch_assoc();
+        if ($stmt === false) {
+            send_json_response(['success' => false, 'message' => 'Error preparando consulta de usuario: ' . $conn->error], 500);
+        }
+        
+        if (!$stmt->bind_param('i', $idUsuario)) {
+            send_json_response(['success' => false, 'message' => 'Error binding parámetros de usuario: ' . $stmt->error], 500);
+        }
+        
+        if (!$stmt->execute()) {
+            send_json_response(['success' => false, 'message' => 'Error ejecutando consulta de usuario: ' . $stmt->error], 500);
+        }
+        
+        $result = $stmt->get_result();
+        if ($result === false) {
+            send_json_response(['success' => false, 'message' => 'Error obteniendo resultado de usuario: ' . $stmt->error], 500);
+        }
+        
+        $userResult = $result->fetch_assoc();
         if (!$userResult) {
             send_json_response(['success' => false, 'message' => 'Usuario no existe o está inactivo'], 400);
         }
@@ -178,9 +243,25 @@ try {
         $placeholders = implode(',', array_fill(0, count($planes), '?'));
         $types = str_repeat('i', count($planes));
         $stmt = $conn->prepare("SELECT idproducto, Pro_nombre, Pro_precioTotal FROM producto WHERE idproducto IN ($placeholders) AND Pro_estado = 'activo'");
-        $stmt->bind_param($types, ...$planes);
-        $stmt->execute();
-        $productResults = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        
+        if ($stmt === false) {
+            send_json_response(['success' => false, 'message' => 'Error preparando consulta de productos: ' . $conn->error], 500);
+        }
+        
+        if (!$stmt->bind_param($types, ...$planes)) {
+            send_json_response(['success' => false, 'message' => 'Error binding parámetros de productos: ' . $stmt->error], 500);
+        }
+        
+        if (!$stmt->execute()) {
+            send_json_response(['success' => false, 'message' => 'Error ejecutando consulta de productos: ' . $stmt->error], 500);
+        }
+        
+        $result = $stmt->get_result();
+        if ($result === false) {
+            send_json_response(['success' => false, 'message' => 'Error obteniendo resultado de productos: ' . $stmt->error], 500);
+        }
+        
+        $productResults = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
         if (count($productResults) !== count($planes)) {
@@ -201,8 +282,15 @@ try {
         try {
             // Insertar cotización principal
             $stmt = $conn->prepare("INSERT INTO cotizacion (Cot_montoAsegurable, idCliente, idUsuario, Cot_estado, Cot_descripcion) VALUES (?, ?, ?, 'borrador', ?)");
+            if ($stmt === false) {
+                throw new Exception('Error preparando inserción de cotización: ' . $conn->error);
+            }
+            
             $descripcion = "Cotización para " . $clientResult['Cli_nombre'] . " - " . count($planes) . " plan(es) seleccionado(s)";
-            $stmt->bind_param('diis', $montoTotal, $idCliente, $idUsuario, $descripcion);
+            
+            if (!$stmt->bind_param('diis', $montoTotal, $idCliente, $idUsuario, $descripcion)) {
+                throw new Exception('Error binding parámetros de cotización: ' . $stmt->error);
+            }
             
             if (!$stmt->execute()) {
                 throw new Exception('Error insertando cotización: ' . $stmt->error);
@@ -213,6 +301,9 @@ try {
 
             // Insertar detalles de cotización
             $stmt = $conn->prepare("INSERT INTO detalle_cotizacion (idCotizacion, idProducto, Det_numServicios, Det_precioUnitario, Det_subtotal) VALUES (?, ?, 1, ?, ?)");
+            if ($stmt === false) {
+                throw new Exception('Error preparando inserción de detalle: ' . $conn->error);
+            }
             
             foreach ($planes as $idProd) {
                 if (!isset($productosValidos[$idProd])) {
@@ -222,7 +313,10 @@ try {
                 $producto = $productosValidos[$idProd];
                 $precio = floatval($producto['Pro_precioTotal']);
                 
-                $stmt->bind_param('iidd', $idCotizacion, $idProd, $precio, $precio);
+                if (!$stmt->bind_param('iidd', $idCotizacion, $idProd, $precio, $precio)) {
+                    throw new Exception('Error binding parámetros de detalle: ' . $stmt->error);
+                }
+                
                 if (!$stmt->execute()) {
                     throw new Exception('Error insertando detalle de cotización: ' . $stmt->error);
                 }
@@ -264,9 +358,25 @@ try {
             JOIN usuarios u ON c.idUsuario = u.id_usuario 
             WHERE c.idCotizacion = ?
         ");
-        $stmt->bind_param('i', $idCotizacion);
-        $stmt->execute();
-        $cotizacion = $stmt->get_result()->fetch_assoc();
+        
+        if ($stmt === false) {
+            send_json_response(['success' => false, 'message' => 'Error preparando consulta de cotización: ' . $conn->error], 500);
+        }
+        
+        if (!$stmt->bind_param('i', $idCotizacion)) {
+            send_json_response(['success' => false, 'message' => 'Error binding parámetros de cotización: ' . $stmt->error], 500);
+        }
+        
+        if (!$stmt->execute()) {
+            send_json_response(['success' => false, 'message' => 'Error ejecutando consulta de cotización: ' . $stmt->error], 500);
+        }
+        
+        $result = $stmt->get_result();
+        if ($result === false) {
+            send_json_response(['success' => false, 'message' => 'Error obteniendo resultado de cotización: ' . $stmt->error], 500);
+        }
+        
+        $cotizacion = $result->fetch_assoc();
         $stmt->close();
 
         if (!$cotizacion) {
@@ -281,9 +391,25 @@ try {
             JOIN empresas_proveedora ep ON p.idEmpresaProveedora = ep.idEmpresas_Proveedora 
             WHERE dc.idCotizacion = ?
         ");
-        $stmt->bind_param('i', $idCotizacion);
-        $stmt->execute();
-        $detalles = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        
+        if ($stmt === false) {
+            send_json_response(['success' => false, 'message' => 'Error preparando consulta de detalles: ' . $conn->error], 500);
+        }
+        
+        if (!$stmt->bind_param('i', $idCotizacion)) {
+            send_json_response(['success' => false, 'message' => 'Error binding parámetros de detalles: ' . $stmt->error], 500);
+        }
+        
+        if (!$stmt->execute()) {
+            send_json_response(['success' => false, 'message' => 'Error ejecutando consulta de detalles: ' . $stmt->error], 500);
+        }
+        
+        $result = $stmt->get_result();
+        if ($result === false) {
+            send_json_response(['success' => false, 'message' => 'Error obteniendo resultado de detalles: ' . $stmt->error], 500);
+        }
+        
+        $detalles = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
         send_json_response([
@@ -300,7 +426,7 @@ try {
 
 } catch (Exception $e) {
     // Si hay una transacción activa, hacer rollback
-    if (!$conn->autocommit(null)) {
+    if (isset($conn) && !$conn->autocommit(null)) {
         $conn->rollback();
         $conn->autocommit(true);
     }
@@ -311,6 +437,6 @@ try {
         'error_details' => $e->getMessage()
     ], 500);
 } finally {
-    if ($conn) $conn->close();
+    if (isset($conn) && $conn) $conn->close();
 }
 ?>
