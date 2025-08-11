@@ -65,11 +65,13 @@ try {
     // 1. Hacemos un LEFT JOIN a la tabla 'roles' (asumiendo que se llama así) para obtener el nombre del rol.
     // 2. Seleccionamos u.rol_id y r.nombre (y le damos un alias 'rol_nombre').
     // 3. Ya no seleccionamos una columna 'rol' que no existe.
-    $sql = "SELECT u.id_usuario, u.nombre, u.contrasena, u.estado, r.nombre as rol_nombre
-            FROM usuarios u
-            LEFT JOIN roles r ON u.rol_id = r.id
-            WHERE u.correo = ? 
-            LIMIT 1";
+    $sql = "SELECT u.id_usuario, u.nombre, u.contrasena, u.estado, r.nombre as rol_nombre,
+               u.intentos_fallidos, u.bloqueado_hasta
+        FROM usuarios u
+        LEFT JOIN roles r ON u.rol_id = r.id
+        WHERE u.correo = ? 
+        LIMIT 1";
+
     // ===============================================
     
     $stmt = $conn->prepare($sql);
@@ -81,49 +83,77 @@ try {
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows === 1) {
-        $usuario = $result->fetch_assoc();
+if ($result->num_rows === 1) {
+    $usuario = $result->fetch_assoc();
+    // Verificar si la cuenta está bloqueada
+    if (!empty($usuario['bloqueado_hasta']) && strtotime($usuario['bloqueado_hasta']) > time()) {
+        $httpStatusCode = 403;
+        $response['message'] = 'Cuenta bloqueada temporalmente. Intente nuevamente más tarde.';
+        echo json_encode($response);
+        exit;
+    }
 
-        if (password_verify($contrasena, $usuario['contrasena'])) {
-            if ($usuario['estado'] === 'activo') {
-                // ¡ÉXITO!
-                session_regenerate_id(true);
+    if (password_verify($contrasena, $usuario['contrasena'])) {
+        if ($usuario['estado'] === 'activo') {
+            // Resetear intentos y bloqueo
+            $reset = $conn->prepare("UPDATE usuarios SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id_usuario = ?");
+            $reset->bind_param("i", $usuario['id_usuario']);
+            $reset->execute();
 
-                $_SESSION['usuario_id'] = $usuario['id_usuario'];
-                $_SESSION['nombre'] = $usuario['nombre'];
-                // ===== CORRECCIÓN AQUÍ: Guardamos el nombre del rol obtenido del JOIN =====
-                $_SESSION['rol'] = $usuario['rol_nombre'];
-                $_SESSION['last_activity'] = time();
+            // ¡ÉXITO!
+            session_regenerate_id(true);
+            $_SESSION['usuario_id'] = $usuario['id_usuario'];
+            $_SESSION['nombre'] = $usuario['nombre'];
+            $_SESSION['rol'] = $usuario['rol_nombre'];
+            $_SESSION['last_activity'] = time();
 
-                registrarAuditoria($conn, 'LOGIN_EXITOSO', "Usuario '{$usuario['nombre']}' ha iniciado sesión.", $usuario['id_usuario']);
-                
-                // Mapeo de roles para el frontend
-                $rolMapping = ['admin' => 'Administrador', 'asesor' => 'Asesor', 'vendedor' => 'Vendedor'];
-                // ===== CORRECCIÓN AQUÍ: Usamos la variable de sesión que ya tiene el nombre correcto =====
-                $rolFrontend = $rolMapping[strtolower($_SESSION['rol'])] ?? 'Usuario';
-                
-                $httpStatusCode = 200;
-                $response = [
-                    'success' => true,
-                    'message' => 'Inicio de sesión exitoso.',
-                    'user' => ['userName' => $usuario['nombre'], 'userRole' => $rolFrontend]
-                ];
+            registrarAuditoria($conn, 'LOGIN_EXITOSO', "Usuario '{$usuario['nombre']}' ha iniciado sesión.", $usuario['id_usuario']);
 
-            } else {
-                registrarAuditoria($conn, 'LOGIN_FALLIDO', "Intento a cuenta inactiva: " . $correo, $usuario['id_usuario']);
-                $httpStatusCode = 403;
-                $response['message'] = 'Esta cuenta ha sido desactivada.';
-            }
+            $rolMapping = ['admin' => 'Administrador', 'asesor' => 'Asesor', 'vendedor' => 'Vendedor'];
+            $rolFrontend = $rolMapping[strtolower($_SESSION['rol'])] ?? 'Usuario';
+
+            $httpStatusCode = 200;
+            $response = [
+                'success' => true,
+                'message' => 'Inicio de sesión exitoso.',
+                'user' => ['userName' => $usuario['nombre'], 'userRole' => $rolFrontend]
+            ];
         } else {
+            registrarAuditoria($conn, 'LOGIN_FALLIDO', "Intento a cuenta inactiva: " . $correo, $usuario['id_usuario']);
+            $httpStatusCode = 403;
+            $response['message'] = 'Esta cuenta ha sido desactivada.';
+        }
+    } else {
+        // Incrementar intentos
+        $nuevosIntentos = $usuario['intentos_fallidos'] + 1;
+
+        if ($nuevosIntentos >= 3) { // Límite de intentos
+            $bloqueoHasta = date('Y-m-d H:i:s', strtotime('+1 minutes'));
+            $update = $conn->prepare("UPDATE usuarios SET intentos_fallidos = ?, bloqueado_hasta = ? WHERE id_usuario = ?");
+            $update->bind_param("isi", $nuevosIntentos, $bloqueoHasta, $usuario['id_usuario']);
+            $update->execute();
+
+            registrarAuditoria($conn, 'LOGIN_BLOQUEO', "Cuenta bloqueada por múltiples intentos fallidos: " . $correo, $usuario['id_usuario']);
+
+            $httpStatusCode = 403;
+            $response['message'] = 'Cuenta bloqueada temporalmente por múltiples intentos fallidos.';
+        } else {
+            $update = $conn->prepare("UPDATE usuarios SET intentos_fallidos = ? WHERE id_usuario = ?");
+            $update->bind_param("ii", $nuevosIntentos, $usuario['id_usuario']);
+            $update->execute();
+
             registrarAuditoria($conn, 'LOGIN_FALLIDO', "Contraseña incorrecta para: " . $correo, $usuario['id_usuario']);
             $httpStatusCode = 401;
             $response['message'] = 'Credenciales inválidas.';
         }
-    } else {
-        registrarAuditoria($conn, 'LOGIN_FALLIDO', "Intento para correo no registrado: " . $correo);
-        $httpStatusCode = 401;
-        $response['message'] = 'Credenciales inválidas.';
     }
+} else {
+    registrarAuditoria($conn, 'LOGIN_FALLIDO', "Intento para correo no registrado: " . $correo);
+    $httpStatusCode = 401;
+    $response['message'] = 'Credenciales inválidas.';
+}
+
+
 
 } catch (Exception $e) {
     $httpStatusCode = 500;
