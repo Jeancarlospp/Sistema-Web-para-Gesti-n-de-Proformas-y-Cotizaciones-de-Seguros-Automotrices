@@ -416,7 +416,7 @@ async function openEditProductModal(productId) {
     
   } catch (error) {
     console.error(' Error al abrir modal de edición:', error);
-    alert('Papitas si senio\r');
+    alert('error al cargar info del producto');
   }
 }
 
@@ -826,7 +826,7 @@ async function showProductInfoModal(productId) {
     }
   } catch (error) {
     console.error('Error al mostrar información del producto:', error);
-    alert('Papitas si senio\r');
+    alert('Error al cargar info del producto');
   }
 }
 
