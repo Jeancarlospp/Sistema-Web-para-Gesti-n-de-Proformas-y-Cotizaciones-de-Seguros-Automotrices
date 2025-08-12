@@ -25,6 +25,8 @@
       <!-- ===== INICIO DE LA CORRECCIÓN: SIDEBAR UNIVERSAL ===== -->
       <!-- ======================================================= -->
       <div id="sidebar">
+        <!-- Este es el contenido completo del sidebar maestro.
+                 El script main.js se encargará de mostrar solo las partes correctas. -->
         <div class="sidebar-wrapper active">
           <div class="sidebar-header position-relative">
             <div class="d-flex justify-content-between align-items-center">
@@ -204,185 +206,188 @@
             ><i class="bi bi-justify fs-3"></i
           ></a>
         </header>
-        <div
-          class="page-heading d-flex justify-content-between align-items-center"
-        >
-          <h3>Panel de Vendedor</h3>
-          <div class="dropdown">
-            <a href="#" data-bs-toggle="dropdown" aria-expanded="false"
-              ><div class="user-menu d-flex">
-                <div class="user-name text-end me-3 d-none d-sm-block">
-                  <h6 class="mb-0 text-gray-600" id="profile-name">
-                    Cargando...
-                  </h6>
-                  <p class="mb-0 text-sm text-gray-600" id="profile-role">
-                    ...
-                  </p>
-                </div>
-                <div class="user-img d-flex align-items-center">
-                  <div class="avatar avatar-md">
-                    <img src="../assets/compiled/jpg/1.jpg" />
+        <div class="page-heading">
+          <div class="d-flex justify-content-between align-items-center">
+            <h3>Panel de Vendedor - Cotización Rápida</h3>
+            <div class="dropdown">
+              <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="user-menu d-flex">
+                  <div class="user-name text-end me-3 d-none d-sm-block">
+                    <h6 class="mb-0 text-gray-600" id="profile-name">
+                      Cargando...
+                    </h6>
+                    <p class="mb-0 text-sm text-gray-600" id="profile-role">
+                      ...
+                    </p>
                   </div>
-                </div></div
-            ></a>
-            <ul
-              class="dropdown-menu dropdown-menu-end"
-              aria-labelledby="dropdownMenuButton"
-              style="min-width: 11rem"
-            >
-              <li>
-                <h6 class="dropdown-header">
-                  Hola, <span id="profile-greeting-name">Usuario</span>!
-                </h6>
-              </li>
-              <li>
-                <a class="dropdown-item" href="miPerfil.html"
-                  ><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a
-                >
-              </li>
-              <li>
-                <div class="dropdown-item-text d-flex align-items-center justify-content-between">
-                  <span class="small text-muted">
-                    <i class="bi bi-shield-check me-1"></i>
-                    Estado de sesión
-                  </span>
-                  <span id="session-status" class="badge bg-success small">Activa</span>
+                  <div class="user-img d-flex align-items-center">
+                    <div class="avatar avatar-md">
+                      <img src="../assets/compiled/jpg/1.jpg" />
+                    </div>
+                  </div>
                 </div>
-              </li>
-              <li><hr class="dropdown-divider" /></li>
-              <li>
-                <a class="dropdown-item" href="#" id="logout-btn"
-                  ><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar
-                  Sesión</a
-                >
-              </li>
-            </ul>
+              </a>
+              <ul
+                class="dropdown-menu dropdown-menu-end"
+                aria-labelledby="dropdownMenuButton"
+                style="min-width: 11rem"
+              >
+                <li>
+                  <h6 class="dropdown-header">
+                    Hola, <span id="profile-greeting-name">Usuario</span>!
+                  </h6>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="miPerfil.html"
+                    ><i class="icon-mid bi bi-person me-2"></i> Mi Perfil</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="#" id="logout-btn"
+                    ><i class="icon-mid bi bi-box-arrow-left me-2"></i> Cerrar
+                    Sesión</a
+                  >
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
         <div class="page-content">
-          <div class="alert alert-light-info color-info">
-            <i class="bi bi-star-fill"></i> ¡Bienvenido! Este panel está
-            optimizado para agilizar tus ventas.
-          </div>
           <section class="row">
             <div class="col-12">
               <div class="card">
                 <div class="card-header">
-                  <h4 class="card-title">
-                    1. Ingresar Datos de Cotización Rápida
-                  </h4>
+                  <h4 class="card-title">1. Ingresar Datos para Cotizar</h4>
                 </div>
                 <div class="card-body">
-                  <form class="form" id="quick-quote-form" novalidate>
-                    <div class="row">
-                      <div class="col-md-6 col-12">
-                        <div class="form-group">
-                          <label for="vendedor-client-name"
-                            >Nombre del Cliente</label
-                          ><input
-                            type="text"
-                            id="vendedor-client-name"
-                            class="form-control"
-                            required
-                          />
+                  <form class="form form-vertical" id="quote-form" novalidate>
+                    <div class="form-body">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="client-name">Nombre o Cédula del Cliente</label>
+                            <input
+                              type="text"
+                              id="client-name"
+                              class="form-control"
+                              list="client-list"
+                              autocomplete="off"
+                              required
+                            />
+                            <datalist id="client-list"></datalist>
+                            <input type="hidden" id="client-id" value="">
+                          </div>
                         </div>
-                      </div>
-                      <div class="col-md-6 col-12">
-                        <div class="form-group">
-                          <label for="vendedor-vehicle-type"
-                            >Tipo de Vehículo</label
-                          >
-                          <select
-                            class="form-select"
-                            id="vendedor-vehicle-type"
-                            required
-                          >
-                            <option value="" disabled selected>
-                              Cargando tipos...
-                            </option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-12">
-                        <div class="form-group">
-                          <label>Seleccione Paquetes a Comparar:</label>
-                          <div id="vendedor-plans-container" class="mt-2">
-                            <p class="text-muted">
-                              Por favor, seleccione primero un tipo de vehículo.
-                            </p>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="vehicle-type">Tipo de Vehículo</label>
+                            <select
+                              class="form-select"
+                              id="vehicle-type"
+                              required
+                            >
+                              <option value="" disabled selected>
+                                Cargando tipos...
+                              </option>
+                            </select>
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-12 d-flex justify-content-end mt-3">
-                        <button
-                          type="submit"
-                          id="btn-vendedor-compare"
-                          class="btn btn-primary me-1 mb-1"
-                          disabled
-                        >
-                          Ver Comparativa
-                        </button>
-                        <button
-                          type="reset"
-                          id="btn-vendedor-reset"
-                          class="btn btn-light-secondary me-1 mb-1"
-                        >
-                          Limpiar
-                        </button>
+                      <div class="row">
+                        <div class="col-12">
+                          <div class="form-group">
+                            <label>Seleccione Planes a Comparar:</label>
+                            <div id="plans-checkbox-container" class="mt-2">
+                              <p class="text-muted">
+                                Por favor, seleccione primero un tipo de
+                                vehículo.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-12 d-flex justify-content-end mt-4">
+                          <button
+                            type="submit"
+                            id="btn-compare"
+                            class="btn btn-primary me-1 mb-1"
+                            disabled
+                          >
+                            <i class="bi bi-bar-chart-fill"></i> Ver Comparativa
+                          </button>
+                          <button
+                            type="reset"
+                            id="btn-reset-form"
+                            class="btn btn-light-secondary me-1 mb-1"
+                          >
+                            Limpiar
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </form>
                 </div>
               </div>
 
-              <div
-                class="card"
-                id="vendedor-comparison-area"
-                style="display: none"
-              >
-                <div class="card-header">
-                  <h4 class="card-title">
-                    2. Comparativa de Paquetes para
-                    <span
-                      id="vendedor-client-name-display"
-                      class="text-primary"
-                    ></span>
-                  </h4>
-                </div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table table-bordered text-center">
-                      <thead id="vendedor-comparison-head"></thead>
-                      <tbody id="vendedor-comparison-body"></tbody>
-                      <tfoot id="vendedor-comparison-foot"></tfoot>
-                    </table>
-                  </div>
-                  <div class="col-12 d-flex justify-content-center mt-4">
-                    <button
-                      id="vendedor-generate-pdf-btn"
-                      class="btn btn-success btn-lg"
-                    >
-                      <i class="bi bi-file-earmark-pdf-fill"></i> Generar PDF y
-                      Entregar
-                    </button>
-                  </div>
-                </div>
-              </div>
+<div class="card" id="comparison-area" style="display: none">
+  <div class="card-header">
+    <h4 class="card-title">
+      2. Comparativa de Seguros para
+      <span id="client-name-display" class="text-primary"></span>
+    </h4>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table id="comparison-table" class="table table-bordered text-center">
+        <thead id="comparison-table-head"></thead>
+        <tbody id="comparison-table-body"></tbody>
+        <tfoot id="comparison-table-foot"></tfoot>
+      </table>
+    </div>
+    <div class="col-12 d-flex justify-content-center mt-4 gap-3">
+      <!-- Botón Guardar Cotización -->
+      <button
+        id="btnGuardar"
+        class="btn btn-primary btn-lg"
+      >
+        <i class="bi bi-save-fill"></i> Guardar Cotización
+      </button>
+
+      <!-- Botón Generar PDF -->
+      <button
+        id="generate-pdf-btn"
+        class="btn btn-success btn-lg"
+      >
+        <i class="bi bi-file-earmark-pdf-fill"></i> Generar PDF
+      </button>
+    </div>
+  </div>
+</div>
+
             </div>
           </section>
         </div>
+
+        <footer>
+          <div class="footer clearfix mb-0 text-muted">
+            <div class="float-start"><p>2025 © CS ENSIGNA</p></div>
+            <div class="float-end">
+              <p>Desarrollado por <a href="#">Grupo 2</a></p>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
     <!-- ===== Bloque de Scripts Final y Correcto ===== -->
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script type="module" src="../js/main.js"></script>
     <script src="../assets/compiled/js/app.js" defer></script>
+    
   </body>
 </html>

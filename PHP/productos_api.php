@@ -75,6 +75,29 @@ try {
                 send_json_response($products);
             }
             
+            // 5. Obtener un producto específico para edición
+            elseif (isset($_GET['action']) && $_GET['action'] === 'get_product' && isset($_GET['id'])) {
+                $productId = intval($_GET['id']);
+                $sql = "SELECT p.*, c.Cat_nombre as nombre_categoria, e.Emp_nombre as nombre_empresa 
+                        FROM producto p 
+                        LEFT JOIN categoria c ON p.idCategoria = c.idcategoria 
+                        LEFT JOIN empresas_proveedora e ON p.idEmpresaProveedora = e.idEmpresas_Proveedora 
+                        WHERE p.idproducto = ?";
+                
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("i", $productId);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                
+                if ($result->num_rows > 0) {
+                    $product = $result->fetch_assoc();
+                    send_json_response(['success' => true, 'product' => $product]);
+                } else {
+                    send_json_response(['success' => false, 'message' => 'Producto no encontrado'], 404);
+                }
+                $stmt->close();
+            }
+            
             // 4. Lógica principal para la vista con paginación (productosAsegurables.html)
             else {
                 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;

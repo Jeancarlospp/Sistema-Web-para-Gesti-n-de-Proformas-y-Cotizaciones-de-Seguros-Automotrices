@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Productos Asegurables - CS ENSIGNA</title>
+    <title>PRODUCTOS MODIFICADO - CS ENSIGNA</title>
 
     <link
       rel="shortcut icon"
@@ -712,6 +712,316 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Edición de Producto -->
+    <div
+      class="modal fade"
+      id="editProductModal"
+      tabindex="-1"
+      aria-labelledby="editProductModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title" id="editProductModalLabel">
+              <i class="bi bi-pencil-square me-2"></i>Editar Producto
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="editProductForm" novalidate>
+              <!-- Campo oculto para el ID -->
+              <input type="hidden" id="editProductId" />
+              
+              <!-- Información Básica -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h6 class="text-primary border-bottom pb-2 mb-3">
+                    <i class="bi bi-info-circle me-2"></i>Información Básica
+                  </h6>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="editNombreProducto" class="form-label">
+                    <i class="bi bi-tag me-1"></i>Nombre del Producto <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="editNombreProducto"
+                    class="form-control"
+                    placeholder="Ej: Seguro Auto Premium"
+                    required
+                  />
+                  <div class="invalid-feedback">
+                    El nombre del producto es obligatorio.
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="editCategoriaProducto" class="form-label">
+                    <i class="bi bi-grid me-1"></i>Categoría <span class="text-danger">*</span>
+                  </label>
+                  <select id="editCategoriaProducto" class="form-select" required>
+                    <option value="">Seleccionar categoría...</option>
+                  </select>
+                  <div class="invalid-feedback">
+                    La categoría es obligatoria.
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="editEmpresaProducto" class="form-label">
+                    <i class="bi bi-building me-1"></i>Empresa <span class="text-danger">*</span>
+                  </label>
+                  <select id="editEmpresaProducto" class="form-select" required>
+                    <option value="">Seleccionar empresa...</option>
+                  </select>
+                  <div class="invalid-feedback">
+                    La empresa es obligatoria.
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="editEstadoProducto" class="form-label">
+                    <i class="bi bi-toggle-on me-1"></i>Estado
+                  </label>
+                  <select id="editEstadoProducto" class="form-select">
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                  </select>
+                </div>
+                <div class="col-12 mb-3">
+                  <label for="editDescripcionProducto" class="form-label">
+                    <i class="bi bi-card-text me-1"></i>Descripción
+                  </label>
+                  <textarea
+                    id="editDescripcionProducto"
+                    class="form-control"
+                    rows="3"
+                    placeholder="Descripción detallada del producto..."
+                  ></textarea>
+                </div>
+              </div>
+
+              <!-- Información de Precios -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h6 class="text-primary border-bottom pb-2 mb-3">
+                    <i class="bi bi-currency-dollar me-2"></i>Información de Precios
+                  </h6>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="editPrecioMensual" class="form-label">
+                    <i class="bi bi-calendar-month me-1"></i>Precio Mensual ($) <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="editPrecioMensual"
+                    class="form-control"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    required
+                  />
+                  <div class="invalid-feedback">
+                    El precio mensual es obligatorio y debe ser mayor a 0.
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="editMesesCobertura" class="form-label">
+                    <i class="bi bi-calendar-range me-1"></i>Meses de Cobertura
+                  </label>
+                  <input
+                    type="number"
+                    id="editMesesCobertura"
+                    class="form-control"
+                    min="1"
+                    max="60"
+                    value="12"
+                    placeholder="12"
+                  />
+                  <small class="form-text text-muted">Por defecto: 12 meses</small>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="editPrecioTotal" class="form-label">
+                    <i class="bi bi-calculator me-1"></i>Precio Total ($)
+                  </label>
+                  <input
+                    type="number"
+                    id="editPrecioTotal"
+                    class="form-control"
+                    step="0.01"
+                    readonly
+                    placeholder="Se calcula automáticamente"
+                  />
+                  <small class="form-text text-muted">Se calcula automáticamente</small>
+                </div>
+              </div>
+
+              <!-- Coberturas y Montos -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h6 class="text-primary border-bottom pb-2 mb-3">
+                    <i class="bi bi-shield-check me-2"></i>Coberturas y Montos
+                  </h6>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="editResponsabilidadCivil" class="form-label">
+                    <i class="bi bi-person-check me-1"></i>Responsabilidad Civil ($)
+                  </label>
+                  <input
+                    type="number"
+                    id="editResponsabilidadCivil"
+                    class="form-control"
+                    min="0"
+                    step="1000"
+                    placeholder="Ej: 20000"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="editDanosColision" class="form-label">
+                    <i class="bi bi-car-front me-1"></i>Daños por Colisión ($)
+                  </label>
+                  <input
+                    type="number"
+                    id="editDanosColision"
+                    class="form-control"
+                    min="0"
+                    step="1000"
+                    placeholder="Ej: 15000"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="editGastosLegales" class="form-label">
+                    <i class="bi bi-file-text me-1"></i>Gastos Legales ($)
+                  </label>
+                  <input
+                    type="number"
+                    id="editGastosLegales"
+                    class="form-control"
+                    min="0"
+                    step="100"
+                    placeholder="Ej: 3000"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="editGastosMedicos" class="form-label">
+                    <i class="bi bi-heart-pulse me-1"></i>Gastos Médicos ($)
+                  </label>
+                  <input
+                    type="number"
+                    id="editGastosMedicos"
+                    class="form-control"
+                    min="0"
+                    step="100"
+                    placeholder="Ej: 2000"
+                  />
+                </div>
+              </div>
+
+              <!-- Coberturas Adicionales -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h6 class="text-primary border-bottom pb-2 mb-3">
+                    <i class="bi bi-plus-square me-2"></i>Coberturas Adicionales
+                  </h6>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">
+                    <i class="bi bi-shield-x me-1"></i>Cobertura de Robo
+                  </label>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="editRoboTotal"
+                      id="editRoboSi"
+                      value="si"
+                    />
+                    <label class="form-check-label" for="editRoboSi">
+                      <i class="bi bi-check-circle text-success me-1"></i>Sí incluye robo total
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="editRoboTotal"
+                      id="editRoboNo"
+                      value="no"
+                      checked
+                    />
+                    <label class="form-check-label" for="editRoboNo">
+                      <i class="bi bi-x-circle text-danger me-1"></i>No incluye robo total
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">
+                    <i class="bi bi-car-front-fill me-1"></i>Auto de Reemplazo
+                  </label>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="editAutoReemplazo"
+                      id="editReemplazoSi"
+                      value="si"
+                    />
+                    <label class="form-check-label" for="editReemplazoSi">
+                      <i class="bi bi-check-circle text-success me-1"></i>Sí incluye auto de reemplazo
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="editAutoReemplazo"
+                      id="editReemplazoNo"
+                      value="no"
+                      checked
+                    />
+                    <label class="form-check-label" for="editReemplazoNo">
+                      <i class="bi bi-x-circle text-danger me-1"></i>No incluye auto de reemplazo
+                    </label>
+                  </div>
+                </div>
+                <div class="col-12 mb-3">
+                  <label for="editAsistenciaVial" class="form-label">
+                    <i class="bi bi-tools me-1"></i>Tipo de Asistencia Vial
+                  </label>
+                  <select id="editAsistenciaVial" class="form-select">
+                    <option value="basica" selected>Básica (horario comercial)</option>
+                    <option value="24/7">24/7 (disponible todo el día)</option>
+                    <option value="ilimitada">Ilimitada (sin restricciones)</option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer bg-light">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              <i class="bi bi-x-circle me-1"></i>Cancelar
+            </button>
+            <button
+              type="button"
+              id="btnActualizarProducto"
+              class="btn btn-warning"
+            >
+              <i class="bi bi-pencil-square me-1"></i>Actualizar Producto
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
 
     <!-- Bloque de Scripts Optimizado -->
     <script src="../assets/static/js/components/dark.js"></script>

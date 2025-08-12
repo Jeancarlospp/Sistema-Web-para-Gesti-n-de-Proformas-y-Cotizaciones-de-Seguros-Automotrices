@@ -399,7 +399,7 @@ async function populateUserFilter() {
   try {
     const response = await fetch("../php/usuarios_api.php?limit=500");
     if (!response.ok)
-      throw new Error("No se pudo cargar la lista de usuarios.");
+      throw new Error("ERROR CAMBIO DE PRUEBA - usuarios no disponibles.");
 
     const result = await response.json();
     if (result && result.data) {

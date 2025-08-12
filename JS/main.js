@@ -24,7 +24,6 @@ import { SessionManager } from "./session_manager.js"; // Asegúrate de que el n
 import { loadAdminDashboard } from "./admin_dashboard.js";
 import { loadGestionUsuarios } from "./gestion_usuario.js";
 import { loadAsesorDashboard } from "./asesor_dashboard.js";
-import { loadVendedorDashboard } from "./vendedor_dashboard.js";
 import { loadGestionClientes } from "./gestion_clientes.js";
 import { loadGestionEmpresas } from "./gestion_empresas.js";
 import { loadVisualizarProductos } from "./vizualizar_productos.js";
@@ -123,7 +122,7 @@ function runPageSpecificLogic() {
   } else if (path.includes("asesor_dashboard.html")) {
     loadAsesorDashboard();
   } else if (path.includes("vendedor_dashboard.html")) {
-    loadVendedorDashboard();
+    loadAsesorDashboard(); // Usar la misma funcionalidad que el asesor
   } else if (path.includes("gestion_clientes.html")) {
     loadGestionClientes();
   } else if (path.includes("gestion_empresas.html")) {
