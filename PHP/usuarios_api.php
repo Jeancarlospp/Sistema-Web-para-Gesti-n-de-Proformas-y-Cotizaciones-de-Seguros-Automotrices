@@ -153,14 +153,14 @@ try {
                     $nuevoId = $conn->insert_id;
 
                     // Auditoría: registrar creación
+                    $usuarioCreador = $_SESSION['nombre'] ?? 'Sistema';
                     $descripcion = sprintf(
-                        "Creación de nuevo usuario:\nNombre: %s\nCédula: %s\nCorreo: %s\nRol: %s (ID: %d)\nCreado por: %s",
+                        "Usuario creado: %s (Cédula: %s, Email: %s, Rol: %s) - Creado por: %s",
                         $nombre,
                         $cedula ?: 'No especificada',
                         $correo,
                         $rol_nombre,
-                        $rol_id,
-                        $_SESSION['nombre'] ?? 'Usuario del sistema'
+                        $usuarioCreador
                     );
                     registrarAuditoria($conn, $_SESSION['usuario_id'], 'INSERT', 'usuarios', $descripcion);
 

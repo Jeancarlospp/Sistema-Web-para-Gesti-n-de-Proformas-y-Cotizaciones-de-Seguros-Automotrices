@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -22,7 +22,7 @@
     <script src="../assets/static/js/initTheme.js"></script>
     <div id="app">
       <!-- ======================================================= -->
-      <!-- ===== INICIO DE LA CORRECCIÓN: SIDEBAR UNIVERSAL ===== -->
+      <!-- ===== INICIO DE LA CORRECCIí“N: SIDEBAR UNIVERSAL ===== -->
       <!-- ======================================================= -->
       <div id="sidebar">
         <!-- Este es el contenido completo del sidebar maestro.
@@ -95,7 +95,7 @@
           </div>
           <div class="sidebar-menu">
             <ul class="menu">
-              <!-- ========== MENÚ ADMINISTRADOR ========== -->
+              <!-- ========== MENíš ADMINISTRADOR ========== -->
               <li class="sidebar-title role-admin">Menú Principal</li>
               <li class="sidebar-item role-admin">
                 <a href="admin_dashboard.html" class="sidebar-link"
@@ -129,16 +129,16 @@
               <li class="sidebar-item role-admin">
                 <a href="reportes_auditoria.html" class="sidebar-link"
                   ><i class="bi bi-journal-album"></i
-                  ><span>Reportes y Auditoría</span></a
+                  ><span>Reportes y Auditorí­a</span></a
                 >
               </li>
 
-              <!-- ========== MENÚ ASESOR ========== -->
+              <!-- ========== MENíš ASESOR ========== -->
               <li class="sidebar-title role-asesor">Menú Asesor</li>
               <li class="sidebar-item role-asesor">
                 <a href="asesor_dashboard.html" class="sidebar-link"
                   ><i class="bi bi-grid-fill"></i
-                  ><span>Dashboard de Cotización</span></a
+                  ><span>Dashboard de Cotizacií³n</span></a
                 >
               </li>
               <li class="sidebar-item role-asesor">
@@ -154,12 +154,12 @@
                 >
               </li>
 
-              <!-- ========== MENÚ VENDEDOR ========== -->
+              <!-- ========== MENíš VENDEDOR ========== -->
               <li class="sidebar-title role-vendedor">Menú Vendedor</li>
               <li class="sidebar-item role-vendedor">
                 <a href="vendedor_dashboard.html" class="sidebar-link"
                   ><i class="bi bi-lightning-charge-fill"></i
-                  ><span>Cotización Rápida</span></a
+                  ><span>Cotizacií³n Rápida</span></a
                 >
               </li>
               <li class="sidebar-item role-vendedor">
@@ -175,7 +175,7 @@
                 >
               </li>
 
-              <!-- ========== CUENTA (Común para todos) ========== -->
+              <!-- ========== CUENTA (Comíºn para todos) ========== -->
               <li class="sidebar-title">Cuenta</li>
               <li class="sidebar-item role-asesor role-vendedor">
                 <a href="mis_cotizaciones.html" class="sidebar-link">
@@ -247,7 +247,7 @@
             </ul>
           </div>
             </div>
-            <!-- ... (código del <head> y <header>) ... -->
+            <!-- ... (cí³digo del <head> y <header>) ... -->
 
 <div class="page-content">
     <section class="row">
@@ -267,7 +267,7 @@
                             </div>
                         </div>
                         <div class="col-12 col-md-5">
-                            <label class="form-label">Filtrar por Fecha de Creación:</label>
+                            <label class="form-label">Filtrar por Fecha de Creación</label>
                             <div class="input-group">
                                 <input type="date" id="my-quotes-start-date" class="form-control">
                                 <span class="input-group-text">a</span>
@@ -298,23 +298,23 @@
                                     <table class="table table-hover table-lg">
                                         <thead>
                                             <tr>
-                                                <th>ID Cotización</th>
+                                                <th>ID Cotizacií³n</th>
                                                 <th>Nombre del Cliente</th>
-                                                <th>Fecha de Creación</th>
-                                                <th>Descripción</th>
+                                                <th>Fecha de Creacií³n</th>
+                                                <th>Descripcií³n</th>
                                                 <th>Monto Asegurable</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody id="my-quotes-table-body">
-                                            <!-- Las filas se generarán con JavaScript -->
+                                            <!-- Las filas se generarí¡n con JavaScript -->
                                         </tbody>
                                     </table>
                                 </div>
                                 <hr />
                                 <div class="d-flex justify-content-end align-items-center flex-wrap gap-3 mt-3">
                                     <span id="my-quotes-pagination-info" class="text-muted small"></span>
-                                    <nav id="my-quotes-pagination-controls" aria-label="Navegación de cotizaciones"></nav>
+                                    <nav id="my-quotes-pagination-controls" aria-label="Navegacií³n de cotizaciones"></nav>
                                 </div>
                             </div>
                         </div>
@@ -326,20 +326,20 @@
 
 
     <!-- ========================================================================= -->
-    <!-- ===== INICIO: MODAL PARA VER DETALLES DE LA COTIZACIÓN ===== -->
+    <!-- ===== INICIO: MODAL PARA VER DETALLES DE LA COTIZACIí“N ===== -->
     <!-- ========================================================================= -->
     <div class="modal fade" id="quoteDetailsModal" tabindex="-1" aria-labelledby="quoteDetailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
                     <h5 class="modal-title" id="quoteDetailsModalLabel">
-                        <i class="bi bi-journal-text me-2"></i>Detalles de la Cotización #<span id="detailsModalTitleId">...</span>
+                        <i class="bi bi-journal-text me-2"></i>Detalles de la Cotizacií³n #<span id="detailsModalTitleId">...</span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div id="detailsModalContent">
-                        <!-- El contenido se llenará dinámicamente -->
+                        <!-- El contenido se llenarí¡ diní¡micamente -->
                         <p class="text-center py-5">Cargando detalles...</p>
                     </div>
                 </div>
@@ -352,19 +352,26 @@
         </div>
     </div>
     <!-- ========================================================================= -->
-    <!-- ===== FIN: MODAL PARA VER DETALLES DE LA COTIZACIÓN ===== -->
+    <!-- ===== FIN: MODAL PARA VER DETALLES DE LA COTIZACIí“N ===== -->
     <!-- ========================================================================= -->
 
-   <!-- 1. Cargar la librería principal jsPDF PRIMERO -->
+   <!-- 1. Cargar la librerí­a principal jsPDF PRIMERO -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
-    <!-- 2. Cargar el plugin AutoTable DESPUÉS -->
+    <!-- 2. Cargar el plugin AutoTable DESPUí‰S -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <!-- ========================================================= -->
     <!-- Bloque de Scripts Optimizado -->
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="../js/validaciones-nuevo.js"></script>
     <script type="module" src="../js/main.js"></script>
     <script src="../assets/compiled/js/app.js" defer></script>
 </body>
 </html>
+
+
+
+
+
+

@@ -16,23 +16,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 header('Content-Type: application/json');
 require_once __DIR__ . '/php/Conexion.php';
-
-/**
- * Función de auditoría CORREGIDA para coincidir con los nombres de tus columnas.
- */
-function registrarAuditoria($conn, $accion, $descripcion, $usuarioId = null) {
-    $tablaAfectada = 'usuarios';
-    $ip = $_SERVER['REMOTE_ADDR'];
-    // ===== CORRECCIÓN AQUÍ: Se usa `idUsuario` en lugar de `Aud_idUsuario` =====
-    $sql = "INSERT INTO auditoria (idUsuario, Aud_accion, Aud_tabla, Aud_descripcion, Aud_IP) VALUES (?, ?, ?, ?, ?)";
-    
-    if ($stmt = $conn->prepare($sql)) {
-        $stmt->bind_param("issss", $usuarioId, $accion, $tablaAfectada, $descripcion, $ip);
-        $stmt->execute();
-        $stmt->close();
-    }
-}
-
+require_once __DIR__ . '/php/auditoria_helper.php';
 
 // --- LÓGICA PRINCIPAL ---
 $response = ['success' => false, 'message' => 'Error no identificado.'];
@@ -100,6 +84,11 @@ if ($result->num_rows === 1) {
             $reset->bind_param("i", $usuario['id_usuario']);
             $reset->execute();
 
+            // Actualizar último login
+            $updateLogin = $conn->prepare("UPDATE usuarios SET ultimo_login = CURRENT_TIMESTAMP WHERE id_usuario = ?");
+            $updateLogin->bind_param("i", $usuario['id_usuario']);
+            $updateLogin->execute();
+
             // ¡ÉXITO!
             session_regenerate_id(true);
             $_SESSION['usuario_id'] = $usuario['id_usuario'];
@@ -107,7 +96,7 @@ if ($result->num_rows === 1) {
             $_SESSION['rol'] = $usuario['rol_nombre'];
             $_SESSION['last_activity'] = time();
 
-            registrarAuditoria($conn, 'LOGIN_EXITOSO', "Usuario '{$usuario['nombre']}' ha iniciado sesión.", $usuario['id_usuario']);
+            registrarAuditoria($conn, $usuario['id_usuario'], 'LOGIN_EXITOSO', 'usuarios', "Usuario '{$usuario['nombre']}' ha iniciado sesión.");
 
             $rolMapping = ['admin' => 'Administrador', 'asesor' => 'Asesor', 'vendedor' => 'Vendedor'];
             $rolFrontend = $rolMapping[strtolower($_SESSION['rol'])] ?? 'Usuario';
@@ -119,7 +108,7 @@ if ($result->num_rows === 1) {
                 'user' => ['userName' => $usuario['nombre'], 'userRole' => $rolFrontend]
             ];
         } else {
-            registrarAuditoria($conn, 'LOGIN_FALLIDO', "Intento a cuenta inactiva: " . $correo, $usuario['id_usuario']);
+            registrarAuditoria($conn, $usuario['id_usuario'], 'LOGIN_FALLIDO', 'usuarios', "Intento a cuenta inactiva: " . $correo);
             $httpStatusCode = 403;
             $response['message'] = 'Esta cuenta ha sido desactivada.';
         }
@@ -133,7 +122,7 @@ if ($result->num_rows === 1) {
             $update->bind_param("isi", $nuevosIntentos, $bloqueoHasta, $usuario['id_usuario']);
             $update->execute();
 
-            registrarAuditoria($conn, 'LOGIN_BLOQUEO', "Cuenta bloqueada por múltiples intentos fallidos: " . $correo, $usuario['id_usuario']);
+            registrarAuditoria($conn, $usuario['id_usuario'], 'LOGIN_BLOQUEO', 'usuarios', "Cuenta bloqueada por múltiples intentos fallidos: " . $correo);
 
             $httpStatusCode = 403;
             $response['message'] = 'Cuenta bloqueada temporalmente por múltiples intentos fallidos.';
@@ -142,13 +131,13 @@ if ($result->num_rows === 1) {
             $update->bind_param("ii", $nuevosIntentos, $usuario['id_usuario']);
             $update->execute();
 
-            registrarAuditoria($conn, 'LOGIN_FALLIDO', "Contraseña incorrecta para: " . $correo, $usuario['id_usuario']);
+            registrarAuditoria($conn, $usuario['id_usuario'], 'LOGIN_FALLIDO', 'usuarios', "Contraseña incorrecta para: " . $correo);
             $httpStatusCode = 401;
             $response['message'] = 'Credenciales inválidas.';
         }
     }
 } else {
-    registrarAuditoria($conn, 'LOGIN_FALLIDO', "Intento para correo no registrado: " . $correo);
+    registrarAuditoria($conn, null, 'LOGIN_FALLIDO', 'usuarios', "Intento para correo no registrado: " . $correo);
     $httpStatusCode = 401;
     $response['message'] = 'Credenciales inválidas.';
 }

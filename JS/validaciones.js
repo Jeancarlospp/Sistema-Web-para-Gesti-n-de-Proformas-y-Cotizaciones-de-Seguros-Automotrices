@@ -1,11 +1,11 @@
 /**
- * Funciones de validación para cédula ecuatoriana y RUC
+ * Funciones de validacion para cedula ecuatoriana y RUC
  */
 
 /**
- * Valida si una cédula ecuatoriana es válida
- * @param {string} cedula - Número de cédula a validar
- * @returns {boolean} - True si es válida, false si no
+ * Valida si una cedula ecuatoriana es valida
+ * @param {string} cedula - Numero de cedula a validar
+ * @returns {boolean} - True si es valida, false si no
  */
 export function validarCedulaEcuatoriana(cedula) {
   // Eliminar espacios y caracteres no numéricos
@@ -264,5 +264,284 @@ export function agregarValidacionRuc(inputId) {
       errorElement.textContent = "El RUC debe tener exactamente 13 dígitos";
       errorElement.style.display = "block";
     }
+  });
+}
+
+/**
+ * Valida si un nombre contiene solo letras, espacios y la ñ
+ * @param {string} nombre - Nombre a validar
+ * @returns {boolean} - True si es válido, false si no
+ */
+export function validarNombre(nombre) {
+  // Expresión regular que permite letras (incluyendo acentos), ñ, espacios
+  const regex = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/;
+  return regex.test(nombre.trim()) && nombre.trim().length > 0;
+}
+
+/**
+ * Valida si un teléfono tiene exactamente 10 dígitos
+ * @param {string} telefono - Número de teléfono a validar
+ * @returns {boolean} - True si es válido, false si no
+ */
+export function validarTelefono(telefono) {
+  const telefonoLimpio = telefono.replace(/\D/g, "");
+  return telefonoLimpio.length === 10;
+}
+
+/**
+ * Valida si un email tiene formato válido
+ * @param {string} email - Email a validar
+ * @returns {boolean} - True si es válido, false si no
+ */
+export function validarEmail(email) {
+  // Verificar que no contenga caracteres peligrosos
+  if (email.includes('<') || email.includes('>')) {
+    return false;
+  }
+  
+  // Expresión regular para validar formato de email
+  const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return regex.test(email);
+}
+
+/**
+ * Sanitiza una cadena eliminando caracteres peligrosos
+ * @param {string} texto - Texto a sanitizar
+ * @returns {string} - Texto sanitizado
+ */
+export function sanitizarTexto(texto) {
+  return texto
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+}
+
+/**
+ * Añade validación en tiempo real a un campo de nombre
+ * @param {string} inputId - ID del campo de entrada
+ */
+export function agregarValidacionNombre(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  // Crear elemento para mostrar mensajes de error
+  let errorElement = document.getElementById(`${inputId}-error`);
+  if (!errorElement) {
+    errorElement = document.createElement("div");
+    errorElement.id = `${inputId}-error`;
+    errorElement.className = "invalid-feedback";
+    errorElement.style.display = "none";
+    input.parentNode.appendChild(errorElement);
+  }
+
+  // Validar en tiempo real
+  input.addEventListener("input", function (e) {
+    // Eliminar caracteres no permitidos
+    let valor = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
+    e.target.value = valor;
+
+    if (valor.trim().length > 0) {
+      if (validarNombre(valor)) {
+        input.classList.remove("is-invalid");
+        input.classList.add("is-valid");
+        errorElement.style.display = "none";
+      } else {
+        input.classList.remove("is-valid");
+        input.classList.add("is-invalid");
+        errorElement.textContent = "El nombre solo puede contener letras y espacios";
+        errorElement.style.display = "block";
+      }
+    } else {
+      input.classList.remove("is-valid", "is-invalid");
+      errorElement.style.display = "none";
+    }
+  });
+
+  // Validar al perder el foco
+  input.addEventListener("blur", function (e) {
+    const valor = e.target.value.trim();
+    if (valor.length === 0) {
+      input.classList.add("is-invalid");
+      errorElement.textContent = "Este campo es obligatorio";
+      errorElement.style.display = "block";
+    }
+  });
+}
+
+/**
+ * Añade validación en tiempo real a un campo de teléfono
+ * @param {string} inputId - ID del campo de entrada
+ */
+export function agregarValidacionTelefono(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  // Crear elemento para mostrar mensajes de error
+  let errorElement = document.getElementById(`${inputId}-error`);
+  if (!errorElement) {
+    errorElement = document.createElement("div");
+    errorElement.id = `${inputId}-error`;
+    errorElement.className = "invalid-feedback";
+    errorElement.style.display = "none";
+    input.parentNode.appendChild(errorElement);
+  }
+
+  // Limitar a solo números y máximo 10 caracteres
+  input.addEventListener("input", function (e) {
+    let valor = e.target.value.replace(/\D/g, "");
+    if (valor.length > 10) {
+      valor = valor.substring(0, 10);
+    }
+    e.target.value = valor;
+
+    // Validar si tiene 10 dígitos
+    if (valor.length === 10) {
+      input.classList.remove("is-invalid");
+      input.classList.add("is-valid");
+      errorElement.style.display = "none";
+    } else if (valor.length > 0) {
+      input.classList.remove("is-valid");
+      input.classList.add("is-invalid");
+      errorElement.textContent = "El teléfono debe tener exactamente 10 dígitos";
+      errorElement.style.display = "block";
+    } else {
+      input.classList.remove("is-valid", "is-invalid");
+      errorElement.style.display = "none";
+    }
+  });
+
+  // Validar al perder el foco
+  input.addEventListener("blur", function (e) {
+    const valor = e.target.value.replace(/\D/g, "");
+    if (valor.length > 0 && valor.length !== 10) {
+      input.classList.add("is-invalid");
+      errorElement.textContent = "El teléfono debe tener exactamente 10 dígitos";
+      errorElement.style.display = "block";
+    }
+  });
+}
+
+/**
+ * Añade validación en tiempo real a un campo de email
+ * @param {string} inputId - ID del campo de entrada
+ */
+export function agregarValidacionEmail(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  // Crear elemento para mostrar mensajes de error
+  let errorElement = document.getElementById(`${inputId}-error`);
+  if (!errorElement) {
+    errorElement = document.createElement("div");
+    errorElement.id = `${inputId}-error`;
+    errorElement.className = "invalid-feedback";
+    errorElement.style.display = "none";
+    input.parentNode.appendChild(errorElement);
+  }
+
+  // Validar en tiempo real
+  input.addEventListener("input", function (e) {
+    // Eliminar caracteres peligrosos
+    let valor = e.target.value.replace(/[<>]/g, "");
+    e.target.value = valor;
+
+    if (valor.trim().length > 0) {
+      if (validarEmail(valor)) {
+        input.classList.remove("is-invalid");
+        input.classList.add("is-valid");
+        errorElement.style.display = "none";
+      } else {
+        input.classList.remove("is-valid");
+        input.classList.add("is-invalid");
+        errorElement.textContent = "Ingrese un email válido (ejemplo@dominio.com)";
+        errorElement.style.display = "block";
+      }
+    } else {
+      input.classList.remove("is-valid", "is-invalid");
+      errorElement.style.display = "none";
+    }
+  });
+
+  // Validar al perder el foco
+  input.addEventListener("blur", function (e) {
+    const valor = e.target.value.trim();
+    if (valor.length > 0 && !validarEmail(valor)) {
+      input.classList.add("is-invalid");
+      errorElement.textContent = "Ingrese un email válido (ejemplo@dominio.com)";
+      errorElement.style.display = "block";
+    }
+  });
+}
+
+/**
+ * Añade validación general a un campo de texto para evitar scripts
+ * @param {string} inputId - ID del campo de entrada
+ */
+export function agregarValidacionTextoSeguro(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  // Crear elemento para mostrar mensajes de error
+  let errorElement = document.getElementById(`${inputId}-error`);
+  if (!errorElement) {
+    errorElement = document.createElement("div");
+    errorElement.id = `${inputId}-error`;
+    errorElement.className = "invalid-feedback";
+    errorElement.style.display = "none";
+    input.parentNode.appendChild(errorElement);
+  }
+
+  // Validar en tiempo real
+  input.addEventListener("input", function (e) {
+    // Verificar caracteres peligrosos
+    if (e.target.value.includes('<') || e.target.value.includes('>')) {
+      input.classList.add("is-invalid");
+      errorElement.textContent = "No se permiten los caracteres < >";
+      errorElement.style.display = "block";
+      
+      // Eliminar caracteres peligrosos
+      e.target.value = e.target.value.replace(/[<>]/g, "");
+    } else {
+      input.classList.remove("is-invalid");
+      errorElement.style.display = "none";
+    }
+  });
+}
+
+/**
+ * Inicializa todas las validaciones en una página
+ * Busca automáticamente campos con clases específicas y aplica validaciones
+ */
+export function inicializarValidaciones() {
+  // Validar campos de cédula
+  document.querySelectorAll('.validar-cedula').forEach(input => {
+    agregarValidacionCedula(input.id);
+  });
+
+  // Validar campos de RUC
+  document.querySelectorAll('.validar-ruc').forEach(input => {
+    agregarValidacionRuc(input.id);
+  });
+
+  // Validar campos de nombre
+  document.querySelectorAll('.validar-nombre').forEach(input => {
+    agregarValidacionNombre(input.id);
+  });
+
+  // Validar campos de teléfono
+  document.querySelectorAll('.validar-telefono').forEach(input => {
+    agregarValidacionTelefono(input.id);
+  });
+
+  // Validar campos de email
+  document.querySelectorAll('.validar-email').forEach(input => {
+    agregarValidacionEmail(input.id);
+  });
+
+  // Validar campos de texto seguro
+  document.querySelectorAll('.validar-texto-seguro').forEach(input => {
+    agregarValidacionTextoSeguro(input.id);
   });
 }

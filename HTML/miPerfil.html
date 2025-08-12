@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -21,7 +21,7 @@
     <script src="../assets/static/js/initTheme.js"></script>
     <div id="app">
       <!-- ======================================================= -->
-      <!-- ===== INICIO DE LA CORRECCIÓN: SIDEBAR UNIVERSAL ===== -->
+      <!-- ===== INICIO DE LA CORRECCIí“N: SIDEBAR UNIVERSAL ===== -->
       <!-- ======================================================= -->
       <div id="sidebar">
         <!-- Este es el contenido completo del sidebar maestro.
@@ -94,7 +94,7 @@
           </div>
           <div class="sidebar-menu">
             <ul class="menu">
-              <!-- ========== MENÚ ADMINISTRADOR ========== -->
+              <!-- ========== MENíš ADMINISTRADOR ========== -->
               <li class="sidebar-title role-admin">Menú Principal</li>
               <li class="sidebar-item role-admin">
                 <a href="admin_dashboard.html" class="sidebar-link"
@@ -128,16 +128,16 @@
               <li class="sidebar-item role-admin">
                 <a href="reportes_auditoria.html" class="sidebar-link"
                   ><i class="bi bi-journal-album"></i
-                  ><span>Reportes y Auditoría</span></a
+                  ><span>Reportes y Auditorí­a</span></a
                 >
               </li>
 
-              <!-- ========== MENÚ ASESOR ========== -->
+              <!-- ========== MENíš ASESOR ========== -->
               <li class="sidebar-title role-asesor">Menú Asesor</li>
               <li class="sidebar-item role-asesor">
                 <a href="asesor_dashboard.html" class="sidebar-link"
                   ><i class="bi bi-grid-fill"></i
-                  ><span>Dashboard de Cotización</span></a
+                  ><span>Dashboard de Cotizacií³n</span></a
                 >
               </li>
               <li class="sidebar-item role-asesor">
@@ -153,12 +153,12 @@
                 >
               </li>
 
-              <!-- ========== MENÚ VENDEDOR ========== -->
+              <!-- ========== MENíš VENDEDOR ========== -->
               <li class="sidebar-title role-vendedor">Menú Vendedor</li>
               <li class="sidebar-item role-vendedor">
                 <a href="vendedor_dashboard.html" class="sidebar-link"
                   ><i class="bi bi-lightning-charge-fill"></i
-                  ><span>Cotización Rápida</span></a
+                  ><span>Cotizacií³n Rápida</span></a
                 >
               </li>
               <li class="sidebar-item role-vendedor">
@@ -174,7 +174,7 @@
                 >
               </li>
 
-              <!-- ========== CUENTA (Común para todos) ========== -->
+              <!-- ========== CUENTA (Comíºn para todos) ========== -->
               <li class="sidebar-title">Cuenta</li>
               <li class="sidebar-item role-asesor role-vendedor">
                 <a href="mis_cotizaciones.html" class="sidebar-link">
@@ -296,7 +296,7 @@
                         role="tab"
                         aria-controls="password"
                         aria-selected="false"
-                        >Cambiar Contraseña</a
+                        >Cambiar Contraseí±a</a
                       >
                     </li>
                   </ul>
@@ -307,7 +307,7 @@
                       role="tabpanel"
                       aria-labelledby="home-tab"
                     >
-                      <!-- ===== CORRECCIÓN 1: No se necesita el atributo 'action' en el form ===== -->
+                      <!-- ===== CORRECCIí“N 1: No se necesita el atributo 'action' en el form ===== -->
                       <form id="form-edit-profile" class="mt-4">
                         <div class="row">
                           <div class="col-md-6">
@@ -365,7 +365,7 @@
                         </div>
                         <div class="form-group">
                           <label for="form-profile-email" class="form-label"
-                            >Correo Electrónico</label
+                            >Correo Electrí³nico</label
                           ><input
                             type="email"
                             id="form-profile-email"
@@ -389,45 +389,45 @@
                       <form id="form-change-password" class="mt-4">
                         <div class="form-group">
                           <label for="current-password" class="form-label"
-                            >Contraseña Actual</label
+                            >Contraseí±a Actual</label
                           ><input
                             type="password"
                             class="form-control"
                             id="current-password"
                             required
-                            placeholder="Ingrese su contraseña actual"
+                            placeholder="Ingrese su contraseí±a actual"
                           />
                         </div>
                         <div class="form-group">
                           <label for="new-password" class="form-label"
-                            >Nueva Contraseña</label
+                            >Nueva Contraseí±a</label
                           ><input
                             type="password"
                             class="form-control"
                             id="new-password"
                             required
-                            placeholder="Mínimo 8 caracteres"
+                            placeholder="Mí­nimo 8 caracteres"
                           />
                         </div>
                         <div class="form-group">
                           <label for="confirm-password" class="form-label"
-                            >Confirmar Nueva Contraseña</label
+                            >Confirmar Nueva Contraseí±a</label
                           ><input
                             type="password"
                             class="form-control"
                             id="confirm-password"
                             required
-                            placeholder="Confirme su nueva contraseña"
+                            placeholder="Confirme su nueva contraseí±a"
                           />
                         </div>
                         <div class="form-group d-flex justify-content-end">
-                          <!-- ===== CORRECCIÓN 2: Se añade un ID para control por JS ===== -->
+                          <!-- ===== CORRECCIí“N 2: Se aí±ade un ID para control por JS ===== -->
                           <button
                             type="submit"
                             id="btn-update-password"
                             class="btn btn-primary"
                           >
-                            Actualizar Contraseña
+                            Actualizar Contraseí±a
                           </button>
                         </div>
                       </form>
@@ -444,9 +444,17 @@
     <!-- Bloque de Scripts Optimizado -->
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="../js/validaciones-nuevo.js"></script>
     <script type="module" src="../js/main.js"></script>
     <script src="../assets/compiled/js/app.js" defer></script>
     <script src="../assets/static/js/components/sidebar.js"></script>
     <script src="../assets/static/js/helper/isDesktop.js"></script>
   </body>
 </html>
+
+
+
+
+
+
+
