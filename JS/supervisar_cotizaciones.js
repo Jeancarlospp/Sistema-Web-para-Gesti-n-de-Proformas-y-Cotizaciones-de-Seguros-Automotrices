@@ -164,79 +164,109 @@ function getStatusBadgeClass(estado) {
  * @param {number} idCotizacion - ID de la cotización
  */
 async function downloadQuotePDF(idCotizacion) {
-  try {
-    const response = await fetch(
-      `../php/cotizaciones_api.php?id=${idCotizacion}`
+  if (!idCotizacion) {
+    alert("Error: ID de cotización no válido.");
+    return;
+  }
+  if (
+    typeof window.jspdf === "undefined" ||
+    typeof window.jspdf.jsPDF === "undefined" ||
+    typeof window.jspdf.jsPDF.API.autoTable === "undefined"
+  ) {
+    alert(
+      "Error: Las librerías para generar PDF no se han cargado correctamente."
     );
+    return;
+  }
+
+  try {
+    // Obtener datos desde la API PHP
+    const response = await fetch(`../php/cotizaciones_api.php?id=${idCotizacion}`);
     if (!response.ok) throw new Error("Error al cargar los datos");
 
     const result = await response.json();
-    if (!result.success) throw new Error(result.message);
-
-    const { cotizacion, detalles } = result;
-
-    // Verificar que jsPDF esté disponible
-    if (
-      typeof window.jspdf === "undefined" ||
-      typeof window.jspdf.jsPDF === "undefined"
-    ) {
-      alert(
-        "Error: La librería para generar PDF no se ha cargado correctamente."
-      );
-      return;
+    if (!result.success || !result.cotizacion || !result.detalles || result.detalles.length === 0) {
+      throw new Error(result.message || "Datos insuficientes para generar PDF.");
     }
 
+    const { cotizacion, detalles: planes } = result;
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: "landscape" });
 
-    // Título y información general
+    // Encabezado
     doc.setFontSize(18);
-    doc.text("Cotización de Seguros", 14, 22);
-
+    doc.text(`Comparativa de Seguros - Cotización #${cotizacion.idCotizacion}`, 14, 22);
     doc.setFontSize(12);
-    doc.text(`ID Cotización: #${cotizacion.idCotizacion}`, 14, 35);
-    doc.text(`Cliente: ${cotizacion.Cli_nombre}`, 14, 42);
-    doc.text(`Cédula: ${cotizacion.Cli_cedula}`, 14, 49);
-    doc.text(`Fecha: ${new Date(cotizacion.Cot_fechaCreacion).toLocaleDateString('es-ES')}`, 14, 56);
-    // Tabla de detalles
-// Tabla de detalles rediseñada
-const tableHeaders = [['Producto', 'Empresa', 'Precio Mensual', 'Precio Unitario']];
-// Filas de productos
-const tableBody = detalles.map(detalle => [
-  detalle.Pro_nombre,
-  detalle.Emp_nombre,
-  `${parseFloat(detalle.Pro_precioMensual ?? 0).toFixed(2)}`, // Si el dato no existe, muestra 0.00
-  `${parseFloat(detalle.Det_precioUnitario).toFixed(2)}`,
-]);
-// Calcular suma total
-const total = detalles.reduce((acc, d) => acc + parseFloat(d.Det_precioUnitario), 0);
-// Agregar fila de total al final
-doc.autoTable({
-  head: tableHeaders,
-  body: tableBody,
-  startY: 63,
-  theme: 'grid',
-  headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255] },
-  bodyStyles: { valign: 'middle' },
-  columnStyles: {
-    0: { cellWidth: 50 }, // Producto
-    1: { cellWidth: 50 }, // Empresa
-    2: { cellWidth: 40, halign: 'right' },  // Precio Mensual
-    3: { cellWidth: 40, halign: 'right' }, // Precio Unitario
+    doc.setTextColor(100);
+    doc.text(`Cliente: ${cotizacion.Cli_nombre}`, 14, 30);
+    doc.text(`Cédula: ${cotizacion.Cli_cedula}`, 14, 36);
+    doc.text(`Fecha: ${new Date(cotizacion.Cot_fechaCreacion).toLocaleDateString("es-ES")}`, 14, 42);
 
-  }
-});
-    // Guardar PDF
-    const fileName = `cotizacion_${idCotizacion}_${cotizacion.Cli_nombre.replace(
-      /\s+/g,
-      "_"
-    )}.pdf`;
-    doc.save(fileName);
+    // Mapeo de características a etiquetas visibles
+    const featureLabels = {
+      Pro_descripcion: "Descripción",
+      Pro_mesesCobertura: "Meses de Cobertura",
+      Pro_responsabilidadCivil: "Responsabilidad Civil",
+      Pro_roboTotal: "Robo Total",
+      Pro_asistenciaVial: "Asistencia Vial",
+      Pro_dañosColision: "Daños por Colisión",
+      Pro_autoReemplazo: "Auto de Reemplazo",
+      Pro_gastosLegales: "Gastos Legales",
+      Pro_gastosMedicos: "Gastos Médicos",
+    };
+    const featureKeys = Object.keys(featureLabels);
+
+    // Encabezado de tabla
+    const head = [["Característica", ...planes.map(p => p.Pro_nombre)]];
+    const body = [];
+
+    // Cuerpo de la tabla
+    featureKeys.forEach(key => {
+      const row = [featureLabels[key]];
+      planes.forEach(plan => {
+        let value = plan[key];
+        if (key === "Pro_descripcion") {
+          row.push(value ? (value.length > 100 ? value.substring(0, 97) + "..." : value) : "N/A");
+        } else if (value === "si") {
+          row.push("Incluido");
+        } else if (value === "no" || !value || value === "0") {
+          row.push("No Incluido");
+        } else if (!isNaN(parseFloat(value)) && parseFloat(value) > 0) {
+          row.push(`$${parseFloat(value).toLocaleString("es-EC")}`);
+        } else {
+          row.push(value || "N/A");
+        }
+      });
+      body.push(row);
+    });
+
+    // Fila de precio mensual
+    const pricesRow = [
+      "PRECIO MENSUAL",
+      ...planes.map(p => `$${parseFloat(p.Pro_precioMensual ?? 0).toFixed(2)}`)
+    ];
+
+    // Render de tabla
+    doc.autoTable({
+      head: head,
+      body: body,
+      foot: [pricesRow],
+      startY: 50,
+      theme: "grid",
+      headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: "bold" },
+      footStyles: { fillColor: "#f0f0f0", textColor: 0, fontStyle: "bold", fontSize: 12 }
+    });
+
+    // Guardar archivo
+    const date = new Date().toISOString().split("T")[0];
+    doc.save(`cotizacion_${idCotizacion}_${cotizacion.Cli_nombre.replace(/\s+/g, "_")}_${date}.pdf`);
+
   } catch (error) {
     console.error("Error generando PDF:", error);
     alert("Error al generar el PDF: " + error.message);
   }
 }
+
 
 // --- FUNCIONES DE RENDERIZADO (MANEJO DEL DOM) ---
 
