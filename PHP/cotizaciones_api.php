@@ -202,6 +202,90 @@ try {
         }
     }
     
+    // OBTENER DETALLES DE UNA COTIZACIÓN ESPECÍFICA (GET con ID)
+    elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
+        $idCotizacion = intval($_GET['id']);
+        
+        if ($idCotizacion <= 0) {
+            send_json_response(['success' => false, 'message' => 'ID de cotización inválido'], 400);
+        }
+
+        // Obtener información principal de la cotización
+        $stmt = $conn->prepare("
+            SELECT c.*, cli.Cli_nombre, cli.Cli_cedula, u.nombre as nombre_usuario 
+            FROM cotizacion c 
+            JOIN cliente cli ON c.idCliente = cli.idCliente 
+            JOIN usuarios u ON c.idUsuario = u.id_usuario 
+            WHERE c.idCotizacion = ?
+        ");
+        
+        if ($stmt === false) {
+            send_json_response(['success' => false, 'message' => 'Error preparando consulta de cotización: ' . $conn->error], 500);
+        }
+        
+        if (!$stmt->bind_param('i', $idCotizacion)) {
+            send_json_response(['success' => false, 'message' => 'Error binding parámetros de cotización: ' . $stmt->error], 500);
+        }
+        
+        if (!$stmt->execute()) {
+            send_json_response(['success' => false, 'message' => 'Error ejecutando consulta de cotización: ' . $stmt->error], 500);
+        }
+        
+        $result = $stmt->get_result();
+        if ($result === false) {
+            send_json_response(['success' => false, 'message' => 'Error obteniendo resultado de cotización: ' . $stmt->error], 500);
+        }
+        
+        $cotizacion = $result->fetch_assoc();
+        $stmt->close();
+
+        if (!$cotizacion) {
+            send_json_response(['success' => false, 'message' => 'Cotización no encontrada'], 404);
+        }
+
+        // Obtener detalles de la cotización
+        $stmt = $conn->prepare("
+            SELECT 
+                dc.*, 
+                p.Pro_nombre, 
+                p.Pro_descripcion, 
+                p.Pro_precioMensual,
+                ep.Emp_nombre 
+            FROM detalle_cotizacion dc 
+            JOIN producto p ON dc.idProducto = p.idproducto 
+            JOIN empresas_proveedora ep ON p.idEmpresaProveedora = ep.idEmpresas_Proveedora 
+            WHERE dc.idCotizacion = ?
+        ");
+
+        
+        if ($stmt === false) {
+            send_json_response(['success' => false, 'message' => 'Error preparando consulta de detalles: ' . $conn->error], 500);
+        }
+        
+        if (!$stmt->bind_param('i', $idCotizacion)) {
+            send_json_response(['success' => false, 'message' => 'Error binding parámetros de detalles: ' . $stmt->error], 500);
+        }
+        
+        if (!$stmt->execute()) {
+            send_json_response(['success' => false, 'message' => 'Error ejecutando consulta de detalles: ' . $stmt->error], 500);
+        }
+        
+        $result = $stmt->get_result();
+        if ($result === false) {
+            send_json_response(['success' => false, 'message' => 'Error obteniendo resultado de detalles: ' . $stmt->error], 500);
+        }
+        
+        $detalles = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        send_json_response([
+            'success' => true,
+            'cotizacion' => $cotizacion,
+            'detalles' => $detalles
+        ]);
+    }
+
+    //MÉTODO NO PERMITIDO
     else {
         send_json_response(['error' => 'Método no permitido.'], 405);
     }

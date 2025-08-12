@@ -72,15 +72,8 @@ async function showQuoteDetails(idCotizacion) {
                   <strong>Usuario Creador:</strong> ${cotizacion.nombre_usuario}
                 </div>
                 <div class="col-md-6">
-                  <strong>Estado:</strong> <span class="badge bg-${getStatusBadgeClass(
-                    cotizacion.Cot_estado
-                  )}">${cotizacion.Cot_estado}</span><br>
-                  <strong>Fecha:</strong> ${new Date(
-                    cotizacion.Cot_fechaCreacion
-                  ).toLocaleDateString("es-ES")}<br>
-                  <strong>Monto Total:</strong> ${parseFloat(
-                    cotizacion.Cot_montoAsegurable
-                  ).toLocaleString("es-ES", { minimumFractionDigits: 2 })}
+                  <strong>Fecha:</strong> ${new Date(cotizacion.Cot_fechaCreacion).toLocaleDateString('es-ES')}<br>
+                  <strong>Monto Total:</strong> ${parseFloat(cotizacion.Cot_montoAsegurable).toLocaleString('es-ES', {minimumFractionDigits: 2})}
                 </div>
               </div>
               <hr>
@@ -204,44 +197,35 @@ async function downloadQuotePDF(idCotizacion) {
     doc.text(`ID Cotización: #${cotizacion.idCotizacion}`, 14, 35);
     doc.text(`Cliente: ${cotizacion.Cli_nombre}`, 14, 42);
     doc.text(`Cédula: ${cotizacion.Cli_cedula}`, 14, 49);
-    doc.text(`Estado: ${cotizacion.Cot_estado}`, 14, 56);
-    doc.text(
-      `Fecha: ${new Date(cotizacion.Cot_fechaCreacion).toLocaleDateString(
-        "es-ES"
-      )}`,
-      14,
-      63
-    );
-    doc.text(
-      `Monto Total: ${parseFloat(cotizacion.Cot_montoAsegurable).toLocaleString(
-        "es-ES",
-        { minimumFractionDigits: 2 }
-      )}`,
-      14,
-      70
-    );
-
+    doc.text(`Fecha: ${new Date(cotizacion.Cot_fechaCreacion).toLocaleDateString('es-ES')}`, 14, 56);
     // Tabla de detalles
-    const tableHeaders = [
-      ["Producto", "Empresa", "Cant.", "Precio Unit.", "Subtotal"],
-    ];
-    const tableBody = detalles.map((detalle) => [
-      detalle.Pro_nombre,
-      detalle.Emp_nombre,
-      detalle.Det_numServicios.toString(),
-      `${parseFloat(detalle.Det_precioUnitario).toFixed(2)}`,
-      `${parseFloat(detalle.Det_subtotal).toFixed(2)}`,
-    ]);
+// Tabla de detalles rediseñada
+const tableHeaders = [['Producto', 'Empresa', 'Precio Mensual', 'Precio Unitario']];
+// Filas de productos
+const tableBody = detalles.map(detalle => [
+  detalle.Pro_nombre,
+  detalle.Emp_nombre,
+  `${parseFloat(detalle.Pro_precioMensual ?? 0).toFixed(2)}`, // Si el dato no existe, muestra 0.00
+  `${parseFloat(detalle.Det_precioUnitario).toFixed(2)}`,
+]);
+// Calcular suma total
+const total = detalles.reduce((acc, d) => acc + parseFloat(d.Det_precioUnitario), 0);
+// Agregar fila de total al final
+doc.autoTable({
+  head: tableHeaders,
+  body: tableBody,
+  startY: 63,
+  theme: 'grid',
+  headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255] },
+  bodyStyles: { valign: 'middle' },
+  columnStyles: {
+    0: { cellWidth: 50 }, // Producto
+    1: { cellWidth: 50 }, // Empresa
+    2: { cellWidth: 40, halign: 'right' },  // Precio Mensual
+    3: { cellWidth: 40, halign: 'right' }, // Precio Unitario
 
-    doc.autoTable({
-      head: tableHeaders,
-      body: tableBody,
-      startY: 80,
-      theme: "grid",
-      headStyles: { fillColor: [41, 128, 185] },
-      footStyles: { fillColor: [230, 230, 230], fontStyle: "bold" },
-    });
-
+  }
+});
     // Guardar PDF
     const fileName = `cotizacion_${idCotizacion}_${cotizacion.Cli_nombre.replace(
       /\s+/g,
@@ -265,9 +249,10 @@ function renderQuotesTable(quotes, tableBody) {
   tableBody.innerHTML = "";
   if (!quotes || quotes.length === 0) {
     tableBody.innerHTML =
-      '<tr><td colspan="7" class="text-center text-muted py-4">No se encontraron cotizaciones con los filtros aplicados.</td></tr>';
+      '<tr><td colspan="6" class="text-center text-muted py-4">No se encontraron cotizaciones con los filtros aplicados.</td></tr>';
     return;
   }
+  
 
   quotes.forEach((quote) => {
     const estado = (quote.Cot_estado || "").toLowerCase();
@@ -301,7 +286,7 @@ function renderQuotesTable(quotes, tableBody) {
               "es-ES",
               { minimumFractionDigits: 2 }
             )}</td>
-            <td>${estadoBadge}</td>
+            
             <td>${new Date(quote.Cot_fechaCreacion).toLocaleDateString(
               "es-ES"
             )}</td>
