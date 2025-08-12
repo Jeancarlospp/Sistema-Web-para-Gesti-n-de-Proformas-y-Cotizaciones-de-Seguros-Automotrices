@@ -6,6 +6,9 @@
 import {
   validarCedulaEcuatoriana,
   agregarValidacionCedula,
+  agregarValidacionNombre,
+  agregarValidacionEmail,
+  agregarValidacionTextoSeguro,
 } from "./validaciones.js";
 
 // --- ESTADO GLOBAL DE LA TABLA ---
@@ -472,6 +475,13 @@ export function loadGestionUsuarios() {
   });
 
   // Agregar validaciones a los campos de cédula
+  // Inicializar validaciones específicas en campos de formularios
   agregarValidacionCedula("add-userCedula");
   agregarValidacionCedula("edit-userCedula");
+  agregarValidacionNombre("add-userName");
+  agregarValidacionNombre("edit-userName");
+  agregarValidacionEmail("add-userEmail");
+  agregarValidacionEmail("edit-userEmail");
+  agregarValidacionTextoSeguro("add-userPassword");
+  agregarValidacionTextoSeguro("edit-userPassword");
 }
