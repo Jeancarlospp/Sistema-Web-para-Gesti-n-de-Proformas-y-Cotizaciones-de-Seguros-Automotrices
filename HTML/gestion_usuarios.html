@@ -121,6 +121,12 @@
                 >
               </li>
               <li class="sidebar-item role-admin">
+                <a href="productos_asegurables.html" class="sidebar-link"
+                  ><i class="bi bi-gear"></i
+                  ><span>Gestión de Productos</span></a
+                >
+              </li>
+              <li class="sidebar-item role-admin">
                 <a href="supervisar_cotizaciones.html" class="sidebar-link"
                   ><i class="bi bi-file-earmark-text-fill"></i
                   ><span>Supervisar Cotizaciones</span></a
@@ -132,12 +138,7 @@
                   ><span>Reportes y Auditoría</span></a
                 >
               </li>
-              <li class="sidebar-item role-admin">
-                <a href="productos_asegurables.html" class="sidebar-link"
-                  ><i class="bi bi-gear"></i
-                  ><span>Gestión de Productos</span></a
-                >
-              </li>
+              
 
               <!-- ========== MENÚ ASESOR ========== -->
               <li class="sidebar-title role-asesor">Menú Asesor</li>
@@ -361,48 +362,7 @@
                       <!-- Los botones de paginación se generarán aquí -->
                     </nav>
                   </div>
-                  <!-- ===== FIN: Controles de Paginación ===== -->
-                    <!-- ===== INICIO: Barra de Herramientas de la Tabla ===== -->
-                    <div class="row mb-3 gy-2">
-                      <div class="col-md-4">
-                        <input type="text" id="search-input" class="form-control" placeholder="Buscar por nombre o correo...">
-                      </div>
-                      <div class="col-md-3">
-                        <select id="sort-select" class="form-select">
-                          <option value="nombre ASC">Nombre (A-Z)</option>
-                          <option value="nombre DESC">Nombre (Z-A)</option>
-                          <option value="id_usuario DESC">ID (Recientes primero)</option>
-                          <option value="id_usuario ASC">ID (Antiguos primero)</option>
-                        </select>
-                      </div>
-                      <div class="col-md-2">
-                        <select id="limit-select" class="form-select">
-                          <option value="5">5</option>
-                          <option value="10" selected>10</option>
-                          <option value="20">20</option>
-                          <option value="50">50</option>
-                        </select>
-                      </div>
-                    </div>
-                    <!-- ===== FIN: Barra de Herramientas de la Tabla ===== -->
-                    <div class="table-responsive">
-                      <table class="table table-striped table-hover align-middle">
-                        <thead>
-                          <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Cédula</th>
-                            <th>Correo</th>
-                            <th>Rol</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody id="all-users-table">
-                          <!-- Las filas se llenan dinámicamente por JS -->
-                        </tbody>
-                      </table>
-                    </div>
+                    
                     <!-- ===== INICIO: Controles de Paginación ===== -->
                     <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap">
                       <div id="pagination-info" class="text-muted mb-2 mb-md-0"></div>
