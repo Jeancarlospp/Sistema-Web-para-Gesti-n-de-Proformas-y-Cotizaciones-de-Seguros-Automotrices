@@ -16,7 +16,6 @@ let tableState = {
   sortBy: "nombre ASC",
   totalRecords: 0,
 };
-
 // --- RENDERIZADO Y LÓGICA DE LA INTERFAZ ---
 
 /** Dibuja las filas de la tabla con los datos de la página actual. */
@@ -214,8 +213,6 @@ async function openEditModal(userId) {
       throw new Error(user.error || "Usuario no encontrado.");
 
     console.log("Datos del usuario cargados:", user);
-
-    
         // Llenar los campos del formulario
     document.getElementById("edit-userId").value = user.id_usuario;
     document.getElementById("edit-userName").value = user.nombre;
