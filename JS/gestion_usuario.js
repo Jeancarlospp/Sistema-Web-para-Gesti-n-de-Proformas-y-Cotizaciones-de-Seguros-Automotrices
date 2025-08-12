@@ -215,13 +215,28 @@ async function openEditModal(userId) {
 
     console.log("Datos del usuario cargados:", user);
 
-    // Llenar los campos del formulario
+    
+        // Llenar los campos del formulario
     document.getElementById("edit-userId").value = user.id_usuario;
     document.getElementById("edit-userName").value = user.nombre;
     document.getElementById("edit-userCedula").value = user.cedula;
     document.getElementById("edit-userEmail").value = user.correo;
     document.getElementById("edit-userRole").value = user.rol_id;
     document.getElementById("edit-userPassword").value = "";
+
+    // Bloquear campos según el rol del usuario actual
+    const currentUserRole = localStorage.getItem("userRole");
+    console.log("Rol detectado:", currentUserRole);
+    // Si el rol es administrador, bloquear ciertos campos
+    if (currentUserRole && currentUserRole.toLowerCase() === "administrador") {
+      document.getElementById("edit-userName").readOnly = true;
+      document.getElementById("edit-userCedula").readOnly = true;
+    } // Si el rol es otro, permitir edición 
+    else {
+      document.getElementById("edit-userName").readOnly = false;
+      document.getElementById("edit-userCedula").readOnly = false;
+    }
+
 
     // Mostrar el modal
     const editModal = new bootstrap.Modal(
