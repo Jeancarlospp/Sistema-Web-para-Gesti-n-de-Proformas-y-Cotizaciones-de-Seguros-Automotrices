@@ -51,7 +51,7 @@ async function showQuoteDetails(idCotizacion) {
     const result = await response.json();
     if (!result.success) throw new Error(result.message);
 
-    const { cotizacion, detalles } = result;
+  const { cotizacion, detalles } = result;
 
     // Crear contenido HTML para mostrar detalles
     const modalContent = `
@@ -84,31 +84,25 @@ async function showQuoteDetails(idCotizacion) {
                     <tr>
                       <th>Producto</th>
                       <th>Empresa</th>
-                      <th>Cantidad</th>
-                      <th>Precio Unit.</th>
-                      <th>Subtotal</th>
+                      <th>Precio</th>
+                      <th>Subtotal (c/IVA 15%)</th>
                     </tr>
                   </thead>
                   <tbody>
                     ${detalles
-                      .map(
-                        (detalle) => `
-                      <tr>
-                        <td>${detalle.Pro_nombre}</td>
-                        <td>${detalle.Emp_nombre}</td>
-                        <td>${detalle.Det_numServicios}</td>
-                        <td>${parseFloat(
-                          detalle.Det_precioUnitario
-                        ).toLocaleString("es-ES", {
-                          minimumFractionDigits: 2,
-                        })}</td>
-                        <td>${parseFloat(detalle.Det_subtotal).toLocaleString(
-                          "es-ES",
-                          { minimumFractionDigits: 2 }
-                        )}</td>
-                      </tr>
-                    `
-                      )
+                      .map((detalle) => {
+                        const precioBase = parseFloat(
+                          detalle.Pro_precioMensual ?? detalle.Det_precioUnitario ?? 0
+                        );
+                        const subtotalIva = precioBase * 1.15; // Precio con IVA 15%
+                        return `
+                          <tr>
+                            <td>${detalle.Pro_nombre || ''}</td>
+                            <td>${detalle.Emp_nombre || ''}</td>
+                            <td>${isNaN(precioBase) ? '0.00' : precioBase.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+                            <td>${isNaN(subtotalIva) ? '0.00' : subtotalIva.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+                          </tr>`;
+                      })
                       .join("")}
                   </tbody>
                 </table>
@@ -240,17 +234,25 @@ async function downloadQuotePDF(idCotizacion) {
       body.push(row);
     });
 
-    // Fila de precio mensual
+    // Fila de precio mensual y precio con IVA
     const pricesRow = [
       "PRECIO MENSUAL",
       ...planes.map(p => `$${parseFloat(p.Pro_precioMensual ?? 0).toFixed(2)}`)
+    ];
+    const pricesWithIvaRow = [
+      "PRECIO + IVA (15%)",
+      ...planes.map(p => {
+        const base = parseFloat(p.Pro_precioMensual ?? 0);
+        const conIva = base * 1.15;
+        return `$${conIva.toFixed(2)}`;
+      })
     ];
 
     // Render de tabla
     doc.autoTable({
       head: head,
       body: body,
-      foot: [pricesRow],
+      foot: [pricesRow, pricesWithIvaRow],
       startY: 50,
       theme: "grid",
       headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: "bold" },
