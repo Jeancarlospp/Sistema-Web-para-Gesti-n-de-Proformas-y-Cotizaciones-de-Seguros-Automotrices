@@ -33,7 +33,7 @@ function renderAuditLogTable(logs, tableBody) {
   tableBody.innerHTML = "";
   if (!logs || logs.length === 0) {
     tableBody.innerHTML =
-      '<tr><td colspan="7" class="text-center text-muted py-4">No se encontraron registros con los filtros actuales.</td></tr>';
+      '<tr><td colspan="6" class="text-center text-muted py-4">No se encontraron registros con los filtros actuales.</td></tr>';
     return;
   }
   logs.forEach((log) => {
@@ -47,8 +47,7 @@ function renderAuditLogTable(logs, tableBody) {
     }</span></td>
       <td>${log.Aud_tabla}</td>
       <td>${log.Aud_descripcion}</td>
-      <td>${new Date(log.Aud_fecha).toLocaleString("es-ES")}</td>
-      <td>${log.Aud_IP}</td>
+  <td>${new Date(log.Aud_fecha).toLocaleString("es-ES")}</td>
     `;
     tableBody.appendChild(row);
   });
@@ -102,7 +101,7 @@ function generatePDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   const tableHeaders = [
-    ["ID", "Usuario", "Acción", "Tabla", "Descripción", "Fecha", "IP"],
+    ["ID", "Usuario", "Acción", "Tabla", "Descripción", "Fecha"],
   ];
   const tableBody = auditState.logs.map((log) => [
     log.idAuditoria,
@@ -111,7 +110,6 @@ function generatePDF() {
     log.Aud_tabla,
     log.Aud_descripcion,
     new Date(log.Aud_fecha).toLocaleString("es-ES"),
-    log.Aud_IP,
   ]);
   doc.setFontSize(18);
   doc.text("Reporte de Auditoría", 14, 22);
@@ -136,7 +134,7 @@ async function fetchAndRenderAuditLogs() {
   if (!tableBody || !paginationControls) return;
 
   tableBody.innerHTML =
-    '<tr><td colspan="7" class="text-center py-4">Cargando...</td></tr>';
+    '<tr><td colspan="6" class="text-center py-4">Cargando...</td></tr>';
   const params = new URLSearchParams({
     page: auditState.currentPage,
     limit: auditState.limit,
@@ -163,7 +161,7 @@ async function fetchAndRenderAuditLogs() {
   } catch (error) {
     console.error("Error al cargar los logs de auditoría:", error);
     tableBody.innerHTML =
-      '<tr><td colspan="7" class="text-center text-danger py-4">Error al cargar los registros.</td></tr>';
+      '<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar los registros.</td></tr>';
   }
 }
 

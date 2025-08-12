@@ -11,15 +11,14 @@ require_once 'utils.php';
  * @return bool True si se registró correctamente, False si hubo error
  */
 function registrarAuditoria($conn, $idUsuario, $accion, $tabla, $descripcion) {
-    $ip = getClientIP();
-    
-    $stmt = $conn->prepare("INSERT INTO auditoria (idUsuario, Aud_accion, Aud_tabla, Aud_descripcion, Aud_IP) VALUES (?, ?, ?, ?, ?)");
+    // Columna Aud_IP eliminada
+    $stmt = $conn->prepare("INSERT INTO auditoria (idUsuario, Aud_accion, Aud_tabla, Aud_descripcion) VALUES (?, ?, ?, ?)");
     if ($stmt === false) {
         error_log("Error preparando la consulta de auditoría: " . $conn->error);
         return false;
     }
     
-    $stmt->bind_param("issss", $idUsuario, $accion, $tabla, $descripcion, $ip);
+    $stmt->bind_param("isss", $idUsuario, $accion, $tabla, $descripcion);
     $result = $stmt->execute();
     
     if (!$result) {

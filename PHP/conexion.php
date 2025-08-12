@@ -1,7 +1,7 @@
-<?php // ¿Está esta etiqueta de apertura al principio?
+<?php 
 class Conexion {
     private $host = "localhost";
-    private $db = "sistemas_cotizaciones";
+    private $db = "sistema_cotizaciones";
     private $user = "root";
     private $pass = "rootroot";
     public $conn;

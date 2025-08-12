@@ -266,13 +266,7 @@
                     >
                       <i class="bi bi-plus-circle"></i> &nbsp;Añadir Nuevo Usuario
                     </button>
-                    <button
-                      class="btn btn-info ms-2"
-                      data-bs-toggle="modal"
-                      data-bs-target="#addRoleModal"
-                    >
-                      <i class="bi bi-person-badge"></i> &nbsp;Añadir Nuevo Rol
-                    </button>
+                    <!-- Botón Añadir Nuevo Rol eliminado -->
                   </div>
                 </div>
                 <div class="card-body">
@@ -537,113 +531,7 @@
       </div>
     </div>
 
-    <!-- Modal para Añadir Rol -->
-    <div
-      class="modal fade"
-      id="addRoleModal"
-      tabindex="-1"
-      aria-labelledby="addRoleModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-info text-white">
-            <h5 class="modal-title" id="addRoleModalLabel">Añadir Nuevo Rol</h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <form id="add-role-form" novalidate>
-              <div class="mb-3">
-                <label class="form-label" for="add-roleName">Nombre del Rol</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="add-roleName"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Permisos de Usuario</label>
-                <div class="form-check-group border rounded p-3" style="max-height: 200px; overflow-y: auto;">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="1" required id="role-permiso-1" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-1">Ver clientes</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="2" id="role-permiso-2" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-2">Agregar clientes</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="3" id="role-permiso-3" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-3">Editar clientes</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="4" id="role-permiso-4" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-4">Ver productos</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="5" id="role-permiso-5" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-5">Agregar productos</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="6" id="role-permiso-6" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-6">Editar productos</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="7" id="role-permiso-7" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-7">Ver usuarios</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="8" id="role-permiso-8" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-8">Agregar usuarios</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="9" id="role-permiso-9" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-9">Editar usuarios</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="10" id="role-permiso-10" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-10">Ver empresas</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="11" id="role-permiso-11" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-11">Agregar empresas</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="12" id="role-permiso-12" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-12">Editar empresas</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="13" id="role-permiso-13" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-13">Ver cotizaciones</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="14" id="role-permiso-14" name="permisos[]">
-                    <label class="form-check-label" for="role-permiso-14">Ver auditorí­a</label>
-                  </div>
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-light-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cerrar</button
-            ><button type="button" id="btn-save-role" class="btn btn-info">
-              Guardar Rol
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Modal Añadir Rol eliminado -->
 
     <!-- ===== BLOQUE DE SCRIPTS FINAL Y CORRECTO ===== -->
     <script src="../assets/static/js/components/dark.js"></script>

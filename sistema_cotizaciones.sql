@@ -34,20 +34,19 @@ CREATE TABLE `auditoria` (
   `Aud_accion` varchar(100) NOT NULL,
   `Aud_tabla` varchar(50) NOT NULL,
   `Aud_descripcion` text NOT NULL,
-  `Aud_fecha` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `Aud_IP` varchar(45) NOT NULL
+  `Aud_fecha` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `auditoria`
 --
 
-INSERT INTO `auditoria` (`idAuditoria`, `idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_fecha`, `Aud_IP`) VALUES
-(1, 1, 'INSERT', 'usuarios', 'Nuevo usuario creado: admin@sistema.com', '2025-08-11 00:29:33', 'root@localhost'),
-(2, 2, 'INSERT', 'usuarios', 'Nuevo usuario creado: zaith@sistema.com', '2025-08-11 00:29:33', 'root@localhost'),
-(3, 3, 'INSERT', 'usuarios', 'Nuevo usuario creado: jean@sistema.com', '2025-08-11 00:29:33', 'root@localhost'),
-(4, 4, 'INSERT', 'usuarios', 'Nuevo usuario creado: ariel@sistema.com', '2025-08-11 00:29:33', 'root@localhost'),
-(230, 1, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Danna Andrade\' ha iniciado sesión.', '2025-08-12 14:49:51', '127.0.0.1');
+INSERT INTO `auditoria` (`idAuditoria`, `idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_fecha`) VALUES
+(1, 1, 'INSERT', 'usuarios', 'Nuevo usuario creado: admin@sistema.com', '2025-08-11 00:29:33'),
+(2, 2, 'INSERT', 'usuarios', 'Nuevo usuario creado: zaith@sistema.com', '2025-08-11 00:29:33'),
+(3, 3, 'INSERT', 'usuarios', 'Nuevo usuario creado: jean@sistema.com', '2025-08-11 00:29:33'),
+(4, 4, 'INSERT', 'usuarios', 'Nuevo usuario creado: ariel@sistema.com', '2025-08-11 00:29:33'),
+(230, 1, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Danna Andrade\' ha iniciado sesión.', '2025-08-12 14:49:51');
 
 --
 -- Disparadores `auditoria`
@@ -398,16 +397,19 @@ INSERT INTO `usuarios` (`id_usuario`, `correo`, `contrasena`, `nombre`, `cedula`
 --
 -- Disparadores `usuarios`
 --
-DELIMITER $$
-CREATE TRIGGER `tr_usuario_insert` AFTER INSERT ON `usuarios` FOR EACH ROW BEGIN
-    SET @client_ip = (SELECT COALESCE(USER(), '127.0.0.1'));
-    INSERT INTO `auditoria` 
-    (`idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_IP`)
-    VALUES 
-    (NEW.id_usuario, 'INSERT', 'usuarios', CONCAT('Nuevo usuario creado: ', NEW.correo), @client_ip);
-END
-$$
-DELIMITER ;
+-- Eliminado: Trigger `tr_usuario_insert` que duplicaba registros de auditoría al crear usuarios.
+-- Antes creaba una segunda fila con Aud_accion='INSERT' y el id del usuario recién creado.
+-- Se comenta para evitar duplicados. Si se necesitara restaurar, descomentar el bloque.
+-- DELIMITER $$
+-- CREATE TRIGGER `tr_usuario_insert` AFTER INSERT ON `usuarios` FOR EACH ROW BEGIN
+--     SET @client_ip = (SELECT COALESCE(USER(), '127.0.0.1'));
+--     INSERT INTO `auditoria` 
+--     (`idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_IP`)
+--     VALUES 
+--     (NEW.id_usuario, 'INSERT', 'usuarios', CONCAT('Nuevo usuario creado: ', NEW.correo), @client_ip);
+-- END
+-- $$
+-- DELIMITER ;
 
 --
 -- Índices para tablas volcadas

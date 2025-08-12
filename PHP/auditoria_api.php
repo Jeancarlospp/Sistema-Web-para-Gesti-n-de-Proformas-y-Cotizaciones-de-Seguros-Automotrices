@@ -79,7 +79,7 @@ try {
     $stmtCount->close();
 
     // --- OBTENER LOS DATOS DE LA PÁGINA ACTUAL CON ORDENAMIENTO DINÁMICO ---
-    $dataSql = "SELECT a.idAuditoria, a.idUsuario, u.nombre as nombre_usuario, a.Aud_accion, a.Aud_tabla, a.Aud_descripcion, a.Aud_fecha, a.Aud_IP "
+    $dataSql = "SELECT a.idAuditoria, a.idUsuario, u.nombre as nombre_usuario, a.Aud_accion, a.Aud_tabla, a.Aud_descripcion, a.Aud_fecha "
              . $baseSql . $whereSql . " ORDER BY " . $sortBy . " LIMIT ? OFFSET ?"; // Se usa $sortBy validado
     
     $stmtData = $conn->prepare($dataSql);
