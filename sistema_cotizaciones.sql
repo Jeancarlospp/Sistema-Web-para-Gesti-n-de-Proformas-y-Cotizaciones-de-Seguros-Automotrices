@@ -46,7 +46,7 @@ INSERT INTO `auditoria` (`idAuditoria`, `idUsuario`, `Aud_accion`, `Aud_tabla`, 
 (2, 2, 'INSERT', 'usuarios', 'Nuevo usuario creado: zaith@sistema.com', '2025-08-11 00:29:33'),
 (3, 3, 'INSERT', 'usuarios', 'Nuevo usuario creado: jean@sistema.com', '2025-08-11 00:29:33'),
 (4, 4, 'INSERT', 'usuarios', 'Nuevo usuario creado: ariel@sistema.com', '2025-08-11 00:29:33'),
-(230, 1, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Danna Andrade\' ha iniciado sesión.', '2025-08-12 14:49:51');
+(5, 1, 'LOGIN_EXITOSO', 'usuarios', 'Usuario \'Danna Andrade\' ha iniciado sesión.', '2025-08-12 14:49:51');
 
 --
 -- Disparadores `auditoria`
