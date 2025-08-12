@@ -152,16 +152,31 @@ async function openEditCompanyModal(companyId) {
     if (!company || company.error)
       throw new Error(company.error || "Empresa no encontrada.");
 
-    document.getElementById("edit-idEmpresas_Proveedora").value =
-      company.idEmpresas_Proveedora;
-    document.getElementById("edit-Emp_razonSocial").value =
-      company.Emp_razonSocial;
+    // Llenar campos
+    document.getElementById("edit-idEmpresas_Proveedora").value = company.idEmpresas_Proveedora;
+    document.getElementById("edit-Emp_razonSocial").value = company.Emp_razonSocial;
     document.getElementById("edit-Emp_nombre").value = company.Emp_nombre;
     document.getElementById("edit-Emp_ruc").value = company.Emp_ruc;
     document.getElementById("edit-Emp_correo").value = company.Emp_correo;
     document.getElementById("edit-Emp_telefono").value = company.Emp_telefono;
     document.getElementById("edit-Emp_direccion").value = company.Emp_direccion;
 
+
+        // Bloquear campos según el rol
+    const userRole = localStorage.getItem("userRole"); // Lo guardas cuando haces login
+    if (userRole === "Administrador") { 
+      document.getElementById("edit-Emp_razonSocial").readOnly = true;
+      document.getElementById("edit-Emp_nombre").readOnly = true;
+      document.getElementById("edit-Emp_ruc").readOnly = true;
+    } else {
+      // Si otro rol (superadmin por ejemplo) puede editarlos, los habilitamos
+      document.getElementById("edit-Emp_razonSocial").readOnly = false;
+      document.getElementById("edit-Emp_nombre").readOnly = false;
+      document.getElementById("edit-Emp_ruc").readOnly = false;
+    }
+
+
+    // Mostrar el modal de edición
     const editModal = new bootstrap.Modal(
       document.getElementById("editCompanyModal")
     );
