@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Visualizar Productos - CS ENSIGNA</title>
-
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Cotizaciones - CS ENSIGNA</title>
     <link
       rel="shortcut icon"
       href="../assets/compiled/svg/favicon.svg"
@@ -17,8 +16,9 @@
       href="../assets/extensions/bootstrap-icons/font/bootstrap-icons.css"
     />
   </head>
+</head>
 
-  <body>
+<body>
     <script src="../assets/static/js/initTheme.js"></script>
     <div id="app">
       <!-- ======================================================= -->
@@ -199,18 +199,13 @@
       <!-- ======================================================= -->
       <!-- ================== FIN DEL SIDEBAR ==================== -->
       <!-- ======================================================= -->
-
-      <div id="main">
-        <header class="mb-3">
-          <a href="#" class="burger-btn d-block d-xl-none"
-            ><i class="bi bi-justify fs-3"></i
-          ></a>
-        </header>
-        <div
-          class="page-heading d-flex justify-content-between align-items-center"
-        >
-          <h3>Productos Disponibles para Venta</h3>
-          <div class="dropdown">
+        <div id="main">
+            <header class="mb-3">
+                <a href="#" class="burger-btn d-block d-xl-none"><i class="bi bi-justify fs-3"></i></a>
+            </header>
+            <div class="page-heading d-flex justify-content-between align-items-center">
+                <h3>Mis Cotizaciones Creadas</h3>
+                <div class="dropdown">
             <a href="#" data-bs-toggle="dropdown" aria-expanded="false"
               ><div class="user-menu d-flex">
                 <div class="user-name text-end me-3 d-none d-sm-block">
@@ -251,108 +246,125 @@
               </li>
             </ul>
           </div>
-        </div>
-        <p class="text-subtitle text-muted">
-          Listado rápido de los paquetes de seguros activos.
-        </p>
-        <div class="page-content">
-          <section class="row">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-body">
-                  <!-- ===== INICIO: Barra de Herramientas de la Tabla ===== -->
-                  <div class="row mb-3 gy-2">
-                    <div class="col-12 col-md-4">
-                      <div class="input-group">
-                        <span class="input-group-text"
-                          ><i class="bi bi-search"></i
-                        ></span>
-                        <input
-                          type="text"
-                          id="product-search-input"
-                          class="form-control"
-                          placeholder="Buscar por nombre..."
-                        />
-                      </div>
-                    </div>
-                    <div class="col-12 col-md-4">
-                      <div class="input-group">
-                        <label
-                          class="input-group-text"
-                          for="product-category-filter"
-                          >Categoría:</label
-                        >
-                        <select
-                          class="form-select"
-                          id="product-category-filter"
-                        >
-                          <option value="" selected>Todas</option>
-                          <!-- Opciones se cargarán dinámicamente -->
-                        </select>
-                      </div>
-                    </div>
-                    <div class="col-12 col-md-4">
-                      <div class="input-group">
-                        <label
-                          class="input-group-text"
-                          for="product-limit-select"
-                          >Mostrar:</label
-                        >
-                        <select class="form-select" id="product-limit-select">
-                          <option value="5">5</option>
-                          <option value="10" selected>10</option>
-                          <option value="15">15</option>
-                        </select>
-                        <span class="input-group-text">registros</span>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- ===== FIN: Barra de Herramientas de la Tabla ===== -->
-                  <div class="table-responsive">
-                    <table class="table table-lg">
-                      <thead>
-                        <tr>
-                          <th>Nombre del Paquete</th>
-                          <th>Descripción</th>
-                          <th>Categoría</th>
-                          <th>Empresa</th>
-                          <th>Precio Mensual</th>
-                        </tr>
-                      </thead>
-                      <tbody id="product-table-body">
-                        <tr>
-                          <td colspan="5" class="text-center">
-                            Cargando productos...
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <!-- ===== INICIO: Controles de Paginación ===== -->
-                  <div
-                    class="d-flex justify-content-between align-items-center mt-3 flex-wrap"
-                  >
-                    <span id="pagination-info" class="text-muted small"
-                      >Mostrando 0 a 0 de 0 productos</span
-                    >
-                    <nav
-                      id="pagination-controls"
-                      aria-label="Navegación de página"
-                    ></nav>
-                  </div>
-                  <!-- ===== FIN: Controles de Paginación ===== -->
-                </div>
-              </div>
             </div>
-          </section>
+            <!-- ... (código del <head> y <header>) ... -->
+
+<div class="page-content">
+    <section class="row">
+        <div class="col-12">
+            <!-- ===== INICIO: TARJETA DE FILTROS ===== -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Filtrar Mis Cotizaciones</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row gy-3 align-items-end">
+                        <div class="col-12 col-md-4">
+                            <label for="my-quotes-search-input" class="form-label">Buscar por Cliente o ID:</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" id="my-quotes-search-input" class="form-control" placeholder="Nombre, Cédula o #ID...">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-5">
+                            <label class="form-label">Filtrar por Fecha de Creación:</label>
+                            <div class="input-group">
+                                <input type="date" id="my-quotes-start-date" class="form-control">
+                                <span class="input-group-text">a</span>
+                                <input type="date" id="my-quotes-end-date" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3 d-flex justify-content-end">
+                            <button id="btn-reset-filters" class="btn btn-secondary">
+                                <i class="bi bi-arrow-clockwise"></i> Limpiar Filtros
+                            </button>
+                            
+                        </div>
+
+                        
+                    </div>
+                </div>
+            </div>
+            <!-- ===== FIN: TARJETA DE FILTROS ===== -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h4 class="card-title">Historial de Mis Cotizaciones</h4>
+                                 <button id="btn-generate-pdf" class="btn btn-danger">
+                    <i class="bi bi-file-earmark-pdf-fill"></i> Exportar a PDF
+                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-lg">
+                                        <thead>
+                                            <tr>
+                                                <th>ID Cotización</th>
+                                                <th>Nombre del Cliente</th>
+                                                <th>Fecha de Creación</th>
+                                                <th>Descripción</th>
+                                                <th>Monto Asegurable</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="my-quotes-table-body">
+                                            <!-- Las filas se generarán con JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <hr />
+                                <div class="d-flex justify-content-end align-items-center flex-wrap gap-3 mt-3">
+                                    <span id="my-quotes-pagination-info" class="text-muted small"></span>
+                                    <nav id="my-quotes-pagination-controls" aria-label="Navegación de cotizaciones"></nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </div>
-      </div>
     </div>
 
-    <!-- ===== Bloque de Scripts Final y Correcto ===== -->
+
+    <!-- ========================================================================= -->
+    <!-- ===== INICIO: MODAL PARA VER DETALLES DE LA COTIZACIÓN ===== -->
+    <!-- ========================================================================= -->
+    <div class="modal fade" id="quoteDetailsModal" tabindex="-1" aria-labelledby="quoteDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="quoteDetailsModalLabel">
+                        <i class="bi bi-journal-text me-2"></i>Detalles de la Cotización #<span id="detailsModalTitleId">...</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="detailsModalContent">
+                        <!-- El contenido se llenará dinámicamente -->
+                        <p class="text-center py-5">Cargando detalles...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ========================================================================= -->
+    <!-- ===== FIN: MODAL PARA VER DETALLES DE LA COTIZACIÓN ===== -->
+    <!-- ========================================================================= -->
+
+   <!-- 1. Cargar la librería principal jsPDF PRIMERO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- 2. Cargar el plugin AutoTable DESPUÉS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- ========================================================= -->
+    <!-- Bloque de Scripts Optimizado -->
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script type="module" src="../js/main.js"></script>
     <script src="../assets/compiled/js/app.js" defer></script>
-  </body>
+</body>
 </html>

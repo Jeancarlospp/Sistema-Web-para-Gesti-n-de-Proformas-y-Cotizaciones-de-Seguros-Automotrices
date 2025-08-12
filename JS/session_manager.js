@@ -315,4 +315,3 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 export { SessionManager };
-

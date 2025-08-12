@@ -1,7 +1,9 @@
 // --- AUTOCOMPLETADO DE CLIENTES POR NOMBRE O CÉDULA ---
 async function searchClients(query) {
   try {
-    const response = await fetch(`../php/clientes_api.php?search=${encodeURIComponent(query)}`);
+    const response = await fetch(
+      `../php/clientes_api.php?search=${encodeURIComponent(query)}`
+    );
     if (!response.ok) return [];
     return await response.json();
   } catch (error) {
@@ -20,7 +22,7 @@ if (clientNameInput && clientList && clientIdInput) {
     if (query.length < 2) return;
     const clients = await searchClients(query);
     clientList.innerHTML = "";
-    clients.forEach(cli => {
+    clients.forEach((cli) => {
       const option = document.createElement("option");
       option.value = `${cli.Cli_nombre} (${cli.Cli_cedula})`;
       option.dataset.id = cli.idCliente;
@@ -30,7 +32,7 @@ if (clientNameInput && clientList && clientIdInput) {
 
   clientNameInput.addEventListener("change", () => {
     const selected = Array.from(clientList.options).find(
-      opt => opt.value === clientNameInput.value
+      (opt) => opt.value === clientNameInput.value
     );
     if (selected) {
       clientIdInput.value = selected.dataset.id;
@@ -130,14 +132,14 @@ async function fetchAndRenderPlans(categoryId, container) {
  */
 async function obtenerIdUsuarioSesion() {
   try {
-    const resp = await fetch('../php/usuarios_api.php?me=1');
+    const resp = await fetch("../php/usuarios_api.php?me=1");
     if (!resp.ok) {
-      throw new Error('No se pudo obtener la información del usuario');
+      throw new Error("No se pudo obtener la información del usuario");
     }
     const data = await resp.json();
     return data.id_usuario;
   } catch (error) {
-    console.error('Error obteniendo ID de usuario:', error);
+    console.error("Error obteniendo ID de usuario:", error);
     return null;
   }
 }
@@ -148,8 +150,10 @@ async function obtenerIdUsuarioSesion() {
 async function guardarCotizacion() {
   const idCliente = document.getElementById("client-id")?.value;
   const selectedPlanIds = Array.from(
-    document.querySelectorAll("#plans-checkbox-container input[type=checkbox]:checked")
-  ).map(cb => parseInt(cb.value));
+    document.querySelectorAll(
+      "#plans-checkbox-container input[type=checkbox]:checked"
+    )
+  ).map((cb) => parseInt(cb.value));
 
   // Validaciones básicas
   if (!idCliente) {
@@ -165,7 +169,9 @@ async function guardarCotizacion() {
   // Obtener el idUsuario de la sesión
   const idUsuario = await obtenerIdUsuarioSesion();
   if (!idUsuario) {
-    alert("Error: No se pudo obtener la información del usuario. Intente cerrar sesión e iniciar nuevamente.");
+    alert(
+      "Error: No se pudo obtener la información del usuario. Intente cerrar sesión e iniciar nuevamente."
+    );
     return;
   }
 
@@ -179,20 +185,20 @@ async function guardarCotizacion() {
     console.log("Enviando datos:", {
       idCliente: parseInt(idCliente),
       idUsuario: parseInt(idUsuario),
-      planes: selectedPlanIds
+      planes: selectedPlanIds,
     });
 
     const response = await fetch("../php/cotizaciones_api.php", {
       method: "POST",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json"
+        Accept: "application/json",
       },
       body: JSON.stringify({
         idCliente: parseInt(idCliente),
         idUsuario: parseInt(idUsuario),
-        planes: selectedPlanIds
-      })
+        planes: selectedPlanIds,
+      }),
     });
 
     console.log("Response status:", response.status);
@@ -202,7 +208,9 @@ async function guardarCotizacion() {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Error response text:", errorText);
-      throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+      throw new Error(
+        `Error HTTP: ${response.status} - ${response.statusText}`
+      );
     }
 
     // Leer la respuesta como texto primero para debug
@@ -216,19 +224,25 @@ async function guardarCotizacion() {
     } catch (jsonError) {
       console.error("Error parsing JSON:", jsonError);
       console.error("Response that failed to parse:", responseText);
-      throw new Error("La respuesta del servidor no es un JSON válido. Posible error PHP.");
+      throw new Error(
+        "La respuesta del servidor no es un JSON válido. Posible error PHP."
+      );
     }
-    
+
     if (data.success) {
       alert(`Cotización guardada correctamente con ID: ${data.idCotizacion}`);
       console.log("Cotización guardada exitosamente:", data);
     } else {
-      alert("Error al guardar cotización: " + (data.message || "Error desconocido"));
+      alert(
+        "Error al guardar cotización: " + (data.message || "Error desconocido")
+      );
       console.error("Detalles del error:", data);
     }
   } catch (error) {
     console.error("Error en la petición:", error);
-    alert("Error de conexión al guardar la cotización. Verifique su conexión a internet.");
+    alert(
+      "Error de conexión al guardar la cotización. Verifique su conexión a internet."
+    );
   } finally {
     // Restaurar botón
     btnGuardar.innerHTML = originalText;
@@ -274,7 +288,7 @@ function generateComparisonPDF() {
   doc.text("Comparativa de Planes de Seguros", 14, 22);
   doc.setFontSize(12);
   doc.text(`Cliente: ${clientName}`, 14, 30);
-  doc.text(`Fecha: ${new Date().toLocaleDateString('es-ES')}`, 14, 36);
+  doc.text(`Fecha: ${new Date().toLocaleDateString("es-ES")}`, 14, 36);
 
   // Usar autoTable para convertir la tabla HTML a PDF
   doc.autoTable({
@@ -391,7 +405,7 @@ export function loadAsesorDashboard() {
       // Mostrar los resultados
       clientNameDisplay.textContent = clientName;
       comparisonArea.style.display = "block";
-      
+
       // Scroll seguro sin getBoundingClientRect
       setTimeout(() => {
         try {
@@ -402,7 +416,6 @@ export function loadAsesorDashboard() {
           console.warn("No se pudo hacer scroll automático:", scrollError);
         }
       }, 200);
-      
     } catch (error) {
       console.error("Error al generar la comparación:", error);
       alert("Error al generar la comparación. Por favor, intente nuevamente.");

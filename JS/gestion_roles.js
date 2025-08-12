@@ -7,17 +7,17 @@ document.addEventListener("DOMContentLoaded", () => {
   function cargarRoles() {
     if (!selectRole) return;
     fetch("../php/roles_api.php?action=get_roles")
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         selectRole.innerHTML = ""; // Limpia opciones
-        data.forEach(role => {
+        data.forEach((role) => {
           const option = document.createElement("option");
           option.value = role.id;
           option.textContent = role.nombre;
           selectRole.appendChild(option);
         });
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error cargando roles:", error);
       });
   }
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const roleName = document.getElementById("add-roleName").value.trim();
       const permisosSeleccionados = Array.from(
         form.querySelectorAll('input[name="permisos[]"]:checked')
-      ).map(cb => cb.value);
+      ).map((cb) => cb.value);
 
       if (!roleName) {
         alert("Ingrese el nombre del rol.");
@@ -44,21 +44,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = {
         nombre: roleName,
-        permisos: permisosSeleccionados
+        permisos: permisosSeleccionados,
       };
 
       try {
         const response = await fetch("../php/roles_api.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
+          body: JSON.stringify(data),
         });
         const result = await response.json();
         if (result.success) {
           alert("Rol creado correctamente.");
           form.reset();
-          document.getElementById("addRoleModal").querySelector(".btn-close").click();
-          
+          document
+            .getElementById("addRoleModal")
+            .querySelector(".btn-close")
+            .click();
+
           // Recargar lista de roles
           cargarRoles();
         } else {

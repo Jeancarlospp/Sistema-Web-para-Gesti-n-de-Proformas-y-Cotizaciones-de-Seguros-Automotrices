@@ -43,21 +43,25 @@ function debounce(func, delay = 500) {
  */
 async function showQuoteDetails(idCotizacion) {
   try {
-    const response = await fetch(`../php/cotizaciones_api.php?id=${idCotizacion}`);
-    if (!response.ok) throw new Error('Error al cargar los detalles');
-    
+    const response = await fetch(
+      `../php/cotizaciones_api.php?id=${idCotizacion}`
+    );
+    if (!response.ok) throw new Error("Error al cargar los detalles");
+
     const result = await response.json();
     if (!result.success) throw new Error(result.message);
 
     const { cotizacion, detalles } = result;
-    
+
     // Crear contenido HTML para mostrar detalles
     const modalContent = `
       <div class="modal fade" id="quoteDetailsModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Detalles de Cotización #${cotizacion.idCotizacion}</h5>
+              <h5 class="modal-title">Detalles de Cotización #${
+                cotizacion.idCotizacion
+              }</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -68,9 +72,15 @@ async function showQuoteDetails(idCotizacion) {
                   <strong>Usuario Creador:</strong> ${cotizacion.nombre_usuario}
                 </div>
                 <div class="col-md-6">
-                  <strong>Estado:</strong> <span class="badge bg-${getStatusBadgeClass(cotizacion.Cot_estado)}">${cotizacion.Cot_estado}</span><br>
-                  <strong>Fecha:</strong> ${new Date(cotizacion.Cot_fechaCreacion).toLocaleDateString('es-ES')}<br>
-                  <strong>Monto Total:</strong> ${parseFloat(cotizacion.Cot_montoAsegurable).toLocaleString('es-ES', {minimumFractionDigits: 2})}
+                  <strong>Estado:</strong> <span class="badge bg-${getStatusBadgeClass(
+                    cotizacion.Cot_estado
+                  )}">${cotizacion.Cot_estado}</span><br>
+                  <strong>Fecha:</strong> ${new Date(
+                    cotizacion.Cot_fechaCreacion
+                  ).toLocaleDateString("es-ES")}<br>
+                  <strong>Monto Total:</strong> ${parseFloat(
+                    cotizacion.Cot_montoAsegurable
+                  ).toLocaleString("es-ES", { minimumFractionDigits: 2 })}
                 </div>
               </div>
               <hr>
@@ -87,15 +97,26 @@ async function showQuoteDetails(idCotizacion) {
                     </tr>
                   </thead>
                   <tbody>
-                    ${detalles.map(detalle => `
+                    ${detalles
+                      .map(
+                        (detalle) => `
                       <tr>
                         <td>${detalle.Pro_nombre}</td>
                         <td>${detalle.Emp_nombre}</td>
                         <td>${detalle.Det_numServicios}</td>
-                        <td>${parseFloat(detalle.Det_precioUnitario).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
-                        <td>${parseFloat(detalle.Det_subtotal).toLocaleString('es-ES', {minimumFractionDigits: 2})}</td>
+                        <td>${parseFloat(
+                          detalle.Det_precioUnitario
+                        ).toLocaleString("es-ES", {
+                          minimumFractionDigits: 2,
+                        })}</td>
+                        <td>${parseFloat(detalle.Det_subtotal).toLocaleString(
+                          "es-ES",
+                          { minimumFractionDigits: 2 }
+                        )}</td>
                       </tr>
-                    `).join('')}
+                    `
+                      )
+                      .join("")}
                   </tbody>
                 </table>
               </div>
@@ -112,19 +133,20 @@ async function showQuoteDetails(idCotizacion) {
     `;
 
     // Eliminar modal anterior si existe
-    const existingModal = document.getElementById('quoteDetailsModal');
+    const existingModal = document.getElementById("quoteDetailsModal");
     if (existingModal) existingModal.remove();
 
     // Agregar modal al DOM
-    document.body.insertAdjacentHTML('beforeend', modalContent);
-    
-    // Mostrar modal
-    const modal = new bootstrap.Modal(document.getElementById('quoteDetailsModal'));
-    modal.show();
+    document.body.insertAdjacentHTML("beforeend", modalContent);
 
+    // Mostrar modal
+    const modal = new bootstrap.Modal(
+      document.getElementById("quoteDetailsModal")
+    );
+    modal.show();
   } catch (error) {
-    console.error('Error mostrando detalles:', error);
-    alert('Error al cargar los detalles de la cotización: ' + error.message);
+    console.error("Error mostrando detalles:", error);
+    alert("Error al cargar los detalles de la cotización: " + error.message);
   }
 }
 
@@ -135,13 +157,13 @@ async function showQuoteDetails(idCotizacion) {
  */
 function getStatusBadgeClass(estado) {
   const statusMap = {
-    'aceptada': 'success',
-    'enviada': 'info', 
-    'rechazada': 'danger',
-    'borrador': 'secondary',
-    'vencida': 'warning'
+    aceptada: "success",
+    enviada: "info",
+    rechazada: "danger",
+    borrador: "secondary",
+    vencida: "warning",
   };
-  return statusMap[estado?.toLowerCase()] || 'secondary';
+  return statusMap[estado?.toLowerCase()] || "secondary";
 }
 
 /**
@@ -150,17 +172,24 @@ function getStatusBadgeClass(estado) {
  */
 async function downloadQuotePDF(idCotizacion) {
   try {
-    const response = await fetch(`../php/cotizaciones_api.php?id=${idCotizacion}`);
-    if (!response.ok) throw new Error('Error al cargar los datos');
-    
+    const response = await fetch(
+      `../php/cotizaciones_api.php?id=${idCotizacion}`
+    );
+    if (!response.ok) throw new Error("Error al cargar los datos");
+
     const result = await response.json();
     if (!result.success) throw new Error(result.message);
 
     const { cotizacion, detalles } = result;
-    
+
     // Verificar que jsPDF esté disponible
-    if (typeof window.jspdf === "undefined" || typeof window.jspdf.jsPDF === "undefined") {
-      alert("Error: La librería para generar PDF no se ha cargado correctamente.");
+    if (
+      typeof window.jspdf === "undefined" ||
+      typeof window.jspdf.jsPDF === "undefined"
+    ) {
+      alert(
+        "Error: La librería para generar PDF no se ha cargado correctamente."
+      );
       return;
     }
 
@@ -170,41 +199,58 @@ async function downloadQuotePDF(idCotizacion) {
     // Título y información general
     doc.setFontSize(18);
     doc.text("Cotización de Seguros", 14, 22);
-    
+
     doc.setFontSize(12);
     doc.text(`ID Cotización: #${cotizacion.idCotizacion}`, 14, 35);
     doc.text(`Cliente: ${cotizacion.Cli_nombre}`, 14, 42);
     doc.text(`Cédula: ${cotizacion.Cli_cedula}`, 14, 49);
     doc.text(`Estado: ${cotizacion.Cot_estado}`, 14, 56);
-    doc.text(`Fecha: ${new Date(cotizacion.Cot_fechaCreacion).toLocaleDateString('es-ES')}`, 14, 63);
-    doc.text(`Monto Total: ${parseFloat(cotizacion.Cot_montoAsegurable).toLocaleString('es-ES', {minimumFractionDigits: 2})}`, 14, 70);
+    doc.text(
+      `Fecha: ${new Date(cotizacion.Cot_fechaCreacion).toLocaleDateString(
+        "es-ES"
+      )}`,
+      14,
+      63
+    );
+    doc.text(
+      `Monto Total: ${parseFloat(cotizacion.Cot_montoAsegurable).toLocaleString(
+        "es-ES",
+        { minimumFractionDigits: 2 }
+      )}`,
+      14,
+      70
+    );
 
     // Tabla de detalles
-    const tableHeaders = [['Producto', 'Empresa', 'Cant.', 'Precio Unit.', 'Subtotal']];
-    const tableBody = detalles.map(detalle => [
+    const tableHeaders = [
+      ["Producto", "Empresa", "Cant.", "Precio Unit.", "Subtotal"],
+    ];
+    const tableBody = detalles.map((detalle) => [
       detalle.Pro_nombre,
       detalle.Emp_nombre,
       detalle.Det_numServicios.toString(),
       `${parseFloat(detalle.Det_precioUnitario).toFixed(2)}`,
-      `${parseFloat(detalle.Det_subtotal).toFixed(2)}`
+      `${parseFloat(detalle.Det_subtotal).toFixed(2)}`,
     ]);
 
     doc.autoTable({
       head: tableHeaders,
       body: tableBody,
       startY: 80,
-      theme: 'grid',
+      theme: "grid",
       headStyles: { fillColor: [41, 128, 185] },
-      footStyles: { fillColor: [230, 230, 230], fontStyle: 'bold' },
+      footStyles: { fillColor: [230, 230, 230], fontStyle: "bold" },
     });
 
     // Guardar PDF
-    const fileName = `cotizacion_${idCotizacion}_${cotizacion.Cli_nombre.replace(/\s+/g, '_')}.pdf`;
+    const fileName = `cotizacion_${idCotizacion}_${cotizacion.Cli_nombre.replace(
+      /\s+/g,
+      "_"
+    )}.pdf`;
     doc.save(fileName);
-
   } catch (error) {
-    console.error('Error generando PDF:', error);
-    alert('Error al generar el PDF: ' + error.message);
+    console.error("Error generando PDF:", error);
+    alert("Error al generar el PDF: " + error.message);
   }
 }
 
@@ -272,15 +318,15 @@ function renderQuotesTable(quotes, tableBody) {
   });
 
   // Agregar event listeners a los botones de acción
-  document.querySelectorAll('.view-details-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+  document.querySelectorAll(".view-details-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
       const idCotizacion = parseInt(e.currentTarget.dataset.id);
       showQuoteDetails(idCotizacion);
     });
   });
 
-  document.querySelectorAll('.download-pdf-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+  document.querySelectorAll(".download-pdf-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
       const idCotizacion = parseInt(e.currentTarget.dataset.id);
       downloadQuotePDF(idCotizacion);
     });
@@ -421,8 +467,13 @@ async function populateUserFilter() {
  * Genera un PDF con los datos de las cotizaciones actualmente visibles.
  */
 function generatePDF() {
-  if (typeof window.jspdf === "undefined" || typeof window.jspdf.jsPDF === "undefined") {
-    alert("Error: La librería para generar PDF no se ha cargado correctamente.");
+  if (
+    typeof window.jspdf === "undefined" ||
+    typeof window.jspdf.jsPDF === "undefined"
+  ) {
+    alert(
+      "Error: La librería para generar PDF no se ha cargado correctamente."
+    );
     return;
   }
 
@@ -451,7 +502,7 @@ function generatePDF() {
   doc.setFontSize(18);
   doc.text("Reporte de Cotizaciones", 14, 22);
   doc.setFontSize(10);
-  doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 14, 30);
+  doc.text(`Generado el: ${new Date().toLocaleDateString("es-ES")}`, 14, 30);
   doc.text(`Total de registros: ${quotesState.totalRecords}`, 14, 36);
 
   doc.autoTable({

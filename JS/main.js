@@ -31,6 +31,7 @@ import { loadProductosAsegurables } from "./productos_asegurables.js";
 import { loadReportesAuditoria } from "./reportes_autidorias.js";
 import { loadSupervisarCotizaciones } from "./supervisar_cotizaciones.js";
 import { loadMiPerfil } from "./miPerfil.js";
+import { loadMisCotizaciones } from "./mis_cotizaciones.js"; // Asegúrate de que este archivo exista y esté correctamente implementado
 
 /**
  * --- ORQUESTADOR PRINCIPAL ---
@@ -137,7 +138,7 @@ function runPageSpecificLogic() {
     loadSupervisarCotizaciones();
   } else if (path.includes("miPerfil.html")) {
     loadMiPerfil();
-  } else {
-    console.warn(`No se encontró un módulo de JS para la página actual: ${path}`);
+  } else if (path.includes("mis_cotizaciones.html")) {
+    loadMisCotizaciones(); // Carga la lógica específica de "Mis Cotizaciones"  
   }
 }

@@ -21,7 +21,12 @@
   <body>
     <script src="../assets/static/js/initTheme.js"></script>
     <div id="app">
+      <!-- ======================================================= -->
+      <!-- ===== INICIO DE LA CORRECCIÓN: SIDEBAR UNIVERSAL ===== -->
+      <!-- ======================================================= -->
       <div id="sidebar">
+        <!-- Este es el contenido completo del sidebar maestro.
+                 El script main.js se encargará de mostrar solo las partes correctas. -->
         <div class="sidebar-wrapper active">
           <div class="sidebar-header position-relative">
             <div class="d-flex justify-content-between align-items-center">
@@ -115,13 +120,7 @@
                   ><span>Gestión Clientes</span></a
                 >
               </li>
-                          <li class="sidebar-item role-admin">
-                <a href="productos_asegurables.html" class="sidebar-link"
-                  ><i class="bi bi-gear"></i
-                  ><span>Gestión de Productos</span></a
-                >
-              </li>
-              <li class="sidebar-item role-admin active">
+              <li class="sidebar-item role-admin">
                 <a href="supervisar_cotizaciones.html" class="sidebar-link"
                   ><i class="bi bi-file-earmark-text-fill"></i
                   ><span>Supervisar Cotizaciones</span></a
@@ -133,7 +132,6 @@
                   ><span>Reportes y Auditoría</span></a
                 >
               </li>
-  
 
               <!-- ========== MENÚ ASESOR ========== -->
               <li class="sidebar-title role-asesor">Menú Asesor</li>
@@ -151,8 +149,8 @@
               </li>
               <li class="sidebar-item role-asesor">
                 <a href="productos_asegurables.html" class="sidebar-link"
-                  ><i class="bi bi-eye"></i
-                  ><span>Consultar Productos</span></a
+                  ><i class="bi bi-card-checklist"></i
+                  ><span>Productos Asegurables</span></a
                 >
               </li>
 
@@ -179,6 +177,12 @@
 
               <!-- ========== CUENTA (Común para todos) ========== -->
               <li class="sidebar-title">Cuenta</li>
+              <li class="sidebar-item role-asesor role-vendedor">
+                <a href="mis_cotizaciones.html" class="sidebar-link">
+                  <i class="bi bi-journal-text"></i
+                  ><span>Mis Cotizaciones</span>
+                </a>
+              </li>
               <li class="sidebar-item">
                 <a
                   href="../index.html"
@@ -192,6 +196,9 @@
           </div>
         </div>
       </div>
+      <!-- ======================================================= -->
+      <!-- ================== FIN DEL SIDEBAR ==================== -->
+      <!-- ======================================================= -->
 
       <div id="main">
         <header class="mb-3">

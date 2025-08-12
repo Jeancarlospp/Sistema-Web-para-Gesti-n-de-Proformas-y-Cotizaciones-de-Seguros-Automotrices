@@ -11,21 +11,25 @@ export async function checkAuth() {
 
   // 1. Verificación rápida del lado del cliente. Si no hay datos, no hay sesión.
   if (!userRole || !userName) {
-    console.error("Acceso denegado. No se encontró información local de la sesión.");
+    console.error(
+      "Acceso denegado. No se encontró información local de la sesión."
+    );
     window.location.href = "../index.html";
     return null;
   }
 
   // 2. Verificación del lado del servidor. La más importante.
   try {
-    const response = await fetch('../php/session_check.php');
+    const response = await fetch("../php/session_check.php");
     if (!response.ok) {
-        throw new Error('Error de red al verificar la sesión.');
+      throw new Error("Error de red al verificar la sesión.");
     }
     const sessionStatus = await response.json();
 
     if (!sessionStatus.valid) {
-      console.error("Acceso denegado. La sesión del servidor es inválida o ha expirado.");
+      console.error(
+        "Acceso denegado. La sesión del servidor es inválida o ha expirado."
+      );
       localStorage.clear(); // Limpiamos cualquier dato local inconsistente.
       window.location.href = "../index.html";
       return null;
@@ -34,7 +38,6 @@ export async function checkAuth() {
     // Si ambas verificaciones pasan, la sesión es válida.
     console.log("Autenticación verificada con éxito.");
     return { userRole, userName };
-
   } catch (error) {
     console.error("Error crítico durante la verificación de la sesión:", error);
     localStorage.clear();
@@ -52,12 +55,12 @@ export function initializeLogoutButtons() {
     if (btn) {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
-        
+
         // Notificar al servidor para que destruya la sesión PHP
-        fetch('../php/logout.php').finally(() => {
-            // Limpiar localStorage y redirigir, sin importar el resultado del fetch.
-            localStorage.clear();
-            window.location.href = "../index.html";
+        fetch("../php/logout.php").finally(() => {
+          // Limpiar localStorage y redirigir, sin importar el resultado del fetch.
+          localStorage.clear();
+          window.location.href = "../index.html";
         });
       });
     }

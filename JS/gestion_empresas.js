@@ -3,7 +3,7 @@
  * Lógica avanzada con Paginación, Búsqueda, Ordenamiento y CRUD para la Gestión de Empresas.
  */
 
-import { validarRucEcuatoriano, agregarValidacionRuc } from './validaciones.js';
+import { validarRucEcuatoriano, agregarValidacionRuc } from "./validaciones.js";
 
 // --- ESTADO GLOBAL DE LA TABLA ---
 let tableState = {
@@ -355,6 +355,6 @@ export function loadGestionEmpresas() {
   });
 
   // Agregar validaciones a los campos de RUC
-  agregarValidacionRuc('add-Emp_ruc');
-  agregarValidacionRuc('edit-Emp_ruc');
+  agregarValidacionRuc("add-Emp_ruc");
+  agregarValidacionRuc("edit-Emp_ruc");
 }

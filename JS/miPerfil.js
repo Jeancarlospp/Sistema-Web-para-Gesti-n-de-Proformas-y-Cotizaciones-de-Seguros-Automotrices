@@ -3,7 +3,10 @@
  * Lógica para la página de Mi Perfil.
  */
 
-import { validarCedulaEcuatoriana, agregarValidacionCedula } from './validaciones.js';
+import {
+  validarCedulaEcuatoriana,
+  agregarValidacionCedula,
+} from "./validaciones.js";
 
 // --- FUNCIÓN PARA POBLAR LOS FORMULARIOS CON LOS DATOS DEL USUARIO ---
 function populateProfileForms(userData) {
@@ -140,5 +143,5 @@ export function loadMiPerfil() {
   });
 
   // Agregar validación al campo de cédula
-  agregarValidacionCedula('form-profile-cedula');
+  agregarValidacionCedula("form-profile-cedula");
 }

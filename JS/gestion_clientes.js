@@ -3,7 +3,10 @@
  * Lógica avanzada con Paginación, Búsqueda, Ordenamiento y CRUD para la Gestión de Clientes.
  */
 
-import { validarCedulaEcuatoriana, agregarValidacionCedula } from './validaciones.js';
+import {
+  validarCedulaEcuatoriana,
+  agregarValidacionCedula,
+} from "./validaciones.js";
 
 // --- ESTADO GLOBAL DE LA TABLA ---
 let tableState = {
@@ -33,7 +36,7 @@ function renderClientTable(clients, tableBody) {
     const actionButtonClass =
       client.Cli_estado === "activo" ? "btn-warning" : "btn-success";
     const actionButtonIcon =
-      client.Cli_estado === "activo" ?  "bi-pause-circle" : "bi-play-circle";
+      client.Cli_estado === "activo" ? "bi-pause-circle" : "bi-play-circle";
 
     const row = document.createElement("tr");
     row.innerHTML = `
@@ -309,7 +312,13 @@ export function loadGestionClientes() {
 
     if (button.classList.contains("btn-toggle-status")) {
       const newStatus = button.dataset.newStatus;
-      if (confirm(`¿Seguro que deseas ${newStatus === 'activo' ? 'activar' : 'desactivar'} este cliente?`)) {
+      if (
+        confirm(
+          `¿Seguro que deseas ${
+            newStatus === "activo" ? "activar" : "desactivar"
+          } este cliente?`
+        )
+      ) {
         try {
           const response = await fetch("../php/clientes_api.php", {
             method: "POST",
@@ -334,6 +343,6 @@ export function loadGestionClientes() {
   });
 
   // Agregar validaciones a los campos de cédula
-  agregarValidacionCedula('add-Cli_cedula');
-  agregarValidacionCedula('edit-Cli_cedula');
+  agregarValidacionCedula("add-Cli_cedula");
+  agregarValidacionCedula("edit-Cli_cedula");
 }

@@ -17,7 +17,7 @@ let viewState = {
 let userPermissions = {
   canEdit: false,
   canAdd: false,
-  canToggleStatus: false
+  canToggleStatus: false,
 };
 
 /**
@@ -25,52 +25,55 @@ let userPermissions = {
  */
 async function initializeUserPermissions() {
   try {
-    console.log('🔍 Verificando permisos del usuario...');
-    const response = await fetch('../PHP/check_session.php');
+    console.log("🔍 Verificando permisos del usuario...");
+    const response = await fetch("../PHP/check_session.php");
     const data = await response.json();
-    
-    console.log('📋 Respuesta del servidor:', data);
-    
-    if (data.status === 'active' && data.user) {
+
+    console.log("📋 Respuesta del servidor:", data);
+
+    if (data.status === "active" && data.user) {
       const userRole = data.user.Usr_rol;
-      
+
       console.log(`👤 Rol del usuario detectado: ${userRole}`);
-      
+
       // Configurar permisos según el rol
-      switch(userRole) {
-        case 'Administrador':
+      switch (userRole) {
+        case "Administrador":
           userPermissions = {
             canEdit: true,
             canAdd: true,
-            canToggleStatus: true
+            canToggleStatus: true,
           };
           break;
-        case 'Asesor':
+        case "Asesor":
           userPermissions = {
             canEdit: false,
             canAdd: false,
-            canToggleStatus: false
+            canToggleStatus: false,
           };
           break;
         default:
           userPermissions = {
             canEdit: false,
             canAdd: false,
-            canToggleStatus: false
+            canToggleStatus: false,
           };
       }
-      
-      console.log(`🔐 Permisos configurados para rol: ${userRole}`, userPermissions);
+
+      console.log(
+        `🔐 Permisos configurados para rol: ${userRole}`,
+        userPermissions
+      );
     } else {
-      console.warn('⚠️ No se pudo obtener información del usuario:', data);
+      console.warn("⚠️ No se pudo obtener información del usuario:", data);
     }
   } catch (error) {
-    console.error('❌ Error al verificar permisos:', error);
+    console.error("❌ Error al verificar permisos:", error);
     // En caso de error, denegar todos los permisos
     userPermissions = {
       canEdit: false,
       canAdd: false,
-      canToggleStatus: false
+      canToggleStatus: false,
     };
   }
 }
@@ -79,41 +82,41 @@ async function initializeUserPermissions() {
  * Aplica restricciones de interfaz basadas en el rol del usuario
  */
 function applyRoleBasedRestrictions() {
-  const addButton = document.getElementById('btnAgregarProducto');
-  const pageTitle = document.querySelector('.page-heading h3');
-  
+  const addButton = document.getElementById("btnAgregarProducto");
+  const pageTitle = document.querySelector(".page-heading h3");
+
   // Controlar visibilidad del botón "Agregar Producto"
   if (addButton) {
     if (userPermissions.canAdd) {
-      addButton.style.display = 'inline-block';
+      addButton.style.display = "inline-block";
     } else {
-      addButton.style.display = 'none';
+      addButton.style.display = "none";
     }
   }
-  
+
   // Mostrar mensaje informativo para Asesores
   if (!userPermissions.canEdit) {
     // Cambiar título de la página
     if (pageTitle) {
-      pageTitle.textContent = 'Catálogo de Productos - Consulta';
+      pageTitle.textContent = "Catálogo de Productos - Consulta";
     }
-    
-    const pageHeading = document.querySelector('.page-heading');
+
+    const pageHeading = document.querySelector(".page-heading");
     if (pageHeading) {
-      const infoDiv = document.createElement('div');
-      infoDiv.className = 'alert alert-info mb-3';
+      const infoDiv = document.createElement("div");
+      infoDiv.className = "alert alert-info mb-3";
       infoDiv.innerHTML = `
         <i class="bi bi-info-circle me-2"></i>
         <strong>Modo Consulta:</strong> Tienes acceso de solo lectura a los productos asegurables. 
         Puedes consultar todos los detalles para asesorar a tus clientes.
       `;
-      
+
       // Insertar después del page-heading
       pageHeading.parentNode.insertBefore(infoDiv, pageHeading.nextSibling);
     }
-    
+
     // Agregar estilos CSS para tarjetas clicables
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       .asesor-clickable {
         cursor: pointer;
@@ -129,7 +132,7 @@ function applyRoleBasedRestrictions() {
   } else {
     // Para administradores, mantener el título original
     if (pageTitle) {
-      pageTitle.textContent = 'Catálogo de Productos Asegurables';
+      pageTitle.textContent = "Catálogo de Productos Asegurables";
     }
   }
 }
@@ -192,10 +195,10 @@ function renderProductCards(products, container) {
       product.Pro_estado === "activo" ? "bi-pause-circle" : "bi-play-circle";
 
     // Generar botones de acción según permisos
-    let actionButtonsHtml = '';
+    let actionButtonsHtml = "";
     if (userPermissions.canEdit || userPermissions.canToggleStatus) {
       actionButtonsHtml = '<div class="btn-group" role="group">';
-      
+
       if (userPermissions.canEdit) {
         actionButtonsHtml += `
           <button class="btn btn-sm btn-info btn-edit" data-id="${product.idproducto}" title="Editar Producto">
@@ -203,19 +206,21 @@ function renderProductCards(products, container) {
           </button>
         `;
       }
-      
+
       if (userPermissions.canToggleStatus) {
         actionButtonsHtml += `
           <button class="btn btn-sm ${estadoButtonClass} btn-toggle-status" 
                   data-id="${product.idproducto}" 
-                  data-new-status="${product.Pro_estado === "activo" ? "inactivo" : "activo"}" 
+                  data-new-status="${
+                    product.Pro_estado === "activo" ? "inactivo" : "activo"
+                  }" 
                   title="${estadoButtonText} Producto">
             <i class="bi ${actionButtonIcon}"></i>
           </button>
         `;
       }
-      
-      actionButtonsHtml += '</div>';
+
+      actionButtonsHtml += "</div>";
     } else {
       // Para Asesores, mostrar botón de visualización
       actionButtonsHtml = `
@@ -227,7 +232,11 @@ function renderProductCards(products, container) {
 
     const cardHtml = `
             <div class="col-12 col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 shadow-sm ${!userPermissions.canEdit ? 'asesor-clickable' : ''}" ${!userPermissions.canEdit ? `data-product-id="${product.idproducto}"` : ''}>
+                <div class="card h-100 shadow-sm ${
+                  !userPermissions.canEdit ? "asesor-clickable" : ""
+                }" ${
+      !userPermissions.canEdit ? `data-product-id="${product.idproducto}"` : ""
+    }>
                     <div class="card-header"><div class="d-flex justify-content-between align-items-center"><h5 class="card-title mb-0">${
                       product.Pro_nombre
                     }</h5><span class="badge ${
@@ -241,9 +250,15 @@ function renderProductCards(products, container) {
                       product.Pro_descripcion
                     }"</p><ul class="list-group list-group-flush small">${featuresHtml}</ul></div>
                     <div class="card-footer d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">$${parseFloat(product.Pro_precioMensual).toFixed(2)}</h4>
+                        <h4 class="mb-0">$${parseFloat(
+                          product.Pro_precioMensual
+                        ).toFixed(2)}</h4>
                         ${actionButtonsHtml}
-                        ${!userPermissions.canEdit ? '<small class="text-primary"><i class="bi bi-cursor-fill me-1"></i>Click para ver detalles</small>' : ''}
+                        ${
+                          !userPermissions.canEdit
+                            ? '<small class="text-primary"><i class="bi bi-cursor-fill me-1"></i>Click para ver detalles</small>'
+                            : ""
+                        }
                     </div>
                 </div>
             </div>`;
@@ -335,7 +350,9 @@ async function populateSelects(...elements) {
       fetch("../PHP/productos_api.php?action=get_categories").then((res) =>
         res.json()
       ),
-      fetch("../PHP/productos_api.php?action=get_empresas").then((res) => res.json()),
+      fetch("../PHP/productos_api.php?action=get_empresas").then((res) =>
+        res.json()
+      ),
     ]);
 
     elements.forEach(({ element, type }) => {
@@ -366,57 +383,80 @@ async function populateSelects(...elements) {
  */
 async function openEditProductModal(productId) {
   try {
-    console.log('� EJECUTANDO openEditProductModal - función de EDICIÓN para producto:', productId);
-    
+    console.log(
+      "� EJECUTANDO openEditProductModal - función de EDICIÓN para producto:",
+      productId
+    );
+
     // 1. Obtener datos del producto
-    const response = await fetch(`../PHP/productos_api.php?action=get_product&id=${productId}`);
-    
+    const response = await fetch(
+      `../PHP/productos_api.php?action=get_product&id=${productId}`
+    );
+
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
-    
+
     const result = await response.json();
-    
+
     if (!result.success || !result.product) {
-      throw new Error(result.message || 'Producto no encontrado');
+      throw new Error(result.message || "Producto no encontrado");
     }
-    
+
     const product = result.product;
-    console.log('✅ Producto obtenido:', product);
+    console.log("✅ Producto obtenido:", product);
 
     // 2. Llenar el formulario con los datos del producto
-    document.getElementById('editProductId').value = product.idproducto;
-    document.getElementById('editNombreProducto').value = product.Pro_nombre || '';
-    document.getElementById('editDescripcionProducto').value = product.Pro_descripcion || '';
-    document.getElementById('editPrecioMensual').value = product.Pro_precioMensual || '';
-    document.getElementById('editMesesCobertura').value = product.Pro_mesesCobertura || '12';
-    document.getElementById('editPrecioTotal').value = product.Pro_precioTotal || '';
-    document.getElementById('editCategoriaProducto').value = product.idCategoria || '';
-    document.getElementById('editEmpresaProducto').value = product.idEmpresaProveedora || '';
-    document.getElementById('editEstadoProducto').value = product.Pro_estado || 'activo';
-    
+    document.getElementById("editProductId").value = product.idproducto;
+    document.getElementById("editNombreProducto").value =
+      product.Pro_nombre || "";
+    document.getElementById("editDescripcionProducto").value =
+      product.Pro_descripcion || "";
+    document.getElementById("editPrecioMensual").value =
+      product.Pro_precioMensual || "";
+    document.getElementById("editMesesCobertura").value =
+      product.Pro_mesesCobertura || "12";
+    document.getElementById("editPrecioTotal").value =
+      product.Pro_precioTotal || "";
+    document.getElementById("editCategoriaProducto").value =
+      product.idCategoria || "";
+    document.getElementById("editEmpresaProducto").value =
+      product.idEmpresaProveedora || "";
+    document.getElementById("editEstadoProducto").value =
+      product.Pro_estado || "activo";
+
     // Coberturas
-    document.getElementById('editResponsabilidadCivil').value = product.Pro_responsabilidadCivil || '';
-    document.getElementById('editDanosColision').value = product.Pro_dañosColision || '';
-    document.getElementById('editGastosLegales').value = product.Pro_gastosLegales || '';
-    document.getElementById('editGastosMedicos').value = product.Pro_gastosMedicos || '';
-    document.getElementById('editAsistenciaVial').value = product.Pro_asistenciaVial || 'basica';
-    
+    document.getElementById("editResponsabilidadCivil").value =
+      product.Pro_responsabilidadCivil || "";
+    document.getElementById("editDanosColision").value =
+      product.Pro_dañosColision || "";
+    document.getElementById("editGastosLegales").value =
+      product.Pro_gastosLegales || "";
+    document.getElementById("editGastosMedicos").value =
+      product.Pro_gastosMedicos || "";
+    document.getElementById("editAsistenciaVial").value =
+      product.Pro_asistenciaVial || "basica";
+
     // Radio buttons
-    document.getElementById('editRoboSi').checked = product.Pro_roboTotal === 'si';
-    document.getElementById('editRoboNo').checked = product.Pro_roboTotal !== 'si';
-    document.getElementById('editReemplazoSi').checked = product.Pro_autoReemplazo === 'si';
-    document.getElementById('editReemplazoNo').checked = product.Pro_autoReemplazo !== 'si';
+    document.getElementById("editRoboSi").checked =
+      product.Pro_roboTotal === "si";
+    document.getElementById("editRoboNo").checked =
+      product.Pro_roboTotal !== "si";
+    document.getElementById("editReemplazoSi").checked =
+      product.Pro_autoReemplazo === "si";
+    document.getElementById("editReemplazoNo").checked =
+      product.Pro_autoReemplazo !== "si";
 
     // 3. Mostrar el modal
-    const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
+    const modal = new bootstrap.Modal(
+      document.getElementById("editProductModal")
+    );
     modal.show();
-    
-    console.log(' Modal de edición abierto correctamente');
-    
+
+    console.log(" Modal de edición abierto correctamente");
   } catch (error) {
-    console.error(' Error al abrir modal de edición:', error);
-    alert('error al cargar info del producto');
+    console.error(" Error al abrir modal de edición:", error);
+    alert("error al cargar info del producto");
   }
 }
 
@@ -425,75 +465,97 @@ async function openEditProductModal(productId) {
  */
 async function updateProduct() {
   try {
-    const form = document.getElementById('editProductForm');
-    
+    const form = document.getElementById("editProductForm");
+
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
     }
 
     // Cambiar botón a estado de carga
-    const button = document.getElementById('btnActualizarProducto');
+    const button = document.getElementById("btnActualizarProducto");
     const originalText = button.innerHTML;
-    button.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Actualizando...';
+    button.innerHTML =
+      '<i class="bi bi-hourglass-split me-1"></i>Actualizando...';
     button.disabled = true;
 
     // Recopilar datos del formulario
     const productData = {
-      action: 'update_product',
-      idproducto: document.getElementById('editProductId').value,
-      Pro_nombre: document.getElementById('editNombreProducto').value.trim(),
-      Pro_descripcion: document.getElementById('editDescripcionProducto').value.trim(),
-      Pro_precioMensual: parseFloat(document.getElementById('editPrecioMensual').value),
-      Pro_mesesCobertura: parseInt(document.getElementById('editMesesCobertura').value) || 12,
-      Pro_precioTotal: parseFloat(document.getElementById('editPrecioTotal').value),
-      idCategoria: parseInt(document.getElementById('editCategoriaProducto').value),
-      idEmpresaProveedora: parseInt(document.getElementById('editEmpresaProducto').value),
-      Pro_estado: document.getElementById('editEstadoProducto').value,
-      Pro_responsabilidadCivil: parseFloat(document.getElementById('editResponsabilidadCivil').value) || null,
-      Pro_dañosColision: parseFloat(document.getElementById('editDanosColision').value) || null,
-      Pro_gastosLegales: parseFloat(document.getElementById('editGastosLegales').value) || null,
-      Pro_gastosMedicos: parseFloat(document.getElementById('editGastosMedicos').value) || null,
-      Pro_roboTotal: document.querySelector('input[name="editRoboTotal"]:checked').value,
-      Pro_autoReemplazo: document.querySelector('input[name="editAutoReemplazo"]:checked').value,
-      Pro_asistenciaVial: document.getElementById('editAsistenciaVial').value
+      action: "update_product",
+      idproducto: document.getElementById("editProductId").value,
+      Pro_nombre: document.getElementById("editNombreProducto").value.trim(),
+      Pro_descripcion: document
+        .getElementById("editDescripcionProducto")
+        .value.trim(),
+      Pro_precioMensual: parseFloat(
+        document.getElementById("editPrecioMensual").value
+      ),
+      Pro_mesesCobertura:
+        parseInt(document.getElementById("editMesesCobertura").value) || 12,
+      Pro_precioTotal: parseFloat(
+        document.getElementById("editPrecioTotal").value
+      ),
+      idCategoria: parseInt(
+        document.getElementById("editCategoriaProducto").value
+      ),
+      idEmpresaProveedora: parseInt(
+        document.getElementById("editEmpresaProducto").value
+      ),
+      Pro_estado: document.getElementById("editEstadoProducto").value,
+      Pro_responsabilidadCivil:
+        parseFloat(document.getElementById("editResponsabilidadCivil").value) ||
+        null,
+      Pro_dañosColision:
+        parseFloat(document.getElementById("editDanosColision").value) || null,
+      Pro_gastosLegales:
+        parseFloat(document.getElementById("editGastosLegales").value) || null,
+      Pro_gastosMedicos:
+        parseFloat(document.getElementById("editGastosMedicos").value) || null,
+      Pro_roboTotal: document.querySelector(
+        'input[name="editRoboTotal"]:checked'
+      ).value,
+      Pro_autoReemplazo: document.querySelector(
+        'input[name="editAutoReemplazo"]:checked'
+      ).value,
+      Pro_asistenciaVial: document.getElementById("editAsistenciaVial").value,
     };
 
-    console.log('📤 Enviando datos de actualización:', productData);
+    console.log("📤 Enviando datos de actualización:", productData);
 
     // Enviar solicitud
-    const response = await fetch('../PHP/productos_api.php', {
-      method: 'POST',
+    const response = await fetch("../PHP/productos_api.php", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(productData)
+      body: JSON.stringify(productData),
     });
 
     const result = await response.json();
-    console.log('📥 Respuesta del servidor:', result);
+    console.log("📥 Respuesta del servidor:", result);
 
     if (result.success) {
       // Cerrar modal
-      bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
-      
+      bootstrap.Modal.getInstance(
+        document.getElementById("editProductModal")
+      ).hide();
+
       // Recargar productos
       await fetchAndRenderProducts();
-      
-      // Mostrar mensaje de éxito
-      showSuccessMessage('¡Producto actualizado exitosamente!');
-      
-    } else {
-      throw new Error(result.message || 'Error desconocido al actualizar');
-    }
 
+      // Mostrar mensaje de éxito
+      showSuccessMessage("¡Producto actualizado exitosamente!");
+    } else {
+      throw new Error(result.message || "Error desconocido al actualizar");
+    }
   } catch (error) {
-    console.error('❌ Error al actualizar producto:', error);
-    showErrorMessage('Error al actualizar el producto: ' + error.message);
+    console.error("❌ Error al actualizar producto:", error);
+    showErrorMessage("Error al actualizar el producto: " + error.message);
   } finally {
     // Restaurar botón
-    const button = document.getElementById('btnActualizarProducto');
-    button.innerHTML = '<i class="bi bi-pencil-square me-1"></i>Actualizar Producto';
+    const button = document.getElementById("btnActualizarProducto");
+    button.innerHTML =
+      '<i class="bi bi-pencil-square me-1"></i>Actualizar Producto';
     button.disabled = false;
   }
 }
@@ -502,9 +564,9 @@ async function updateProduct() {
  * Configura los calculadores automáticos para el modal de edición
  */
 function setupEditModalCalculators() {
-  const precioMensual = document.getElementById('editPrecioMensual');
-  const mesesCobertura = document.getElementById('editMesesCobertura');
-  const precioTotal = document.getElementById('editPrecioTotal');
+  const precioMensual = document.getElementById("editPrecioMensual");
+  const mesesCobertura = document.getElementById("editMesesCobertura");
+  const precioTotal = document.getElementById("editPrecioTotal");
 
   function calcularTotal() {
     const mensual = parseFloat(precioMensual.value) || 0;
@@ -514,16 +576,16 @@ function setupEditModalCalculators() {
   }
 
   if (precioMensual && mesesCobertura && precioTotal) {
-    precioMensual.addEventListener('input', calcularTotal);
-    mesesCobertura.addEventListener('input', calcularTotal);
+    precioMensual.addEventListener("input", calcularTotal);
+    mesesCobertura.addEventListener("input", calcularTotal);
   }
 }
 
 // --- FUNCIÓN PRINCIPAL DE INICIALIZACIÓN ---
 export async function loadProductosAsegurables() {
-  console.log("🚀 Inicializando Gestión de Productos...");  // Verificar permisos del usuario
+  console.log("🚀 Inicializando Gestión de Productos..."); // Verificar permisos del usuario
   await initializeUserPermissions();
-  
+
   // Aplicar restricciones de interfaz según el rol
   applyRoleBasedRestrictions();
 
@@ -541,22 +603,24 @@ export async function loadProductosAsegurables() {
 
   // Elementos del modal de edición
   const editProductModalEl = document.getElementById("editProductModal");
-  const btnActualizarProducto = document.getElementById("btnActualizarProducto");
+  const btnActualizarProducto = document.getElementById(
+    "btnActualizarProducto"
+  );
 
   // Poblar selects de categorías y empresas
   await loadFormSelects();
-  
+
   // Configurar calculadores automáticos para el modal de edición
   setupEditModalCalculators();
-  
+
   // Event listener para el botón de actualizar producto
   if (btnActualizarProducto) {
-    btnActualizarProducto.addEventListener('click', updateProduct);
+    btnActualizarProducto.addEventListener("click", updateProduct);
   }
-  
+
   // Cargar productos inicialmente
   await fetchAndRenderProducts();
-  
+
   console.log("✅ Gestión de Productos inicializada correctamente");
 
   // --- EVENT LISTENERS ---
@@ -600,7 +664,7 @@ export async function loadProductosAsegurables() {
 
   container.addEventListener("click", async (event) => {
     // Verificar si es un clic en tarjeta para Asesor (solo consulta)
-    const card = event.target.closest('.asesor-clickable');
+    const card = event.target.closest(".asesor-clickable");
     if (card && !userPermissions.canEdit) {
       const productId = card.dataset.productId;
       if (productId) {
@@ -608,7 +672,7 @@ export async function loadProductosAsegurables() {
         return;
       }
     }
-    
+
     // Manejo de botones de acción (solo para usuarios con permisos)
     const button = event.target.closest("button");
     if (!button) return;
@@ -616,16 +680,20 @@ export async function loadProductosAsegurables() {
     if (!productId) return;
 
     if (button.classList.contains("btn-edit")) {
-      console.log('🔍 Verificando permisos de usuario:', userPermissions);
-      
+      console.log("🔍 Verificando permisos de usuario:", userPermissions);
+
       // Para Asesores, mostrar modal de información en lugar de edición
       if (!userPermissions.canEdit) {
-        console.log('📖 Usuario SIN permisos de edición - llamando showProductInfoModal');
+        console.log(
+          "📖 Usuario SIN permisos de edición - llamando showProductInfoModal"
+        );
         showProductInfoModal(productId);
         return;
       }
       // Para Administradores, abrir modal de edición
-      console.log('✏️ Usuario CON permisos de edición - llamando openEditProductModal');
+      console.log(
+        "✏️ Usuario CON permisos de edición - llamando openEditProductModal"
+      );
       openEditProductModal(productId);
     }
 
@@ -635,7 +703,7 @@ export async function loadProductosAsegurables() {
         alert("No tienes permisos para cambiar el estado de productos.");
         return;
       }
-      
+
       const newStatus = button.dataset.newStatus;
       if (confirm(`¿Seguro que deseas ${newStatus} este producto?`)) {
         try {
@@ -659,10 +727,10 @@ export async function loadProductosAsegurables() {
   });
 
   btnGuardarProducto.addEventListener("click", async () => {
-    const modal = document.getElementById('addProductModal');
-    const isEditMode = modal.getAttribute('data-mode') === 'edit';
-    const productId = modal.getAttribute('data-product-id');
-    
+    const modal = document.getElementById("addProductModal");
+    const isEditMode = modal.getAttribute("data-mode") === "edit";
+    const productId = modal.getAttribute("data-product-id");
+
     if (isEditMode && !userPermissions.canEdit) {
       alert("No tienes permisos para editar productos.");
       return;
@@ -670,7 +738,7 @@ export async function loadProductosAsegurables() {
       alert("No tienes permisos para agregar productos.");
       return;
     }
-    
+
     const form = document.getElementById("formNuevoProducto");
     if (!form.checkValidity()) {
       form.reportValidity();
@@ -679,40 +747,59 @@ export async function loadProductosAsegurables() {
 
     // Mostrar indicador de carga
     const originalText = btnGuardarProducto.innerHTML;
-    const loadingText = isEditMode ? 
-      '<i class="bi bi-hourglass-split me-1"></i>Actualizando...' : 
-      '<i class="bi bi-hourglass-split me-1"></i>Guardando...';
+    const loadingText = isEditMode
+      ? '<i class="bi bi-hourglass-split me-1"></i>Actualizando...'
+      : '<i class="bi bi-hourglass-split me-1"></i>Guardando...';
     btnGuardarProducto.innerHTML = loadingText;
     btnGuardarProducto.disabled = true;
 
     try {
       const formData = {
         Pro_nombre: document.getElementById("nombreProducto").value.trim(),
-        Pro_descripcion: document.getElementById("descripcionProducto").value.trim(),
-        Pro_precioMensual: parseFloat(document.getElementById("precioMensual").value),
-        Pro_mesesCobertura: parseInt(document.getElementById("mesesCobertura").value) || 12,
-        Pro_precioTotal: parseFloat(document.getElementById("precioTotal").value),
-        Pro_responsabilidadCivil: parseFloat(document.getElementById("responsabilidadCivil").value) || null,
-        Pro_dañosColision: parseFloat(document.getElementById("danosColision").value) || null,
-        Pro_gastosLegales: parseFloat(document.getElementById("gastosLegales").value) || null,
-        Pro_gastosMedicos: parseFloat(document.getElementById("gastosMedicos").value) || null,
-        Pro_roboTotal: document.querySelector('input[name="roboTotal"]:checked').value,
-        Pro_autoReemplazo: document.querySelector('input[name="autoReemplazo"]:checked').value,
+        Pro_descripcion: document
+          .getElementById("descripcionProducto")
+          .value.trim(),
+        Pro_precioMensual: parseFloat(
+          document.getElementById("precioMensual").value
+        ),
+        Pro_mesesCobertura:
+          parseInt(document.getElementById("mesesCobertura").value) || 12,
+        Pro_precioTotal: parseFloat(
+          document.getElementById("precioTotal").value
+        ),
+        Pro_responsabilidadCivil:
+          parseFloat(document.getElementById("responsabilidadCivil").value) ||
+          null,
+        Pro_dañosColision:
+          parseFloat(document.getElementById("danosColision").value) || null,
+        Pro_gastosLegales:
+          parseFloat(document.getElementById("gastosLegales").value) || null,
+        Pro_gastosMedicos:
+          parseFloat(document.getElementById("gastosMedicos").value) || null,
+        Pro_roboTotal: document.querySelector('input[name="roboTotal"]:checked')
+          .value,
+        Pro_autoReemplazo: document.querySelector(
+          'input[name="autoReemplazo"]:checked'
+        ).value,
         Pro_asistenciaVial: document.getElementById("asistenciaVial").value,
-        idCategoria: parseInt(document.getElementById("categoriaProducto").value),
-        idEmpresaProveedora: parseInt(document.getElementById("empresaProducto").value),
-        Pro_estado: document.getElementById("estadoProducto").value
+        idCategoria: parseInt(
+          document.getElementById("categoriaProducto").value
+        ),
+        idEmpresaProveedora: parseInt(
+          document.getElementById("empresaProducto").value
+        ),
+        Pro_estado: document.getElementById("estadoProducto").value,
       };
 
       if (isEditMode) {
         // Modo EDICIÓN
         formData.action = "update_product";
         formData.idproducto = parseInt(productId);
-        console.log('📝 Actualizando producto con ID:', productId, formData);
+        console.log("📝 Actualizando producto con ID:", productId, formData);
       } else {
         // Modo AGREGAR
         formData.action = "create_product";
-        console.log('📝 Creando nuevo producto:', formData);
+        console.log("📝 Creando nuevo producto:", formData);
       }
 
       const response = await fetch("../PHP/productos_api.php", {
@@ -722,7 +809,7 @@ export async function loadProductosAsegurables() {
       });
 
       const result = await response.json();
-      console.log('📥 Respuesta del servidor:', result);
+      console.log("📥 Respuesta del servidor:", result);
 
       if (result.success) {
         // Cerrar modal y resetear formulario
@@ -730,20 +817,22 @@ export async function loadProductosAsegurables() {
         resetModalToAddMode(); // Resetear modal a modo agregar
         resetAddProductForm();
         await fetchAndRenderProducts();
-        
+
         // Mostrar mensaje de éxito
-        const successMessage = isEditMode ? 
-          "¡Producto actualizado exitosamente!" : 
-          "¡Producto guardado exitosamente!";
+        const successMessage = isEditMode
+          ? "¡Producto actualizado exitosamente!"
+          : "¡Producto guardado exitosamente!";
         showSuccessMessage(successMessage);
       } else {
-        throw new Error(result.message || "Error desconocido al procesar el producto");
+        throw new Error(
+          result.message || "Error desconocido al procesar el producto"
+        );
       }
     } catch (error) {
       console.error("Error al procesar producto:", error);
-      const errorMessage = isEditMode ? 
-        "Error al actualizar el producto: " + error.message :
-        "Error al guardar el producto: " + error.message;
+      const errorMessage = isEditMode
+        ? "Error al actualizar el producto: " + error.message
+        : "Error al guardar el producto: " + error.message;
       showErrorMessage(errorMessage);
     } finally {
       // Restaurar botón
@@ -753,10 +842,9 @@ export async function loadProductosAsegurables() {
   });
 
   // Event listener para resetear el modal cuando se cierre
-  addProductModalEl.addEventListener('hidden.bs.modal', function () {
+  addProductModalEl.addEventListener("hidden.bs.modal", function () {
     resetModalToAddMode();
   });
-
 }
 
 /**
@@ -764,46 +852,87 @@ export async function loadProductosAsegurables() {
  */
 async function showProductInfoModal(productId) {
   try {
-    console.log('� EJECUTANDO showProductInfoModal - función de VISUALIZACIÓN para producto:', productId);
-    
-    const response = await fetch(`../php/productos_api.php?action=get_product&id=${productId}`);
+    console.log(
+      "� EJECUTANDO showProductInfoModal - función de VISUALIZACIÓN para producto:",
+      productId
+    );
+
+    const response = await fetch(
+      `../php/productos_api.php?action=get_product&id=${productId}`
+    );
     const result = await response.json();
-    
+
     if (result.success && result.product) {
       const product = result.product;
-      
+
       // Llenar información general
-      document.getElementById('view-producto-nombre').textContent = product.Pro_nombre;
-      document.getElementById('view-producto-categoria').textContent = product.nombre_categoria || 'N/A';
-      document.getElementById('view-producto-empresa').textContent = product.nombre_empresa || 'N/A';
-      document.getElementById('view-producto-precio').textContent = `$${parseFloat(product.Pro_precioMensual).toFixed(2)}`;
-      document.getElementById('view-producto-descripcion').textContent = product.Pro_descripcion;
-      
+      document.getElementById("view-producto-nombre").textContent =
+        product.Pro_nombre;
+      document.getElementById("view-producto-categoria").textContent =
+        product.nombre_categoria || "N/A";
+      document.getElementById("view-producto-empresa").textContent =
+        product.nombre_empresa || "N/A";
+      document.getElementById(
+        "view-producto-precio"
+      ).textContent = `$${parseFloat(product.Pro_precioMensual).toFixed(2)}`;
+      document.getElementById("view-producto-descripcion").textContent =
+        product.Pro_descripcion;
+
       // Estado con badge
-      const estadoBadge = document.getElementById('view-producto-estado');
+      const estadoBadge = document.getElementById("view-producto-estado");
       estadoBadge.textContent = product.Pro_estado;
-      estadoBadge.className = `badge ${product.Pro_estado === 'activo' ? 'bg-success' : 'bg-secondary'}`;
-      
+      estadoBadge.className = `badge ${
+        product.Pro_estado === "activo" ? "bg-success" : "bg-secondary"
+      }`;
+
       // Llenar coberturas
-      const coberturasContainer = document.getElementById('view-producto-coberturas');
+      const coberturasContainer = document.getElementById(
+        "view-producto-coberturas"
+      );
       const coberturas = [
-        { label: "Meses de Cobertura", value: product.Pro_mesesCobertura, unit: " meses" },
-        { label: "Responsabilidad Civil", value: product.Pro_responsabilidadCivil, unit: "$" },
+        {
+          label: "Meses de Cobertura",
+          value: product.Pro_mesesCobertura,
+          unit: " meses",
+        },
+        {
+          label: "Responsabilidad Civil",
+          value: product.Pro_responsabilidadCivil,
+          unit: "$",
+        },
         { label: "Robo Total", value: product.Pro_roboTotal },
         { label: "Asistencia Vial", value: product.Pro_asistenciaVial },
-        { label: "Daños por Colisión", value: product.Pro_dañosColision, unit: "$" },
+        {
+          label: "Daños por Colisión",
+          value: product.Pro_dañosColision,
+          unit: "$",
+        },
         { label: "Auto de Reemplazo", value: product.Pro_autoReemplazo },
-        { label: "Gastos Legales", value: product.Pro_gastosLegales, unit: "$" },
-        { label: "Gastos Médicos", value: product.Pro_gastosMedicos, unit: "$" }
+        {
+          label: "Gastos Legales",
+          value: product.Pro_gastosLegales,
+          unit: "$",
+        },
+        {
+          label: "Gastos Médicos",
+          value: product.Pro_gastosMedicos,
+          unit: "$",
+        },
       ];
-      
+
       let coberturasHtml = '<ul class="list-group list-group-flush">';
-      coberturas.forEach(cobertura => {
+      coberturas.forEach((cobertura) => {
         let content = `<i class="bi bi-x-circle text-danger me-2"></i> ${cobertura.label}`;
-        if (cobertura.value && cobertura.value !== "no" && cobertura.value != 0) {
+        if (
+          cobertura.value &&
+          cobertura.value !== "no" &&
+          cobertura.value != 0
+        ) {
           let displayValue = cobertura.value;
           if (cobertura.unit === "$" && !isNaN(parseFloat(cobertura.value))) {
-            displayValue = `$${parseFloat(cobertura.value).toLocaleString("es-EC")}`;
+            displayValue = `$${parseFloat(cobertura.value).toLocaleString(
+              "es-EC"
+            )}`;
           } else if (cobertura.unit) {
             displayValue = `${cobertura.value}${cobertura.unit}`;
           } else if (cobertura.value === "si") {
@@ -813,20 +942,23 @@ async function showProductInfoModal(productId) {
         }
         coberturasHtml += `<li class="list-group-item py-2 px-0 border-0">${content}</li>`;
       });
-      coberturasHtml += '</ul>';
-      
+      coberturasHtml += "</ul>";
+
       coberturasContainer.innerHTML = coberturasHtml;
-      
+
       // Mostrar el modal
-      const viewModal = new bootstrap.Modal(document.getElementById('viewProductModal'));
+      const viewModal = new bootstrap.Modal(
+        document.getElementById("viewProductModal")
+      );
       viewModal.show();
-      
     } else {
-      throw new Error(result.message || 'No se pudo obtener la información del producto');
+      throw new Error(
+        result.message || "No se pudo obtener la información del producto"
+      );
     }
   } catch (error) {
-    console.error('Error al mostrar información del producto:', error);
-    alert('Error al cargar info del producto');
+    console.error("Error al mostrar información del producto:", error);
+    alert("Error al cargar info del producto");
   }
 }
 
@@ -835,24 +967,25 @@ async function showProductInfoModal(productId) {
  */
 async function loadFormSelects() {
   try {
-    console.log('🔄 Cargando categorías y empresas...');
-    
+    console.log("🔄 Cargando categorías y empresas...");
+
     const [categoriesResponse, empresasResponse] = await Promise.all([
       fetch("../PHP/productos_api.php?action=get_categories"),
-      fetch("../PHP/productos_api.php?action=get_empresas")
+      fetch("../PHP/productos_api.php?action=get_empresas"),
     ]);
 
     const categories = await categoriesResponse.json();
     const empresas = await empresasResponse.json();
 
-    console.log('📊 Categorías cargadas:', categories);
-    console.log('🏢 Empresas cargadas:', empresas);
+    console.log("📊 Categorías cargadas:", categories);
+    console.log("🏢 Empresas cargadas:", empresas);
 
     // Poblar select de categorías (filtro)
     const categoryFilter = document.getElementById("product-category-filter");
     if (categoryFilter) {
-      categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
-      categories.forEach(cat => {
+      categoryFilter.innerHTML =
+        '<option value="">Todas las categorías</option>';
+      categories.forEach((cat) => {
         categoryFilter.innerHTML += `<option value="${cat.idcategoria}">${cat.Cat_nombre}</option>`;
       });
     }
@@ -860,17 +993,21 @@ async function loadFormSelects() {
     // Poblar select de categorías (modal agregar)
     const categoriaProducto = document.getElementById("categoriaProducto");
     if (categoriaProducto) {
-      categoriaProducto.innerHTML = '<option value="">Seleccione una categoría...</option>';
-      categories.forEach(cat => {
+      categoriaProducto.innerHTML =
+        '<option value="">Seleccione una categoría...</option>';
+      categories.forEach((cat) => {
         categoriaProducto.innerHTML += `<option value="${cat.idcategoria}">${cat.Cat_nombre}</option>`;
       });
     }
 
     // Poblar select de categorías (modal editar)
-    const editCategoriaProducto = document.getElementById("editCategoriaProducto");
+    const editCategoriaProducto = document.getElementById(
+      "editCategoriaProducto"
+    );
     if (editCategoriaProducto) {
-      editCategoriaProducto.innerHTML = '<option value="">Seleccione una categoría...</option>';
-      categories.forEach(cat => {
+      editCategoriaProducto.innerHTML =
+        '<option value="">Seleccione una categoría...</option>';
+      categories.forEach((cat) => {
         editCategoriaProducto.innerHTML += `<option value="${cat.idcategoria}">${cat.Cat_nombre}</option>`;
       });
     }
@@ -878,8 +1015,9 @@ async function loadFormSelects() {
     // Poblar select de empresas (modal agregar)
     const empresaProducto = document.getElementById("empresaProducto");
     if (empresaProducto) {
-      empresaProducto.innerHTML = '<option value="">Seleccione una empresa...</option>';
-      empresas.forEach(emp => {
+      empresaProducto.innerHTML =
+        '<option value="">Seleccione una empresa...</option>';
+      empresas.forEach((emp) => {
         empresaProducto.innerHTML += `<option value="${emp.idEmpresas_Proveedora}">${emp.Emp_nombre}</option>`;
       });
     }
@@ -887,17 +1025,17 @@ async function loadFormSelects() {
     // Poblar select de empresas (modal editar)
     const editEmpresaProducto = document.getElementById("editEmpresaProducto");
     if (editEmpresaProducto) {
-      editEmpresaProducto.innerHTML = '<option value="">Seleccione una empresa...</option>';
-      empresas.forEach(emp => {
+      editEmpresaProducto.innerHTML =
+        '<option value="">Seleccione una empresa...</option>';
+      empresas.forEach((emp) => {
         editEmpresaProducto.innerHTML += `<option value="${emp.idEmpresas_Proveedora}">${emp.Emp_nombre}</option>`;
       });
     }
 
-    console.log('✅ Selects cargados correctamente');
-    
+    console.log("✅ Selects cargados correctamente");
   } catch (error) {
-    console.error('❌ Error al cargar selects:', error);
-    showErrorMessage('Error al cargar las opciones del formulario');
+    console.error("❌ Error al cargar selects:", error);
+    showErrorMessage("Error al cargar las opciones del formulario");
   }
 }
 
@@ -905,18 +1043,20 @@ async function loadFormSelects() {
  * Resetea el modal al modo "Agregar Producto"
  */
 function resetModalToAddMode() {
-  const modal = document.getElementById('addProductModal');
-  const modalTitle = document.getElementById('addProductModalLabel');
-  const submitButton = document.getElementById('btnGuardarProducto');
-  
+  const modal = document.getElementById("addProductModal");
+  const modalTitle = document.getElementById("addProductModalLabel");
+  const submitButton = document.getElementById("btnGuardarProducto");
+
   // Restaurar título y botón originales
-  modalTitle.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Añadir Nuevo Producto';
-  submitButton.innerHTML = '<i class="bi bi-save-fill me-1"></i>Guardar Producto';
-  submitButton.className = 'btn btn-primary'; // Restaurar color primario
-  
+  modalTitle.innerHTML =
+    '<i class="bi bi-plus-circle me-2"></i>Añadir Nuevo Producto';
+  submitButton.innerHTML =
+    '<i class="bi bi-save-fill me-1"></i>Guardar Producto';
+  submitButton.className = "btn btn-primary"; // Restaurar color primario
+
   // Remover atributos de modo edición
-  modal.removeAttribute('data-mode');
-  modal.removeAttribute('data-product-id');
+  modal.removeAttribute("data-mode");
+  modal.removeAttribute("data-product-id");
 }
 
 /**
@@ -932,14 +1072,14 @@ function setupAutomaticCalculations() {
     const mensual = parseFloat(precioMensual.value) || 0;
     const meses = parseInt(mesesCobertura.value) || 12;
     const total = mensual * meses;
-    
+
     precioTotal.value = total.toFixed(2);
   }
 
   if (precioMensual && mesesCobertura && precioTotal) {
-    precioMensual.addEventListener('input', calcularPrecioTotal);
-    mesesCobertura.addEventListener('input', calcularPrecioTotal);
-    
+    precioMensual.addEventListener("input", calcularPrecioTotal);
+    mesesCobertura.addEventListener("input", calcularPrecioTotal);
+
     // Calcular inicialmente
     calcularPrecioTotal();
   }
@@ -950,27 +1090,27 @@ function setupAutomaticCalculations() {
  */
 function setupFormValidation() {
   const form = document.getElementById("formNuevoProducto");
-  
+
   if (form) {
     // Validación personalizada para campos numéricos
     const numericInputs = form.querySelectorAll('input[type="number"]');
-    numericInputs.forEach(input => {
-      input.addEventListener('input', function() {
+    numericInputs.forEach((input) => {
+      input.addEventListener("input", function () {
         if (this.value < 0) {
-          this.setCustomValidity('El valor no puede ser negativo');
+          this.setCustomValidity("El valor no puede ser negativo");
         } else {
-          this.setCustomValidity('');
+          this.setCustomValidity("");
         }
       });
     });
 
     // Validación para campos requeridos
-    form.addEventListener('submit', function(e) {
+    form.addEventListener("submit", function (e) {
       e.preventDefault();
-      
+
       if (!this.checkValidity()) {
         e.stopPropagation();
-        this.classList.add('was-validated');
+        this.classList.add("was-validated");
       }
     });
   }
@@ -983,17 +1123,17 @@ function resetAddProductForm() {
   const form = document.getElementById("formNuevoProducto");
   if (form) {
     form.reset();
-    form.classList.remove('was-validated');
-    
+    form.classList.remove("was-validated");
+
     // Resetear valores por defecto
     document.getElementById("mesesCobertura").value = 12;
-    document.getElementById("estadoProducto").value = 'activo';
-    document.getElementById("asistenciaVial").value = 'basica';
-    document.querySelector('#roboNo').checked = true;
-    document.querySelector('#reemplazoNo').checked = true;
-    
+    document.getElementById("estadoProducto").value = "activo";
+    document.getElementById("asistenciaVial").value = "basica";
+    document.querySelector("#roboNo").checked = true;
+    document.querySelector("#reemplazoNo").checked = true;
+
     // Limpiar precio total
-    document.getElementById("precioTotal").value = '';
+    document.getElementById("precioTotal").value = "";
   }
 }
 
@@ -1002,8 +1142,8 @@ function resetAddProductForm() {
  */
 function showSuccessMessage(message) {
   // Usar Toast de Bootstrap si está disponible, sino usar alert
-  if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
-    showToast(message, 'success');
+  if (typeof bootstrap !== "undefined" && bootstrap.Toast) {
+    showToast(message, "success");
   } else {
     alert(message);
   }
@@ -1014,8 +1154,8 @@ function showSuccessMessage(message) {
  */
 function showErrorMessage(message) {
   // Usar Toast de Bootstrap si está disponible, sino usar alert
-  if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
-    showToast(message, 'error');
+  if (typeof bootstrap !== "undefined" && bootstrap.Toast) {
+    showToast(message, "error");
   } else {
     alert(message);
   }
@@ -1024,20 +1164,30 @@ function showErrorMessage(message) {
 /**
  * Función auxiliar para mostrar toasts
  */
-function showToast(message, type = 'info') {
+function showToast(message, type = "info") {
   // Crear container de toasts si no existe
-  let toastContainer = document.querySelector('.toast-container');
+  let toastContainer = document.querySelector(".toast-container");
   if (!toastContainer) {
-    toastContainer = document.createElement('div');
-    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-    toastContainer.style.zIndex = '9999';
+    toastContainer = document.createElement("div");
+    toastContainer.className = "toast-container position-fixed top-0 end-0 p-3";
+    toastContainer.style.zIndex = "9999";
     document.body.appendChild(toastContainer);
   }
 
   // Crear toast
-  const toastId = 'toast-' + Date.now();
-  const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
-  const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+  const toastId = "toast-" + Date.now();
+  const bgClass =
+    type === "success"
+      ? "bg-success"
+      : type === "error"
+      ? "bg-danger"
+      : "bg-info";
+  const iconClass =
+    type === "success"
+      ? "bi-check-circle"
+      : type === "error"
+      ? "bi-exclamation-triangle"
+      : "bi-info-circle";
 
   const toastHtml = `
     <div id="${toastId}" class="toast ${bgClass} text-white" role="alert">
@@ -1049,15 +1199,15 @@ function showToast(message, type = 'info') {
     </div>
   `;
 
-  toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-  
+  toastContainer.insertAdjacentHTML("beforeend", toastHtml);
+
   // Mostrar toast
   const toastElement = document.getElementById(toastId);
   const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
   toast.show();
-  
+
   // Limpiar después de mostrar
-  toastElement.addEventListener('hidden.bs.toast', () => {
+  toastElement.addEventListener("hidden.bs.toast", () => {
     toastElement.remove();
   });
 }

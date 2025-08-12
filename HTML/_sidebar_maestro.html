@@ -4,7 +4,7 @@
     <div class="d-flex justify-content-between align-items-center">
       <div class="logo">
         <a href="index.html"
-          ><img src="../assets/compiled/svg/logo.svg" alt="Logo"
+          ><img src="../assets/compiled/svg/logo.svg" alt="Logo" srcset=""
         /></a>
       </div>
       <div class="theme-toggle d-flex gap-2 align-items-center mt-2">
@@ -87,12 +87,6 @@
           ><span>Gestión Clientes</span></a
         >
       </li>
-            <li class="sidebar-item role-admin">
-        <a href="productos_asegurables.html" class="sidebar-link"
-          ><i class="bi bi-gear"></i
-          ><span>Gestión de Productos</span></a
-        >
-      </li>
       <li class="sidebar-item role-admin">
         <a href="supervisar_cotizaciones.html" class="sidebar-link"
           ><i class="bi bi-file-earmark-text-fill"></i
@@ -105,7 +99,6 @@
           ><span>Reportes y Auditoría</span></a
         >
       </li>
-
 
       <!-- ========== MENÚ ASESOR ========== -->
       <li class="sidebar-title role-asesor">Menú Asesor</li>
@@ -121,12 +114,14 @@
           ><span>Gestión de Clientes</span></a
         >
       </li>
-              <li class="sidebar-item role-asesor">
-                <a href="productos_asegurables.html" class="sidebar-link"
-                  ><i class="bi bi-eye"></i
-                  ><span>Consultar Productos</span></a
-                >
-              </li>      <!-- ========== MENÚ VENDEDOR ========== -->
+      <li class="sidebar-item role-asesor">
+        <a href="productos_asegurables.html" class="sidebar-link"
+          ><i class="bi bi-card-checklist"></i
+          ><span>Productos Asegurables</span></a
+        >
+      </li>
+
+      <!-- ========== MENÚ VENDEDOR ========== -->
       <li class="sidebar-title role-vendedor">Menú Vendedor</li>
       <li class="sidebar-item role-vendedor">
         <a href="vendedor_dashboard.html" class="sidebar-link"
@@ -149,6 +144,17 @@
 
       <!-- ========== CUENTA (Común para todos) ========== -->
       <li class="sidebar-title">Cuenta</li>
+      <li class="sidebar-item role-asesor">
+        <a href="misCotizaciones.html" class="sidebar-link"
+          ><i class="bi bi-person-lines-fill"></i
+          ><span>Mis Cotizaciones</span></a
+        >
+      </li>
+      <li class="sidebar-item role-vendedor">
+        <a href="misCotizaciones.html" class="sidebar-link"
+          ><i class="bi bi-person-lines-fill"></i
+          ><span>Mis Cotizaciones</span></a
+        >
       <li class="sidebar-item">
         <a href="../index.html" id="logout-btn-sidebar" class="sidebar-link"
           ><i class="bi bi-box-arrow-left"></i><span>Cerrar Sesión</span></a

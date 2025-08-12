@@ -3,7 +3,10 @@
  * Lógica completa con Paginación, Búsqueda, Ordenamiento y CRUD para la Gestión de Usuarios.
  */
 
-import { validarCedulaEcuatoriana, agregarValidacionCedula } from './validaciones.js';
+import {
+  validarCedulaEcuatoriana,
+  agregarValidacionCedula,
+} from "./validaciones.js";
 
 // --- ESTADO GLOBAL DE LA TABLA ---
 let tableState = {
@@ -50,7 +53,7 @@ function renderUsersTable(users, tableBody) {
                 <button class="btn btn-sm ${actionButtonClass} btn-toggle-on ms-1" 
                 data-id="${user.id_usuario}" 
                 data-new-status="${
-                user.estado === "activo" ? "inactivo" : "activo"
+                  user.estado === "activo" ? "inactivo" : "activo"
                 }" 
                 title="${actionButtonText} Usuario">
                     <i class="bi ${actionButtonIcon}"></i>
@@ -140,18 +143,20 @@ async function populateRolesSelects(...elements) {
   try {
     console.log("Cargando roles desde la API...");
     const response = await fetch("../php/roles_api.php?action=get_roles");
-    
+
     if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+      throw new Error(
+        `Error HTTP: ${response.status} - ${response.statusText}`
+      );
     }
-    
+
     const contentType = response.headers.get("content-type");
     if (!contentType || !contentType.includes("application/json")) {
       const text = await response.text();
       console.error("Respuesta no es JSON:", text);
       throw new Error("La respuesta no es JSON válido");
     }
-    
+
     const roles = await response.json();
     console.log("Roles recibidos:", roles);
 
@@ -163,7 +168,8 @@ async function populateRolesSelects(...elements) {
 
     elements.forEach((selectElement) => {
       if (selectElement) {
-        selectElement.innerHTML = '<option value="" disabled selected>-- Seleccione un rol --</option>';
+        selectElement.innerHTML =
+          '<option value="" disabled selected>-- Seleccione un rol --</option>';
         roles.forEach((rol) => {
           // Verificar que el rol tiene las propiedades necesarias
           if (rol.id && rol.nombre) {
@@ -177,12 +183,15 @@ async function populateRolesSelects(...elements) {
     console.error("Error detallado al poblar roles:", error);
     elements.forEach((el) => {
       if (el) {
-        el.innerHTML = '<option value="" disabled>Error al cargar roles</option>';
+        el.innerHTML =
+          '<option value="" disabled>Error al cargar roles</option>';
       }
     });
-    
+
     // Mostrar alerta al usuario
-    alert("Error al cargar los roles. Por favor, recargue la página e intente nuevamente.");
+    alert(
+      "Error al cargar los roles. Por favor, recargue la página e intente nuevamente."
+    );
   }
 }
 
@@ -190,16 +199,16 @@ async function populateRolesSelects(...elements) {
 async function openEditModal(userId) {
   try {
     console.log("Abriendo modal de edición para usuario ID:", userId);
-    
+
     // Primero cargar los roles en el select del modal de edición
     const editRoleSelect = document.getElementById("edit-userRole");
     await populateRolesSelects(editRoleSelect);
-    
+
     // Luego cargar los datos del usuario
     const response = await fetch(`../php/usuarios_api.php?id=${userId}`);
     if (!response.ok)
       throw new Error("No se pudo obtener la info del usuario.");
-    
+
     const user = await response.json();
     if (!user || user.error)
       throw new Error(user.error || "Usuario no encontrado.");
@@ -268,14 +277,14 @@ export function loadGestionUsuarios() {
   // --- EVENT LISTENERS ---
 
   // Event listener para cuando se abre el modal de añadir usuario
-  addUserModalEl.addEventListener('show.bs.modal', async function (event) {
+  addUserModalEl.addEventListener("show.bs.modal", async function (event) {
     console.log("Modal de añadir usuario se está abriendo...");
     const addRoleSelect = document.getElementById("add-userRole");
     await populateRolesSelects(addRoleSelect);
   });
 
   // Event listener para cuando se abre el modal de editar usuario
-  editUserModalEl.addEventListener('show.bs.modal', function (event) {
+  editUserModalEl.addEventListener("show.bs.modal", function (event) {
     console.log("Modal de editar usuario se está abriendo...");
     // Los roles ya se cargan en openEditModal
   });
@@ -323,7 +332,13 @@ export function loadGestionUsuarios() {
 
     if (button.classList.contains("btn-toggle-on")) {
       const newStatus = button.dataset.newStatus;
-      if (confirm(`¿Seguro que deseas ${newStatus === 'activo' ? 'activar' : 'desactivar'} este usuario?`)) {
+      if (
+        confirm(
+          `¿Seguro que deseas ${
+            newStatus === "activo" ? "activar" : "desactivar"
+          } este usuario?`
+        )
+      ) {
         try {
           const response = await fetch("../php/usuarios_api.php", {
             method: "POST",
@@ -331,7 +346,7 @@ export function loadGestionUsuarios() {
             body: JSON.stringify({
               action: "update_estado",
               id: userId,
-              estado: newStatus
+              estado: newStatus,
             }),
           });
           const result = await response.json();
@@ -445,6 +460,6 @@ export function loadGestionUsuarios() {
   });
 
   // Agregar validaciones a los campos de cédula
-  agregarValidacionCedula('add-userCedula');
-  agregarValidacionCedula('edit-userCedula');
+  agregarValidacionCedula("add-userCedula");
+  agregarValidacionCedula("edit-userCedula");
 }
