@@ -390,4 +390,127 @@ export function loadGestionEmpresas() {
   // Dirección: solo sanitizar texto
   agregarValidacionTextoSeguro("add-Emp_direccion");
   agregarValidacionTextoSeguro("edit-Emp_direccion");
+
+  // --- CONFIGURAR VALIDACIONES EN TIEMPO REAL ---
+  if (typeof RealtimeValidator !== 'undefined') {
+    const validator = new RealtimeValidator();
+
+    // Validación personalizada para RUC ecuatoriano
+    const validateRuc = (value) => {
+      if (!validarRucEcuatoriano(value)) {
+        return 'RUC ecuatoriano inválido';
+      }
+      return true;
+    };
+
+    // Configurar validaciones para el modal de agregar empresa
+    validator.initForm('add-company-form', {
+      'add-Emp_razonSocial': {
+        required: true,
+        pattern: 'alphanumeric',
+        minLength: 3,
+        maxLength: 100
+      },
+      'add-Emp_nombre': {
+        required: true,
+        pattern: 'alphanumeric',
+        minLength: 2,
+        maxLength: 80
+      },
+      'add-Emp_ruc': {
+        required: true,
+        pattern: 'onlyNumbers',
+        minLength: 13,
+        maxLength: 13,
+        custom: validateRuc
+      },
+      'add-Emp_correo': {
+        required: true,
+        pattern: 'email',
+        maxLength: 120
+      },
+      'add-Emp_telefono': {
+        required: true,
+        pattern: 'telefono',
+        minLength: 10,
+        maxLength: 10
+      },
+      'add-Emp_direccion': {
+        required: true,
+        pattern: 'noSpecialChars',
+        minLength: 10,
+        maxLength: 200
+      }
+    });
+
+    // Configurar validaciones para el modal de editar empresa
+    validator.initForm('edit-company-form', {
+      'edit-Emp_razonSocial': {
+        required: true,
+        pattern: 'alphanumeric',
+        minLength: 3,
+        maxLength: 100
+      },
+      'edit-Emp_nombre': {
+        required: true,
+        pattern: 'alphanumeric',
+        minLength: 2,
+        maxLength: 80
+      },
+      'edit-Emp_ruc': {
+        required: true,
+        pattern: 'onlyNumbers',
+        minLength: 13,
+        maxLength: 13,
+        custom: validateRuc
+      },
+      'edit-Emp_correo': {
+        required: true,
+        pattern: 'email',
+        maxLength: 120
+      },
+      'edit-Emp_telefono': {
+        required: true,
+        pattern: 'telefono',
+        minLength: 10,
+        maxLength: 10
+      },
+      'edit-Emp_direccion': {
+        required: true,
+        pattern: 'noSpecialChars',
+        minLength: 10,
+        maxLength: 200
+      }
+    });
+
+    // Formatear campos en tiempo real
+    const addRucField = document.getElementById('add-Emp_ruc');
+    const editRucField = document.getElementById('edit-Emp_ruc');
+    const addTelefonoField = document.getElementById('add-Emp_telefono');
+    const editTelefonoField = document.getElementById('edit-Emp_telefono');
+    
+    // Formatear RUC (solo números)
+    [addRucField, editRucField].forEach(field => {
+      if (field) {
+        field.addEventListener('input', function(e) {
+          let value = e.target.value.replace(/\D/g, '');
+          if (value.length > 13) value = value.substring(0, 13);
+          e.target.value = value;
+        });
+      }
+    });
+
+    // Formatear teléfonos
+    if (addTelefonoField) RealtimeValidator.formatPhoneNumber(addTelefonoField);
+    if (editTelefonoField) RealtimeValidator.formatPhoneNumber(editTelefonoField);
+
+    // Limpiar validaciones al abrir los modales
+    document.getElementById('addCompanyModal')?.addEventListener('show.bs.modal', () => {
+      validator.clearValidations('add-company-form');
+    });
+
+    document.getElementById('editCompanyModal')?.addEventListener('show.bs.modal', () => {
+      validator.clearValidations('edit-company-form');
+    });
+  }
 }

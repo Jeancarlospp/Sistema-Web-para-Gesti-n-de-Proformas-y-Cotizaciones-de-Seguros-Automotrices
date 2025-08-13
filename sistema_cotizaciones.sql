@@ -632,3 +632,22 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- Script para corregir el problema de auditoría con la columna Aud_IP
+-- Fecha: 12-08-2025
+
+-- 1. Agregar la columna Aud_IP a la tabla auditoria
+ALTER TABLE `auditoria` ADD COLUMN `Aud_IP` VARCHAR(45) DEFAULT '127.0.0.1' AFTER `Aud_descripcion`;
+
+-- 2. Eliminar el trigger existente
+DROP TRIGGER IF EXISTS `tr_cotizacion_insert`;
+
+-- 3. Crear el trigger corregido
+DELIMITER $$
+CREATE TRIGGER `tr_cotizacion_insert` AFTER INSERT ON `cotizacion` FOR EACH ROW 
+BEGIN
+  INSERT INTO `auditoria` 
+  (`idUsuario`, `Aud_accion`, `Aud_tabla`, `Aud_descripcion`, `Aud_IP`)
+  VALUES 
+  (NEW.idUsuario, 'INSERT', 'cotizacion', CONCAT('Nueva cotización creada ID: ', NEW.idCotizacion, ' para cliente ID: ', NEW.idCliente), '127.0.0.1');
+END$$
+DELIMITER ;

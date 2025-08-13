@@ -345,4 +345,103 @@ export function loadGestionClientes() {
   // Agregar validaciones a los campos de cédula
   agregarValidacionCedula("add-Cli_cedula");
   agregarValidacionCedula("edit-Cli_cedula");
+
+  // --- CONFIGURAR VALIDACIONES EN TIEMPO REAL ---
+  if (typeof RealtimeValidator !== 'undefined') {
+    const validator = new RealtimeValidator();
+
+    // Configurar validaciones para el modal de agregar cliente
+    validator.initForm('add-client-form', {
+      'add-Cli_nombre': {
+        required: true,
+        pattern: 'onlyLetters',
+        minLength: 2,
+        maxLength: 100
+      },
+      'add-Cli_cedula': {
+        required: true,
+        pattern: 'cedula',
+        custom: (value) => {
+          if (!RealtimeValidator.validateEcuadorianCedula(value)) {
+            return 'Cédula ecuatoriana inválida';
+          }
+          return true;
+        }
+      },
+      'add-Cli_correo': {
+        required: false,
+        pattern: 'email',
+        maxLength: 120
+      },
+      'add-Cli_telefono': {
+        required: false,
+        pattern: 'telefono',
+        minLength: 10,
+        maxLength: 10
+      },
+      'add-Cli_direccion': {
+        required: false,
+        pattern: 'noSpecialChars',
+        minLength: 5,
+        maxLength: 200
+      }
+    });
+
+    // Configurar validaciones para el modal de editar cliente
+    validator.initForm('edit-client-form', {
+      'edit-Cli_nombre': {
+        required: true,
+        pattern: 'onlyLetters',
+        minLength: 2,
+        maxLength: 100
+      },
+      'edit-Cli_cedula': {
+        required: true,
+        pattern: 'cedula',
+        custom: (value) => {
+          if (!RealtimeValidator.validateEcuadorianCedula(value)) {
+            return 'Cédula ecuatoriana inválida';
+          }
+          return true;
+        }
+      },
+      'edit-Cli_correo': {
+        required: false,
+        pattern: 'email',
+        maxLength: 120
+      },
+      'edit-Cli_telefono': {
+        required: false,
+        pattern: 'telefono',
+        minLength: 10,
+        maxLength: 10
+      },
+      'edit-Cli_direccion': {
+        required: false,
+        pattern: 'noSpecialChars',
+        minLength: 5,
+        maxLength: 200
+      }
+    });
+
+    // Formatear campos en tiempo real
+    const addCedulaField = document.getElementById('add-Cli_cedula');
+    const editCedulaField = document.getElementById('edit-Cli_cedula');
+    const addTelefonoField = document.getElementById('add-Cli_telefono');
+    const editTelefonoField = document.getElementById('edit-Cli_telefono');
+    
+    if (addCedulaField) RealtimeValidator.formatCedula(addCedulaField);
+    if (editCedulaField) RealtimeValidator.formatCedula(editCedulaField);
+    if (addTelefonoField) RealtimeValidator.formatPhoneNumber(addTelefonoField);
+    if (editTelefonoField) RealtimeValidator.formatPhoneNumber(editTelefonoField);
+
+    // Limpiar validaciones al abrir los modales
+    document.getElementById('addClientModal')?.addEventListener('show.bs.modal', () => {
+      validator.clearValidations('add-client-form');
+    });
+
+    document.getElementById('editClientModal')?.addEventListener('show.bs.modal', () => {
+      validator.clearValidations('edit-client-form');
+    });
+  }
 }

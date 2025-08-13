@@ -484,4 +484,91 @@ export function loadGestionUsuarios() {
   agregarValidacionEmail("edit-userEmail");
   agregarValidacionTextoSeguro("add-userPassword");
   agregarValidacionTextoSeguro("edit-userPassword");
+
+  // --- CONFIGURAR VALIDACIONES EN TIEMPO REAL ---
+  if (typeof RealtimeValidator !== 'undefined') {
+    const validator = new RealtimeValidator();
+
+    // Configurar validaciones para el modal de agregar usuario
+    validator.initForm('add-user-form', {
+      'add-userName': {
+        required: true,
+        pattern: 'onlyLetters',
+        minLength: 2,
+        maxLength: 80
+      },
+      'add-userCedula': {
+        required: true,
+        pattern: 'cedula',
+        custom: (value) => {
+          if (!RealtimeValidator.validateEcuadorianCedula(value)) {
+            return 'Cédula ecuatoriana inválida';
+          }
+          return true;
+        }
+      },
+      'add-userEmail': {
+        required: true,
+        pattern: 'email',
+        maxLength: 120
+      },
+      'add-userPassword': {
+        required: true,
+        minLength: 8,
+        pattern: 'password'
+      },
+      'add-userRole': {
+        required: true
+      }
+    });
+
+    // Configurar validaciones para el modal de editar usuario
+    validator.initForm('edit-user-form', {
+      'edit-userName': {
+        required: true,
+        pattern: 'onlyLetters',
+        minLength: 2,
+        maxLength: 80
+      },
+      'edit-userCedula': {
+        required: true,
+        pattern: 'cedula',
+        custom: (value) => {
+          if (!RealtimeValidator.validateEcuadorianCedula(value)) {
+            return 'Cédula ecuatoriana inválida';
+          }
+          return true;
+        }
+      },
+      'edit-userEmail': {
+        required: true,
+        pattern: 'email',
+        maxLength: 120
+      },
+      'edit-userPassword': {
+        required: false,
+        minLength: 8,
+        pattern: 'password'
+      },
+      'edit-userRole': {
+        required: true
+      }
+    });
+
+    // Formatear campos en tiempo real
+    const addCedulaField = document.getElementById('add-userCedula');
+    const editCedulaField = document.getElementById('edit-userCedula');
+    
+    if (addCedulaField) RealtimeValidator.formatCedula(addCedulaField);
+    if (editCedulaField) RealtimeValidator.formatCedula(editCedulaField);
+
+    // Limpiar validaciones al abrir los modales
+    document.getElementById('addUserModal')?.addEventListener('show.bs.modal', () => {
+      validator.clearValidations('add-user-form');
+    });
+
+    document.getElementById('editUserModal')?.addEventListener('show.bs.modal', () => {
+      validator.clearValidations('edit-user-form');
+    });
+  }
 }

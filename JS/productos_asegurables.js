@@ -856,6 +856,110 @@ export async function loadProductosAsegurables() {
   addProductModalEl.addEventListener("hidden.bs.modal", function () {
     resetModalToAddMode();
   });
+
+  // --- CONFIGURAR VALIDACIONES EN TIEMPO REAL ---
+  if (typeof RealtimeValidator !== 'undefined') {
+    const validator = new RealtimeValidator();
+
+    // Configurar validaciones para el modal de agregar/editar producto
+    validator.initForm('add-product-form', {
+      'nombreProducto': {
+        required: true,
+        pattern: 'alphanumeric',
+        minLength: 3,
+        maxLength: 100
+      },
+      'descripcionProducto': {
+        required: true,
+        pattern: 'noSpecialChars',
+        minLength: 10,
+        maxLength: 500
+      },
+      'precioMensual': {
+        required: true,
+        pattern: 'positiveNumber',
+        custom: (value) => {
+          const num = parseFloat(value);
+          if (num <= 0) return 'El precio debe ser mayor a 0';
+          if (num > 99999.99) return 'El precio no puede exceder $99,999.99';
+          return true;
+        }
+      },
+      'mesesCobertura': {
+        required: true,
+        pattern: 'onlyNumbers',
+        custom: (value) => {
+          const num = parseInt(value);
+          if (num < 1 || num > 60) return 'Los meses de cobertura deben estar entre 1 y 60';
+          return true;
+        }
+      },
+      'categoriaProducto': {
+        required: true
+      },
+      'empresaProducto': {
+        required: true
+      },
+      'responsabilidadCivil': {
+        required: false,
+        pattern: 'positiveNumber'
+      },
+      'danosColision': {
+        required: false,
+        pattern: 'positiveNumber'
+      },
+      'gastosLegales': {
+        required: false,
+        pattern: 'positiveNumber'
+      },
+      'gastosMedicos': {
+        required: false,
+        pattern: 'positiveNumber'
+      }
+    });
+
+    // Validación especial para precios
+    const priceFields = ['precioMensual', 'responsabilidadCivil', 'danosColision', 'gastosLegales', 'gastosMedicos'];
+    priceFields.forEach(fieldId => {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        field.addEventListener('input', function(e) {
+          // Permitir solo números y un punto decimal
+          let value = e.target.value.replace(/[^0-9.]/g, '');
+          
+          // Evitar múltiples puntos decimales
+          const parts = value.split('.');
+          if (parts.length > 2) {
+            value = parts[0] + '.' + parts.slice(1).join('');
+          }
+          
+          // Limitar decimales a 2 dígitos
+          if (parts[1] && parts[1].length > 2) {
+            value = parts[0] + '.' + parts[1].substring(0, 2);
+          }
+          
+          e.target.value = value;
+        });
+      }
+    });
+
+    // Validación para meses de cobertura (solo números enteros)
+    const mesesField = document.getElementById('mesesCobertura');
+    if (mesesField) {
+      mesesField.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+      });
+    }
+
+    // Limpiar validaciones al abrir el modal
+    addProductModalEl?.addEventListener('show.bs.modal', () => {
+      validator.clearValidations('add-product-form');
+    });
+
+    editProductModalEl?.addEventListener('show.bs.modal', () => {
+      validator.clearValidations('add-product-form');
+    });
+  }
 }
 
 /**
