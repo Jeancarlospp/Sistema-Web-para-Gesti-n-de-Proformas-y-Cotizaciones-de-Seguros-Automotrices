@@ -380,59 +380,80 @@
           </div>
           <div class="modal-body">
             <form id="add-company-form" novalidate>
-              <div class="form-group">
+              <div class="mb-3">
                 <label class="form-label" for="add-Emp_razonSocial"
                   >Razón Social</label
                 ><input
                   id="add-Emp_razonSocial"
                   type="text"
-                  class="form-control"
+                  class="form-control validar-nombre"
+                  pattern="^[A-Za-zÁÉÍÓÚáéíóúÜüÑñ\s]+$"
+                  maxlength="100"
+                  autocomplete="off"
                   required
                 />
               </div>
-              <div class="form-group">
+              <div class="mb-3">
                 <label class="form-label" for="add-Emp_nombre"
                   >Nombre Comercial</label
                 ><input
                   id="add-Emp_nombre"
                   type="text"
-                  class="form-control"
+                  class="form-control validar-nombre"
+                  pattern="^[A-Za-zÁÉÍÓÚáéíóúÜüÑñ\s]+$"
+                  maxlength="80"
+                  autocomplete="off"
                   required
                 />
               </div>
-              <div class="form-group">
+              <div class="mb-3">
                 <label class="form-label" for="add-Emp_ruc">RUC</label
                 ><input
                   id="add-Emp_ruc"
                   type="text"
-                  class="form-control"
+                  class="form-control validar-ruc"
+                  pattern="\d{13}"
+                  maxlength="13"
+                  inputmode="numeric"
+                  autocomplete="off"
                   required
                 />
               </div>
-              <div class="form-group">
+              <div class="mb-3">
                 <label class="form-label" for="add-Emp_correo">Email</label
                 ><input
                   id="add-Emp_correo"
                   type="email"
-                  class="form-control"
+                  class="form-control validar-email"
+                  pattern="^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                  maxlength="120"
+                  autocomplete="off"
                   required
                 />
               </div>
-              <div class="form-group">
+              <div class="mb-3">
                 <label class="form-label" for="add-Emp_telefono">Teléfono</label
                 ><input
                   id="add-Emp_telefono"
                   type="tel"
-                  class="form-control"
+                  class="form-control validar-telefono"
+                  pattern="\d{10}"
+                  maxlength="10"
+                  inputmode="numeric"
+                  autocomplete="off"
                   required
                 />
               </div>
-              <div class="form-group">
+              <div class="mb-3">
                 <label class="form-label" for="add-Emp_direccion"
                   >Dirección</label
                 ><textarea
                   id="add-Emp_direccion"
-                  class="form-control"
+                  class="form-control validar-texto-seguro"
+                  pattern="^[^<>]{1,200}$"
+                  maxlength="200"
+                  rows="3"
+                  autocomplete="off"
                   required
                 ></textarea>
               </div>
@@ -560,7 +581,7 @@
     <!-- Bloque de Scripts Optimizado y Limpio -->
     <script src="../assets/static/js/components/dark.js"></script>
     <script src="../assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-    <script src="../js/validaciones-nuevo.js"></script>
+
     <script type="module" src="../js/main.js"></script>
     <script src="../assets/compiled/js/app.js" defer></script>
   </body>

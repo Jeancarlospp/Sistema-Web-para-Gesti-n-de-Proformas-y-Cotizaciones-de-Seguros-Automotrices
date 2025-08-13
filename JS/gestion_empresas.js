@@ -3,7 +3,14 @@
  * Lógica avanzada con Paginación, Búsqueda, Ordenamiento y CRUD para la Gestión de Empresas.
  */
 
-import { validarRucEcuatoriano, agregarValidacionRuc } from "./validaciones.js";
+import { 
+  validarRucEcuatoriano, 
+  agregarValidacionRuc,
+  agregarValidacionNombre,
+  agregarValidacionEmail,
+  agregarValidacionTelefono,
+  agregarValidacionTextoSeguro
+} from "./validaciones.js";
 
 // --- ESTADO GLOBAL DE LA TABLA ---
 let tableState = {
@@ -369,7 +376,18 @@ export function loadGestionEmpresas() {
     }
   });
 
-  // Agregar validaciones a los campos de RUC
+  // Agregar validaciones en tiempo real a los campos del formulario de empresa
   agregarValidacionRuc("add-Emp_ruc");
   agregarValidacionRuc("edit-Emp_ruc");
+  agregarValidacionNombre("add-Emp_nombre");
+  agregarValidacionNombre("edit-Emp_nombre");
+  agregarValidacionNombre("add-Emp_razonSocial");
+  agregarValidacionNombre("edit-Emp_razonSocial");
+  agregarValidacionEmail("add-Emp_correo");
+  agregarValidacionEmail("edit-Emp_correo");
+  agregarValidacionTelefono("add-Emp_telefono");
+  agregarValidacionTelefono("edit-Emp_telefono");
+  // Dirección: solo sanitizar texto
+  agregarValidacionTextoSeguro("add-Emp_direccion");
+  agregarValidacionTextoSeguro("edit-Emp_direccion");
 }

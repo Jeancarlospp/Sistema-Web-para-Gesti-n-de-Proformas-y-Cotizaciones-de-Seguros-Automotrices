@@ -3,6 +3,13 @@
  * Lógica avanzada con Paginación, Filtros y CRUD completo para la Gestión de Productos Asegurables.
  */
 
+import {
+  agregarValidacionNombre,
+  agregarValidacionTextoSeguro,
+  agregarValidacionEmail,
+  agregarValidacionTelefono
+} from "./validaciones.js";
+
 // --- ESTADO GLOBAL DE LA VISTA DE PRODUCTOS ---
 let viewState = {
   currentPage: 1,
@@ -661,6 +668,10 @@ export async function loadProductosAsegurables() {
 
   // Event listener para validación del formulario
   setupFormValidation();
+
+  // Validaciones en tiempo real para el formulario de producto (añadir/editar)
+  agregarValidacionNombre("nombreProducto");
+  agregarValidacionTextoSeguro("descripcionProducto");
 
   container.addEventListener("click", async (event) => {
     // Verificar si es un clic en tarjeta para Asesor (solo consulta)
