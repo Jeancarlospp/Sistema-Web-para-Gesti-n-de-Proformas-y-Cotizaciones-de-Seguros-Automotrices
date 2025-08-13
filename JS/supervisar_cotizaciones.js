@@ -137,21 +137,6 @@ async function showQuoteDetails(idCotizacion) {
   }
 }
 
-/**
- * Retorna la clase CSS apropiada para el badge del estado
- * @param {string} estado - Estado de la cotización
- * @returns {string}
- */
-function getStatusBadgeClass(estado) {
-  const statusMap = {
-    aceptada: "success",
-    enviada: "info",
-    rechazada: "danger",
-    borrador: "secondary",
-    vencida: "warning",
-  };
-  return statusMap[estado?.toLowerCase()] || "secondary";
-}
 
 /**
  * Descarga el PDF de una cotización específica
