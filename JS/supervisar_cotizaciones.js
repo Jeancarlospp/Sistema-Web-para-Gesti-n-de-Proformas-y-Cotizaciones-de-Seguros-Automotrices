@@ -240,10 +240,10 @@ async function downloadQuotePDF(idCotizacion) {
       ...planes.map(p => `$${parseFloat(p.Pro_precioMensual ?? 0).toFixed(2)}`)
     ];
     const pricesWithIvaRow = [
-      "PRECIO + IVA (15%)",
+      "PRECIO TOTAL+ IVA (15%)",
       ...planes.map(p => {
         const base = parseFloat(p.Pro_precioMensual ?? 0);
-        const conIva = base * 1.15;
+        const conIva = base * p.Pro_mesesCobertura* 1.15;
         return `$${conIva.toFixed(2)}`;
       })
     ];

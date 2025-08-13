@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const roleRedirects = {
       Administrador: "html/admin_dashboard.html",
       Asesor: "html/asesor_dashboard.html",
-      Vendedor: "html/vendedor_dashboard.html",
+      Vendedor: "html/asesor_dashboard.html", // Vendedor comparte dashboard con Asesor.
     };
     const redirectUrl = roleRedirects[userData.userRole];
 

@@ -26,17 +26,12 @@
       <!-- ===== INICIO DE LA CORRECCIí“N: SIDEBAR UNIVERSAL ===== -->
       <!-- ======================================================= -->
       <div id="sidebar">
-        <!-- Este es el contenido completo del sidebar maestro.
-                 El script main.js se encargará de mostrar solo las partes correctas. -->
         <div class="sidebar-wrapper active">
           <div class="sidebar-header position-relative">
             <div class="d-flex justify-content-between align-items-center">
               <div class="logo">
                 <a href="index.html"
-                  ><img
-                    src="../assets/compiled/svg/logo.svg"
-                    alt="Logo"
-                    srcset=""
+                  ><img src="../assets/compiled/svg/logo.svg" alt="Logo" srcset=""
                 /></a>
               </div>
               <div class="theme-toggle d-flex gap-2 align-items-center mt-2">
@@ -96,7 +91,7 @@
           </div>
           <div class="sidebar-menu">
             <ul class="menu">
-              <!-- ========== MENíš ADMINISTRADOR ========== -->
+              <!-- ========== MENÚ ADMINISTRADOR ========== -->
               <li class="sidebar-title role-admin">Menú Principal</li>
               <li class="sidebar-item role-admin">
                 <a href="admin_dashboard.html" class="sidebar-link"
@@ -105,14 +100,19 @@
               </li>
               <li class="sidebar-item role-admin">
                 <a href="gestion_usuarios.html" class="sidebar-link"
-                  ><i class="bi bi-people-fill"></i
-                  ><span>Gestión de Usuarios</span></a
+                  ><i class="bi bi-people-fill"></i><span>Gestión de Usuarios</span></a
                 >
               </li>
               <li class="sidebar-item role-admin">
                 <a href="gestion_empresas.html" class="sidebar-link"
-                  ><i class="bi bi-building"></i
-                  ><span>Gestión de Empresas</span></a
+                  ><i class="bi bi-building"></i><span>Gestión de Empresas</span></a
+                >
+              </li>
+              <li class="sidebar-item role-admin">
+                <a href="productos_asegurables.html" class="sidebar-link"
+                  ><i class="bi bi-card-checklist"></i
+                  ><i class="bi bi-gear"></i
+                  ><span>Gestión de Productos</span></a
                 >
               </li>
               <li class="sidebar-item role-admin">
@@ -139,7 +139,7 @@
               <li class="sidebar-item role-asesor">
                 <a href="asesor_dashboard.html" class="sidebar-link"
                   ><i class="bi bi-grid-fill"></i
-                  ><span>Dashboard de Cotizacií³n</span></a
+                  ><span>Dashboard de Cotización</span></a
                 >
               </li>
               <li class="sidebar-item role-asesor">
@@ -155,12 +155,12 @@
                 >
               </li>
 
-              <!-- ========== MENíš VENDEDOR ========== -->
+              <!-- ========== MENÚ VENDEDOR ========== -->
               <li class="sidebar-title role-vendedor">Menú Vendedor</li>
               <li class="sidebar-item role-vendedor">
-                <a href="vendedor_dashboard.html" class="sidebar-link"
+                <a href="asesor_dashboard.html" class="sidebar-link"
                   ><i class="bi bi-lightning-charge-fill"></i
-                  ><span>Cotizacií³n Rápida</span></a
+                  ><span>Cotización Rápida</span></a
                 >
               </li>
               <li class="sidebar-item role-vendedor">
@@ -176,21 +176,22 @@
                 >
               </li>
 
-              <!-- ========== CUENTA (Comíºn para todos) ========== -->
+              <!-- ========== CUENTA (Común para todos) ========== -->
               <li class="sidebar-title">Cuenta</li>
-              <li class="sidebar-item role-asesor role-vendedor">
-                <a href="mis_cotizaciones.html" class="sidebar-link">
-                  <i class="bi bi-journal-text"></i
-                  ><span>Mis Cotizaciones</span>
-                </a>
+              <li class="sidebar-item role-asesor">
+                <a href="misCotizaciones.html" class="sidebar-link"
+                  ><i class="bi bi-person-lines-fill"></i
+                  ><span>Mis Cotizaciones</span></a
+                >
               </li>
+              <li class="sidebar-item role-vendedor">
+                <a href="misCotizaciones.html" class="sidebar-link"
+                  ><i class="bi bi-person-lines-fill"></i
+                  ><span>Mis Cotizaciones</span></a
+                >
               <li class="sidebar-item">
-                <a
-                  href="../index.html"
-                  id="logout-btn-sidebar"
-                  class="sidebar-link"
-                  ><i class="bi bi-box-arrow-left"></i
-                  ><span>Cerrar Sesión</span></a
+                <a href="../index.html" id="logout-btn-sidebar" class="sidebar-link"
+                  ><i class="bi bi-box-arrow-left"></i><span>Cerrar Sesión</span></a
                 >
               </li>
             </ul>
