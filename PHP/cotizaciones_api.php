@@ -198,7 +198,10 @@ try {
 
         } catch (Exception $e) {
             $conn->rollback();
+            $conn->autocommit(true);
             throw $e;
+        } finally {
+            $conn->autocommit(true);
         }
     }
     
@@ -291,7 +294,7 @@ try {
     }
 
 } catch (Exception $e) {
-    if (isset($conn) && $conn->get_autocommit() === false) {
+    if (isset($conn)) {
         $conn->rollback();
     }
     send_json_response(['success' => false, 'message' => 'Error interno del servidor.', 'error_details' => $e->getMessage()], 500);

@@ -257,18 +257,19 @@ function generateComparisonPDF() {
   // Verificar que las librerías PDF estén cargadas
   if (
     typeof window.jspdf === "undefined" ||
-    typeof window.jspdf.jsPDF === "undefined"
+    typeof window.jspdf.jsPDF === "undefined" ||
+    typeof window.jspdf.jsPDF.API.autoTable === "undefined"
   ) {
     alert(
-      "Error: La librería para generar PDF no se ha cargado correctamente."
+      "Error: Las librerías para generar PDF no se han cargado correctamente."
     );
     return;
   }
 
   const { jsPDF } = window.jspdf;
   const comparisonArea = document.getElementById("comparison-area");
-  const clientName =
-    document.getElementById("client-name-display")?.textContent || "Cliente";
+  const clientNameElement = document.getElementById("client-name-display");
+  const clientName = clientNameElement?.textContent || "Cliente";
   const comparisonTable = document.getElementById("comparison-table");
 
   // Verificar que la tabla de comparación esté visible
@@ -279,42 +280,111 @@ function generateComparisonPDF() {
     return;
   }
 
-  const doc = new jsPDF({
-    orientation: "landscape", // Tabla ancha, mejor en horizontal
+  const doc = new jsPDF({ orientation: "landscape" });
+
+  // Obtener datos del cliente seleccionado
+  const clientInput = document.getElementById("client-name");
+  const clientIdInput = document.getElementById("client-id");
+  const vehicleTypeSelect = document.getElementById("vehicle-type");
+  
+  const clientInputValue = clientInput ? clientInput.value : "N/A";
+  const vehicleType = vehicleTypeSelect ? vehicleTypeSelect.options[vehicleTypeSelect.selectedIndex]?.text || "N/A" : "N/A";
+
+  // Encabezado del documento
+  doc.setFontSize(18);
+  doc.text(`Comparativa de Seguros`, 14, 22);
+  doc.setFontSize(12);
+  doc.setTextColor(100);
+  doc.text(`Cliente: ${clientName}`, 14, 30);
+  doc.text(`Tipo de Vehículo: ${vehicleType}`, 14, 36);
+  doc.text(`Fecha: ${new Date().toLocaleDateString("es-ES")}`, 14, 42);
+
+  // Extraer datos de la tabla HTML
+  const tableHead = comparisonTable.querySelector("thead");
+  const tableBody = comparisonTable.querySelector("tbody");
+  const tableFoot = comparisonTable.querySelector("tfoot");
+
+  if (!tableHead || !tableBody) {
+    alert("Error: No se pudo extraer los datos de la tabla de comparación.");
+    return;
+  }
+
+  // Procesar encabezado
+  const headRow = tableHead.querySelector("tr");
+  const head = [];
+  if (headRow) {
+    const headCells = Array.from(headRow.querySelectorAll("th"));
+    head.push(headCells.map(cell => cell.textContent.trim()));
+  }
+
+  // Procesar cuerpo de la tabla
+  const body = [];
+  const bodyRows = Array.from(tableBody.querySelectorAll("tr"));
+  bodyRows.forEach(row => {
+    const cells = Array.from(row.querySelectorAll("td, th"));
+    const rowData = cells.map(cell => {
+      let text = cell.textContent.trim();
+      // Limpiar texto para el PDF
+      if (text.length > 100) {
+        text = text.substring(0, 97) + "...";
+      }
+      return text;
+    });
+    if (rowData.length > 0) {
+      body.push(rowData);
+    }
   });
 
-  // Añadir Títulos
-  doc.setFontSize(18);
-  doc.text("Comparativa de Planes de Seguros", 14, 22);
-  doc.setFontSize(12);
-  doc.text(`Cliente: ${clientName}`, 14, 30);
-  doc.text(`Fecha: ${new Date().toLocaleDateString("es-ES")}`, 14, 36);
+  // Procesar pie de tabla (precios)
+  const foot = [];
+  if (tableFoot) {
+    const footRows = Array.from(tableFoot.querySelectorAll("tr"));
+    footRows.forEach(row => {
+      const cells = Array.from(row.querySelectorAll("td, th"));
+      const rowData = cells.map(cell => cell.textContent.trim());
+      if (rowData.length > 0) {
+        foot.push(rowData);
+      }
+    });
+  }
 
-  // Usar autoTable para convertir la tabla HTML a PDF
+  // Renderizar tabla en PDF
   doc.autoTable({
-    html: "#comparison-table",
-    startY: 42,
+    head: head,
+    body: body,
+    foot: foot,
+    startY: 50,
     theme: "grid",
-    headStyles: { fillColor: [41, 128, 185], textColor: 255 }, // Cabecera azul
-    footStyles: { fillColor: [230, 230, 230], textColor: 0, fontStyle: "bold" },
+    headStyles: { 
+      fillColor: [41, 128, 185], 
+      textColor: 255, 
+      fontStyle: "bold" 
+    },
+    footStyles: { 
+      fillColor: "#f0f0f0", 
+      textColor: 0, 
+      fontStyle: "bold", 
+      fontSize: 12 
+    },
+    bodyStyles: {
+      fontSize: 10
+    },
     didDrawPage: (data) => {
       // Añadir pie de página con número de página
       const pageCount = doc.internal.getNumberOfPages();
       doc.setFontSize(10);
+      doc.setTextColor(100);
       doc.text(
-        `Página ${data.pageNumber} de ${pageCount}`,
+        `Página ${data.pageNumber} de ${pageCount} - Generado el ${new Date().toLocaleDateString("es-ES")}`,
         data.settings.margin.left,
         doc.internal.pageSize.height - 10
       );
-    },
+    }
   });
 
   // Generar nombre de archivo y guardar
   const date = new Date().toISOString().split("T")[0];
-  const fileName = `comparativa_seguros_${clientName.replace(
-    /\s+/g,
-    "_"
-  )}_${date}.pdf`;
+  const fileName = `comparativa_seguros_${clientName.replace(/\s+/g, "_")}_${date}.pdf`;
   doc.save(fileName);
 }
 
