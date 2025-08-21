@@ -2,8 +2,8 @@
 class Conexion {
     private $host = "localhost";
     private $db = "sistema_cotizaciones";
-    private $user = "admin";
-    private $pass = "admin";
+    private $user = "root";
+    private $pass = "rootroot";
     public $conn;
 
     public function __construct() {
